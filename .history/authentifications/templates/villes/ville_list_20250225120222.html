@@ -1,0 +1,20 @@
+{% extends "/t" %}
+
+{% block title %}
+    Liste des Villes
+{% endblock %}
+
+{% block header %}
+    Liste des Villes
+{% endblock %}
+
+{% block content %}
+    <h2>Liste des Villes</h2>
+    <ul>
+        {% for ville in villes %}
+            <li>{{ ville.nom }} - {{ ville.description }}</li>
+        {% empty %}
+            <li>Aucune ville trouvée.</li>
+        {% endfor %}
+    </ul>
+{% endblock %}

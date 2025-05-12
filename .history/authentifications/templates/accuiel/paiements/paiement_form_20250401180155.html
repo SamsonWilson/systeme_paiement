@@ -1,0 +1,229 @@
+{% extends "accuiel/Base.html" %}
+{% load static %} {# Si vous avez besoin de fichiers statiques spécifiques #}
+{% block title %}Paiement du Loyer - {{ location.chambre }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="card">
+        <div class="text-white card-header bg-primary">
+            <h4 class="mb-0">Enregistrer un Paiement de Loyer</h4>
+        </div>
+        <div class="card-body">
+            <h5 class="card-title">Location Concernée</h5>
+            <p><strong>Locataire :</strong> {{ location.utilisateur.get_full_name|default:location.utilisateur.username }}</p>
+            <p><strong>Chambre :</strong> {{ location.chambre }}</p>
+            <p><strong>Montant Mensuel :</strong> <span id="montant-mensuel">{{ location.montant_total|floatformat:0 }}</span> CFA</p>
+            <p><strong>Fin Avance Actuelle :</strong> <span id="date-fin-avance-actuelle" data-date="{{ location.date_fin_avance|date:'Y-m-d' }}">{{ location.date_fin_avance|date:"d/m/Y" }}</span></p>
+            <hr>
+
+            <form method="post" id="paiement-loyer-form">
+                {% csrf_token %}
+
+                {# Affichage des erreurs non liées à un champ spécifique #}
+                {% if form.non_field_errors %}
+                    <div class="alert alert-danger">
+                        {% for error in form.non_field_errors %}
+                            <p class="mb-0">{{ error }}</p>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+
+                {# Champ caché pour date_fin_paiement (sa valeur sera mise à jour par JS) #}
+                {{ form.date_fin_paiement }}
+
+                <div class="row g-3">
+                    {# Nombre de mois #}
+                    <div class="col-md-6">
+                        <label for="{{ form.nombre_mois_paye.id_for_label }}" class="form-label">{{ form.nombre_mois_paye.label }} <span class="text-danger">*</span></label>
+                        {{ form.nombre_mois_paye }}
+                        {% if form.nombre_mois_paye.errors %}
+                            <div class="invalid-feedback d-block">
+                                {% for error in form.nombre_mois_paye.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                         <div class="form-text">Entrez le nombre de mois de loyer à payer.</div>
+                    </div>
+
+                    {# Montant Payé (calculé, readonly) #}
+                    <div class="col-md-6">
+                        <label for="{{ form.montant_paye.id_for_label }}" class="form-label">{{ form.montant_paye.label }}</label>
+                        {{ form.montant_paye }}
+                        {% if form.montant_paye.errors %}
+                             <div class="invalid-feedback d-block">
+                                {% for error in form.montant_paye.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                        <div class="form-text">Calculé automatiquement en fonction du nombre de mois.</div>
+                    </div>
+
+                     {# Date de fin prévisionnelle (Affichage informatif) #}
+                    <div class="col-md-12">
+                         <p class="mt-2"><strong>Nouvelle date de fin de paiement prévue :</strong> <span id="date-fin-prevue" class="fw-bold">--/--/----</span></p>
+                    </div>
+
+                    {# Mode de Paiement #}
+                    <div class="col-md-6">
+                        <label for="{{ form.mode_paiement.id_for_label }}" class="form-label">{{ form.mode_paiement.label }}</label>
+                        {{ form.mode_paiement }}
+                        {% if form.mode_paiement.errors %}
+                            <div class="invalid-feedback d-block">
+                                {% for error in form.mode_paiement.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    {# Statut de Paiement #}
+                    <div class="col-md-6">
+                        <label for="{{ form.statut_paiement.id_for_label }}" class="form-label">{{ form.statut_paiement.label }}</label>
+                        {{ form.statut_paiement }}
+                         {% if form.statut_paiement.errors %}
+                            <div class="invalid-feedback d-block">
+                                {% for error in form.statut_paiement.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    {# Commentaire #}
+                    <div class="col-12">
+                        <label for="{{ form.commentaire.id_for_label }}" class="form-label">{{ form.commentaire.label }}</label>
+                        {{ form.commentaire }}
+                         {% if form.commentaire.errors %}
+                            <div class="invalid-feedback d-block">
+                                {% for error in form.commentaire.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="mt-4">
+                    <button type="submit" class="btn btn-success">
+                        <i class="fas fa-save me-1"></i> Enregistrer le Paiement
+                    </button>
+                    <a href="{% url 'VOTRE_URL_DE_RETOUR' lo                    <a href="{% url 'liste_paiements' %}" class="btn btn-outline-secondary">
+cation.pk %}" class="btn btn-secondary"> {# Adaptez l'URL de retour #}
+                       <i class="fas fa-times me-1"></i> Annuler
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const nombreMoisInput = document.getElementById('{{ form.nombre_mois_paye.id_for_label }}');
+    const montantPayeInput = document.getElementById('{{ form.montant_paye.id_for_label }}');
+    const dateFinPaiementInput = document.getElementById('{{ form.date_fin_paiement.id_for_label }}'); // Champ caché
+    const dateFinPrevueDisplay = document.getElementById('date-fin-prevue');
+
+    const montantMensuelElement = document.getElementById('montant-mensuel');
+    const dateFinAvanceElement = document.getElementById('date-fin-avance-actuelle');
+
+    // --- Vérification initiale ---
+    if (!nombreMoisInput || !montantPayeInput || !dateFinPaiementInput || !dateFinPrevueDisplay || !montantMensuelElement || !dateFinAvanceElement) {
+        console.error("Erreur: Un ou plusieurs éléments du formulaire sont manquants dans le DOM.");
+        // Optionnel: Afficher un message à l'utilisateur
+        // alert("Une erreur est survenue lors du chargement du formulaire. Veuillez contacter l'administrateur.");
+        return; // Arrêter l'exécution si des éléments manquent
+    }
+
+    // --- Récupération des valeurs initiales ---
+    const montantMensuel = parseFloat(montantMensuelElement.textContent.replace(/\s/g, '')) || 0; // Supprime les espaces pour le parsing
+    const dateFinAvanceStr = dateFinAvanceElement.getAttribute('data-date'); // Format YYYY-MM-DD
+
+    if (!dateFinAvanceStr) {
+         console.error("Erreur: La date de fin d'avance actuelle n'est pas définie.");
+         dateFinPrevueDisplay.textContent = "Date de début non définie";
+         return;
+    }
+
+     // Fonction pour formater une date en JJ/MM/AAAA
+    function formatDateFR(date) {
+        if (!date || !(date instanceof Date) || isNaN(date)) {
+            return '--/--/----';
+        }
+        const day = String(date.getDate()).padStart(2, '0');
+        const month = String(date.getMonth() + 1).padStart(2, '0'); // Mois est 0-indexé
+        const year = date.getFullYear();
+        return `${day}/${month}/${year}`;
+    }
+
+     // Fonction pour formater une date en YYYY-MM-DD (pour l'input hidden)
+    function formatDateISO(date) {
+         if (!date || !(date instanceof Date) || isNaN(date)) {
+            return '';
+        }
+        const day = String(date.getDate()).padStart(2, '0');
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const year = date.getFullYear();
+        return `${year}-${month}-${day}`;
+    }
+
+    // --- Fonction de calcul ---
+    function calculerEtMaj() {
+        const nombreMois = parseInt(nombreMoisInput.value, 10);
+
+        if (!isNaN(nombreMois) && nombreMois > 0 && montantMensuel > 0 && dateFinAvanceStr) {
+            // Calcul du montant
+            const montantTotal = nombreMois * montantMensuel;
+            montantPayeInput.value = montantTotal; // Pas besoin de formater pour l'input number
+
+            try {
+                // Calcul de la date de fin
+                const dateDebutCalcul = new Date(dateFinAvanceStr + 'T00:00:00Z'); // Assurer UTC pour éviter décalages horaires
+
+                 if (isNaN(dateDebutCalcul)) {
+                     throw new Error("Date de fin d'avance invalide.");
+                 }
+
+                // Ajoute les mois demandés
+                let nouvelleDateFin = new Date(dateDebutCalcul);
+                nouvelleDateFin.setUTCMonth(dateDebutCalcul.getUTCMonth() + nombreMois);
+
+                // Se positionne au premier jour du mois *suivant* celui de la nouvelle échéance
+                nouvelleDateFin.setUTCDate(1);
+                nouvelleDateFin.setUTCMonth(nouvelleDateFin.getUTCMonth() + 1);
+
+                // Revient un jour en arrière pour obtenir le dernier jour du mois de l'échéance
+                nouvelleDateFin.setUTCDate(nouvelleDateFin.getUTCDate() - 1);
+
+                // Mise à jour des champs
+                dateFinPrevueDisplay.textContent = formatDateFR(nouvelleDateFin);
+                dateFinPaiementInput.value = formatDateISO(nouvelleDateFin); // Met à jour le champ caché
+
+            } catch (error) {
+                console.error("Erreur lors du calcul de la date:", error);
+                dateFinPrevueDisplay.textContent = "Erreur calcul date";
+                dateFinPaiementInput.value = ''; // Vide la date cachée en cas d'erreur
+            }
+
+        } else {
+            // Réinitialiser si nombre de mois invalide ou nul
+            montantPayeInput.value = '';
+            dateFinPrevueDisplay.textContent = '--/--/----';
+            dateFinPaiementInput.value = '';
+        }
+    }
+
+    // --- Écouteur d'événement ---
+    nombreMoisInput.addEventListener('input', calculerEtMaj);
+
+    // --- Calcul initial au chargement de la page (si une valeur existe déjà) ---
+    calculerEtMaj();
+
+});
+</script>
+{% endblock %}

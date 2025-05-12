@@ -1,0 +1,89 @@
+{% extends "accuiel/Base.html" %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="shadow-lg card">
+        <div class="text-center text-white card-header bg-primary">
+            <h2>Liste des Chambres par Maison</h2>
+        </div>
+        <div class="card-body">
+            <!-- Formulaire de sélection -->
+            <form method="GET" class="mb-3 text-center">
+                <label for="maison_id"><strong>Sélectionnez une Maison :</strong></label>
+                <select name="maison_id" id="maison_id" class="form-control d-inline-block w-50">
+                    <option value="">Toutes les maisons</option>
+                    {% for maison in maisons %}
+                        <option value="{{ maison.id }}" {% if maison.id|stringformat:"s" == maison_id %}selected{% endif %}>
+                            {{ maison.nom }}
+                        </option>
+                    {% endfor %}
+                </select>
+                <button type="submit" class="btn btn-primary">Filtrer</button>
+            </form>
+
+            <!-- Bouton Ajouter -->
+            {% comment %} <div class="mb-3 text-center">
+                <a href="{% url 'creer_chambre' %}" class="btn btn-success">
+                    <i class="fas fa-plus"></i> Ajouter une Chambre
+                </a>
+            </div> {% endcomment %}
+
+            <!-- Tableau des Chambres -->
+            <div class="table-responsive">
+                {% if chambres %}
+                    <table class="table text-center table-bordered table-hover table-striped">
+                        <thead class="thead-dark">
+                            <tr>
+                                <th>Type</th>
+                                <th>Surface (m²)</th>
+                                <th>Prix</th>
+                                <th>État</th>
+                                <th>Description</th>
+                                <th>Date de Création</th>
+                                <th>Date de Modification</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        {% for chambre in chambres %}
+                            <tr>
+                                <td>{{ chambre.type_chambre.nom }}</td>
+                                <td>{{ chambre.surface }} m²</td>
+                                <td>{{ chambre.prix }} cfa</td>
+                                <td>
+                                    {% if chambre.etat == 'libre' %}
+                                        <span class="badge bg-success">Libre</span>
+                                    {% else %}
+                                        <span class="badge bg-danger">Occupée</span>
+                                    {% endif %}
+                                </td>
+                                <td>{{ chambre.description|default:"Non spécifiée" }}</td>
+                                <td>{{ chambre.date_creation|date:"d/m/Y H:i" }}</td>
+                                <td>{{ chambre.date_modification|date:"d/m/Y H:i" }}</td>
+                                <td>
+                                    <div class="d-flex justify-content-center">
+                                        <a href="{% url 'chambre_detail' chambre.pk %}" class="mx-1 btn btn-info btn-sm">
+                                            <i class="fas fa-eye"></i> Détail
+                                        </a>
+                                        <a href="{% url 'modifier_chambre' chambre.pk %}" class="mx-1 btn btn-warning btn-sm">
+                                            <i class="fas fa-edit"></i> Modifier
+                                        </a>
+                                        <a href="{% url 'supprimer_chambre' chambre.pk %}" class="mx-1 btn btn-danger btn-sm">
+                                            <i class="fas fa-trash"></i> Supprimer
+                                        </a>
+                                        
+                                        
+                                    </div>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                {% else %}
+                    <p class="text-center">Aucune chambre disponible.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

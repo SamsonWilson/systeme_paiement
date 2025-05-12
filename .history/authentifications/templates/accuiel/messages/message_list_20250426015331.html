@@ -1,0 +1,549 @@
+{% extends 'accuiel/base.html' %} {# Assurez-vous que ce template de base existe #}
+{% comment %} 
+{% block content %}
+<style>
+    /* Vos styles CSS ici */
+    body {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        background-color: #f4f4f4;
+        margin: 0;
+        padding: 0;
+    }
+
+    .chat-container {
+        display: flex;
+        height: 600px; /* Ajustez la hauteur si nécessaire */
+        border-radius: 10px;
+        overflow: hidden;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        margin: 20px auto; /* Centrer le chat */
+        background-color: #fff;
+        max-width: 900px; /* Limiter la largeur max */
+        width: 95%; /* Rendre légèrement responsive */
+    }
+
+    /* Liste des utilisateurs */
+    .user-list {
+        width: 250px;
+        border-right: 1px solid #e0e0e0;
+        padding: 20px;
+        background-color: #f9f9f9;
+        overflow-y: auto; /* Rendre la liste scrollable si trop d'utilisateurs */
+        flex-shrink: 0; /* Empêcher la liste de rétrécir */
+    }
+
+    .user-list h3 {
+        margin-top: 0;
+        color: #333;
+        font-size: 1.4em;
+        margin-bottom: 15px;
+    }
+
+    .user-list ul {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    .user-list li {
+        margin-bottom: 5px; /* Espacement réduit */
+    }
+
+    .user-list a {
+        display: block;
+        text-decoration: none;
+        color: #333;
+        padding: 10px;
+        border-radius: 5px;
+        transition: background-color 0.3s;
+         position: relative; /* Nécessaire pour positionner la notification */
+    }
+
+    .user-list a:hover,
+    .user-list a.active { /* Ajoutez une classe active pour l'utilisateur en cours de chat */
+        background-color: #e9ecef;
+    }
+
+    /* Zone de chat */
+    .chat-box-container {
+        display: flex;
+        flex-direction: column;
+        flex-grow: 1;
+    }
+
+    .chat-header {
+        background-color: #007bff;
+        color: white;
+        padding: 20px;
+        text-align: center;
+        font-size: 1.6em;
+        border-bottom: 1px solid #0056b3;
+        flex-shrink: 0; /* Empêcher le header de rétrécir */
+    }
+
+    .chat-box {
+        flex-grow: 1;
+        overflow-y: auto;
+        padding: 20px;
+        display: flex;
+        flex-direction: column;
+        background-color: #e5ddd5; /* Couleur de fond WhatsApp-like */
+    }
+
+    /* Messages */
+    .message {
+        margin-bottom: 15px;
+        display: flex;
+        clear: both; /* Important pour le flottement si utilisé */
+        max-width: 80%; /* Limiter la largeur du message */
+    }
+
+    .message.sent {
+        justify-content: flex-end;
+        align-self: flex-end; /* Aligné à droite dans la colonne flex */
+    }
+
+    .message.received {
+        justify-content: flex-start;
+        align-self: flex-start; /* Aligné à gauche dans la colonne flex */
+    }
+
+    .message-content {
+        border-radius: 10px;
+        padding: 10px 15px;
+        word-wrap: break-word;
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+        position: relative; /* Nécessaire pour la flèche du message */
+    }
+
+    .message.sent .message-content {
+        background-color: #DCF8C6; /* Vert pour les messages envoyés */
+        margin-left: auto; /* Pousser le message à droite si pas de flex-end */
+         /* Petite flèche pour les messages envoyés */
+         /* Vous pouvez ajouter des pseudo-éléments ::before ou ::after pour des formes de bulle */
+         /* Exemple très simple de base */
+         /* &::after {
+             content: '';
+             position: absolute;
+             top: 0;
+             right: -5px;
+             border-top: 5px solid transparent;
+             border-left: 5px solid #DCF8C6;
+             border-bottom: 5px solid transparent;
+         } */
+    }
+
+    .message.received .message-content {
+        background-color: #fff; /* Blanc pour les messages reçus */
+        margin-right: auto; /* Pousser le message à gauche si pas de flex-start */
+         /* Petite flèche pour les messages reçus */
+         /* &::after {
+             content: '';
+             position: absolute;
+             top: 0;
+             left: -5px;
+             border-top: 5px solid transparent;
+             border-right: 5px solid #fff;
+             border-bottom: 5px solid transparent;
+         } */
+    }
+
+     /* Expéditeur dans le message reçu (pour les messages non privés si visible) */
+     .message.received .message-content strong {
+        display: block; /* Pour mettre le nom de l'expéditeur sur une nouvelle ligne */
+        font-size: 0.9em;
+        color: #555;
+        margin-bottom: 5px;
+     }
+
+    /* Formulaire de message */
+    .message-form {
+        padding: 20px;
+        background-color: #f9f9f9;
+        border-top: 1px solid #e0e0e0;
+        display: flex;
+        align-items: center; /* Aligner verticalement les éléments */
+        flex-shrink: 0; /* Empêcher le formulaire de rétrécir */
+    }
+
+     .message-form select#group_receivers {
+        flex-grow: 1;
+        padding: 10px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        margin-right: 10px;
+        font-size: 1em;
+     }
+
+    .message-form input[type="text"] {
+        flex-grow: 1; /* Prend l'espace disponible */
+        padding: 12px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        margin-right: 10px;
+        font-size: 1em;
+    }
+
+    .message-form button {
+        padding: 12px 20px;
+        background-color: #007bff;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        font-size: 1em;
+        transition: background-color 0.3s;
+    }
+
+    .message-form button:hover {
+        background-color: #0056b3;
+    }
+
+    /* Notification de nouveau message */
+    .new-message-notification::after {
+       /* Le data-count initial est défini à 0 dans le template */
+        content: attr(data-count); /* Utilise l'attribut data-count pour le contenu */
+        position: absolute;
+        top: 5px; /* Ajustez si necessaire */
+        right: 5px; /* Ajustez si necessaire */
+        background-color: red;
+        color: white;
+        font-size: 0.7em;
+        padding: 2px 5px;
+        border-radius: 50%;
+        min-width: 10px; /* Pour assurer une taille minimale même pour un seul chiffre */
+        text-align: center;
+        line-height: 1.2; /* Centrer le texte */
+        display: {% comment %} Cache si le count est 0 
+                 attr(data-count) and attr(data-count) != '0' ? 'inline-block' : 'none';
+    }
+
+     /* Style pour l'élément select multiple */
+     #group_receivers {
+         height: 100px; /* Hauteur adjustable */
+     }
+
+</style>
+    <div class="chat-container">
+        <div class="user-list">
+            <h3>Utilisateurs</h3>
+            <ul>
+                {% for user in all_users %}
+                    {# Ajouter data-count="0" initialement pour les notifications #}
+                    } <li data-user-id="{{ user.id }}" class="new-message-notification" data-count="0">
+                        <a href="{% url 'private_chat_page' user_id=user.id %}"
+                           class="{% if chat_user and chat_user.id == user.id %}active{% endif %}">
+                            {{ user.username }}
+                        </a>
+                    </li> 
+                {% endfor %}
+                 {% comment %}
+                 Optionnellement, ajouter l'utilisateur courant dans la liste pour certains cas?
+                 <li data-user-id="{{ current_user.id }}" class="new-message-notification" data-count="0">
+                      <a href="#" class="active">
+                         {{ current_user.usename }} (Vous)
+                      </a>
+                 </li>
+                 {% endcomment %}
+            </ul>
+        </div>
+        <div class="chat-box-container">
+            <div class="chat-header">
+                <h2>
+                    {% if chat_user %}
+                        Conversation avec {{ chat_user.username }}
+                    {% elif is_admin %}
+                        Messages de Groupe ou Sélectionner un utilisateur
+                    {% else %}
+                        Conversation avec Admin
+                    {% endif %}
+                </h2>
+            </div>
+
+            <div id="chat-box" class="chat-box">
+                {% comment %} Les messages seront ajoutés ici par le JavaScript ou rendus par Django {% endcomment %}
+                {% for msg in messages %}
+                    <div class="message {% if msg.sender == current_user %}sent{% else %}received{% endif %}">
+                        <div class="message-content">
+                            {% if msg.sender != current_user and not msg.is_group_message %}
+                                {# Afficher l'expéditeur pour les messages reçus dans une conversation privée, sauf si c'est un message de l'utilisateur courant #}
+                                {# Note: Dans un chat 1-1, c'est soit vous, soit l'autre, donc l'expéditeur est implicite #}
+                                {# Ce bloc est peut-être plus utile dans un VRAI chat de groupe ou si l'admin envoie des messages qui apparaissent ici #}
+                                {# L'enlever pour simplifier le 1-1 si l'expéditeur est évident #}
+                                {# <strong>{{ msg.sender.username }}</strong> #}
+                            {% elif msg.is_group_message %}
+                                {# Si c'est un message de groupe (probablement envoyé par l'admin et affiché ici), afficher l'expéditeur#}
+                                <strong>{{ msg.sender.username }}{% if msg.sender == current_user %} (Vous){% endif %}</strong>
+                            {% endif %}
+
+                            <p>{{ msg.message }}</p>
+
+                            {% if msg.is_group_message and is_admin %}
+                                {# Dans un chat privé, on n'affiche pas la liste des destinataires du groupe #}
+                                {# Cette partie serait utile si cette vue affichait des messages de groupe dans un contexte global #}
+                                {# Pour un message de groupe reçu dans cette vue privée, peut-être indiquer que c'était un message de groupe ? #}
+                                {# <div class="message-group">(Msg Groupe)</div> #}
+                            {% endif %}
+                        </div>
+                    </div>
+                {% endfor %}
+                 {% comment %} Les messages AJAX seront ajoutés juste après {% endcomment %}
+            </div>
+
+            <form id="message-form" class="message-form" method="post">
+                {% csrf_token %}
+
+                {# Champs cachés ou la sélection dépendent de la vue et de l'utilisateur #}
+                {% if chat_user %}
+                    {# Si on est dans une conversation privée, le destinataire est chat_user #}
+                    <input type="hidden" name="receiver_id" value="{{ chat_user.id }}" id="receiver_id_input">
+                    <input type="hidden" name="is_group_message" value="false">
+                     {# Placeholder pour afficher le nom de l'utilisateur sélectionné en texte si besoin #}
+                     {# <span class="selected-user-text">{{ chat_user.username }}</span> #}
+
+                {% elif is_admin %}
+                    {# Si c'est l'admin sur l'index, montrer la sélection de groupe #}
+                     <select id="group_receivers" name="group_receivers" multiple>
+                         {% for user in all_users %}
+                             <option value="{{ user.id }}">{{ user.username }}</option>
+                         {% endfor %}
+                     </select>
+                     <input type="hidden" name="is_group_message" value="true">
+
+                {% else %}
+                    {# Si c'est un utilisateur normal sur l'index, le destinataire par défaut est l'admin #}
+                    {# Assurez-vous que admin_user est passé au contexte dans ce cas #}
+                    {% if admin_user %}
+                        <input type="hidden" name="receiver_id" value="{{ admin_user.id }}" id="receiver_id_input">
+                        <input type="hidden" name="is_group_message" value="false">
+                        {# Placeholder pour indiquer que le message est destiné à l'admin #}
+                         {# <span class="selected-user-text">Envoyer à l'Admin</span> #}
+                    {% else %}
+                         {# Gérer le cas où aucun admin n'est trouvé pour un utilisateur non-admin #}
+                        <p>Aucun administrateur disponible pour discuter.</p>
+                         {# Désactiver l'input et le bouton #}
+                         <input type="text" id="message" placeholder="Écrivez un message..." disabled>
+                         <button type="submit" disabled>Envoyer</button>
+                         {% comment %} Sortir de la logique du form ci-dessous si désactivé {% endcomment %}
+                         </div> {# Fermer .message-form flex container #}
+                         </div> {# Fermer .chat-box-container #}
+                         </div> {# Fermer .chat-container #}
+                        
+                         {% comment %} Arrêter le template ici si pas d'admin pour non-admin #}
+                         {% endcomment %}
+                    {% endif %}
+                {% endif %}
+
+                {% comment %} Le champ message et le bouton sont communs sauf si désactivés {% endcomment %}
+                {% if admin_user or chat_user or is_admin and not chat_user %}
+                    <input type="text" id="message" placeholder="Écrivez un message...">
+                    <button type="submit">Envoyer</button>
+                {% endif %}
+            </form>
+        </div>
+    </div>
+
+    {% comment %} Le script JavaScript pour l'envoi de messages et l'ajout dynamique {% endcomment %}
+    <script>
+        // Assurez-vous que ces variables sont définies par Django dans le contexte
+        const currentUserId = {{ current_user.id }};
+        const isAdmin = {{ is_admin|yesno:"true,false" }};
+        // Si chat_user est défini, utilisez son ID, sinon null
+        const chatUserId = {{ chat_user.id|default:"null" }};
+
+        const chatBox = document.getElementById('chat-box');
+        const messageForm = document.getElementById('message-form');
+        const messageInput = document.getElementById('message');
+        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+        // --- Fonction pour ajouter un message à l'interface ---
+        // data: l'objet message reçu (soit de l'envoi, soit de la réception temps réel)
+        function addMessageToChatBox(messageData) {
+            const messageDiv = document.createElement('div');
+            messageDiv.classList.add('message');
+
+            // Déterminer si le message est envoyé ou reçu
+            const isSentByCurrentUser = messageData.sender_id === currentUserId;
+            messageDiv.classList.add(isSentByCurrentUser ? 'sent' : 'received');
+
+            let messageContentHTML = '';
+
+            // Ajouter le nom de l'expéditeur pour les messages reçus UNIQUEMENT
+            // Exception : en chat 1-1, le nom de l'expéditeur reçu est implicite.
+            // On l'affiche si c'est un message de groupe reçu, ou si on n'est pas dans un chat 1-1 spécifique (page index admin)
+             if (!isSentByCurrentUser && (messageData.is_group_message || chatUserId === null)) {
+                 messageContentHTML += `<strong>${messageData.sender_username}</strong>`;
+             }
+
+            messageContentHTML += `<p>${messageData.message}</p>`;
+
+            // Indiquer le destinataire si c'est un message de groupe envoyé par l'admin
+             if (messageData.is_group_message && isAdmin && isSentByCurrentUser) {
+                  // Afficher la liste des destinataires pour les messages de groupe envoyés par l'admin sur n'importe quelle page
+                 messageContentHTML += `<div class="message-group"><small>(À: ${messageData.group_receivers_usernames.join(', ')})</small></div>`;
+             }
+             // Note: Afficher "Msg Groupe" pour les messages de groupe reçus est plus complexe car on ne veut pas le faire pour chaque user.
+             // On va le laisser simple pour l'instant.
+
+            const messageContentDiv = document.createElement('div');
+            messageContentDiv.classList.add('message-content');
+            messageContentDiv.innerHTML = messageContentHTML;
+
+            messageDiv.appendChild(messageContentDiv);
+            chatBox.appendChild(messageDiv);
+
+            // Faire défiler vers le bas après l'ajout du message
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+
+         // --- Fonction pour mettre à jour la notification sur la liste des utilisateurs ---
+         // Prend l'ID de l'utilisateur qui a envoyé le message
+         function updateNotification(senderId) {
+             // Mettre à jour la notification UNIQUEMENT si c'est un message reçu ET non dans la fenêtre de chat courante avec cet utilisateur
+             // Si senderId est l'ID de l'utilisateur courant OU si senderId est l'ID de l'utilisateur avec qui on chatte (chatUserId),
+             // alors ne mettez pas la notification sur la liste.
+             if (senderId !== currentUserId && senderId !== chatUserId) {
+                // Trouver l'élément <li> correspondant à cet utilisateur dans la liste
+                const userElement = document.querySelector(`.user-list li[data-user-id="${senderId}"]`);
+
+                if (userElement) {
+                    // Incrémenter le compteur de notifications
+                    let count = parseInt(userElement.dataset.count) || 0; // Utiliser || 0 si data-count n'existe pas encore ou est vide
+                    count++;
+                    userElement.dataset.count = count; // Met à jour l'attribut qui est lu par le CSS ::after
+
+                    // Le CSS se charge d'afficher/cacher la bulle si le count > 0
+                }
+             }
+         }
+
+        // --- Écouter l'événement de soumission du formulaire ---
+        if (messageForm) { // S'assurer que le formulaire existe (il pourrait être désactivé si pas d'admin pour non-admin)
+             messageForm.addEventListener('submit', function(e) {
+                e.preventDefault(); // Empêcher le rechargement de la page
+
+                const message = messageInput.value.trim(); // Réduire les espaces blancs
+                if (!message) { // Ne pas envoyer de messages vides
+                    return;
+                }
+
+                let formData = new FormData();
+                formData.append('message', message);
+                formData.append('csrfmiddlewaretoken', csrfToken); // Ajouter CSRF token manuellement pour FormData
+
+                // Déterminer le type de message et les destinataires
+                const isGroupMessageInput = document.querySelector('input[name="is_group_message"]');
+                const isGroupMessage = isGroupMessageInput ? isGroupMessageInput.value === 'true' : false;
+                formData.append('is_group_message', isGroupMessage);
+
+                if (isGroupMessage && isAdmin) {
+                    // Si c'est un message de groupe initié par l'admin
+                    const groupReceiversSelect = document.getElementById('group_receivers');
+                    const selectedReceiverIds = [];
+                    if (groupReceiversSelect) {
+                       for (let i = 0; i < groupReceiversSelect.options.length; i++) {
+                           if (groupReceiversSelect.options[i].selected) {
+                                selectedReceiverIds.push(groupReceiversSelect.options[i].value);
+                           }
+                       }
+                    }
+
+                    if (selectedReceiverIds.length === 0) {
+                       alert("Veuillez sélectionner au moins un destinataire pour le message de groupe.");
+                        return; // Empêcher l'envoi si aucun destinataire sélectionné
+                    }
+
+                    selectedReceiverIds.forEach(function(id) {
+                        formData.append('group_receivers', id); // Ajouter chaque ID séparément
+                    });
+                    // Pour affichage immédiat côté client (bien que le backend renvoie aussi les noms)
+                    // You could fetch usernames here or rely on backend returning them
+                     const selectedReceiverUsernames = Array.from(groupReceiversSelect.selectedOptions).map(option => option.text);
+                     formData.append('__client_side_group_usernames__', JSON.stringify(selectedReceiverUsernames)); // Utilisation interne JS
+
+                } else {
+                    // Si c'est un message privé
+                    const receiverIdInput = document.getElementById('receiver_id_input');
+                     if (receiverIdInput && receiverIdInput.value) {
+                          formData.append('receiver_id', receiverIdInput.value);
+                     } else {
+                          console.error("Erreur : ID du destinataire privé non trouvé.");
+                          alert("Erreur lors de la préparation de l'envoi : Destinataire non spécifié.");
+                          return;
+                     }
+                }
+
+                // Envoyer la requête POST avec fetch
+                {% comment %} fetch("{% url 'send_message' %}", {
+                    method: "POST",
+                    body: formData, // FormData inclut automatiquement le bon Content-Type
+                }) {% endcomment %}
+                .then(response => {
+                    if (!response.ok) {
+                        // Gérer les erreurs HTTP
+                         // Tenter de lire la réponse d'erreur du backend si JsonResponse est renvoyé
+                        response.json().then(data => {
+                            console.error('Error data:', data);
+                            alert("Échec de l'envoi du message: " + (data.message || 'Erreur inconnue'));
+                        }).catch(err => {
+                             console.error('HTTP error! status: ' + response.status, err);
+                             alert("Échec de l'envoi du message. Statut : " + response.status);
+                         });
+
+                        throw new Error('HTTP status: ' + response.status); // Stopper la chaîne .then()
+                    }
+                    return response.json(); // Parser la réponse JSON
+                })
+                .then(data => {
+                    // Vérifier le statut 'success' dans la réponse JSON du backend
+                    if (data.status === 'success') {
+                         // Ajouter le message envoyé à l'interface
+                        addMessageToChatBox({
+                            message: data.message,
+                            sender_id: data.sender_id, // ID de l'utilisateur courant
+                            sender_username: data.sender_username,
+                            timestamp: data.timestamp, // Peut être utilisé plus tard
+                            is_group_message: data.is_group_message,
+                            group_receivers_usernames: data.group_receivers_usernames, // Noms des destinataires du groupe/privé
+                             group_receivers_ids: data.group_receivers_ids // IDs des destinataires pour logique future potentielle
+                        });
+
+                        // Effacer le champ de texte après l'envoi réussi
+                        messageInput.value = '';
+
+                         // Si c'est un message de groupe envoyé par l'admin, désélectionner les destinataires après l'envoi
+                         if(isGroupMessage && isAdmin){
+                              const groupReceiversSelect = document.getElementById('group_receivers');
+                              if(groupReceiversSelect){
+                                   groupReceiversSelect.selectedIndex = -1; // Désélectionner toutes les options
+                              }
+                         }
+
+                       
+
+                    } else {
+                        // Gérer les erreurs renvoyées par le backend même avec status 200 si 'status' : 'error'
+                         console.error('Backend reported error:', data.message);
+                         alert("Le serveur a signalé une erreur : " + data.message);
+                    }
+
+                })
+                .catch((error) => {
+                     // Cette partie attrape les erreurs réseau ou les erreurs de parsing JSON
+                    console.error('Erreur lors de l\'envoi ou du traitement de la réponse:', error);
+                     if (!error.message.startsWith('HTTP status:')) {
+                         alert("Une erreur de connexion est survenue lors de l'envoi du message.");
+                     }
+                });
+            });
+        }
+
+       
+        window.addEventListener('load', () => {
+             if (chatBox) {
+                 chatBox.scrollTop = chatBox.scrollHeight;
+             }
+        });
+
+    </script>
+{% endblock %} {% endcomment %}

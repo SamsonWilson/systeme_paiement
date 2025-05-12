@@ -1,0 +1,68 @@
+{% extends "accuiel/Base.html" %}
+{% load widget_tweaks %}
+
+{% block content %}
+<div class="container mt-5">
+    <!-- Section pour afficher les pièces libres et occupées -->
+    <div class="mb-4 row">
+        <div class="col-md-6">
+            <div class="text-center alert alert-success">
+                <h5>Pièces Libres</h5>
+                <p class="mb-0"><strong>{{ pieces_libres }}</strong></p>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="text-center alert alert-danger">
+                <h5>Pièces Occupées</h5>
+                <p class="mb-0"><strong>{{ pieces_occupees }}</strong></p>
+            </div>
+        </div>
+    </div>
+
+    <div class="shadow-lg card">
+        <div class="text-center text-white card-header bg-primary">
+            <h2>Ajouter une Chambre</h2>
+        </div>
+        <div class="card-body">
+            <!-- Afficher les erreurs générales du formulaire -->
+            {% if form.non_field_errors %}
+                <div class="alert alert-danger">
+                    {% for error in form.non_field_errors %}
+                        <p>{{ error }}</p>
+                    {% endfor %}
+                </div>
+            {% endif %}
+            
+            <form method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                <!-- Boucle sur tous les champs du formulaire -->
+                {% for field in form %}
+                    <div class="mb-3">
+                        <label for="{{ field.id_for_label }}" class="form-label"><strong>{{ field.label }}</strong></label>
+                        {{ field|add_class:"form-control" }}
+                        {% if field.help_text %}
+                            <small class="form-text text-muted">{{ field.help_text }}</small>
+                        {% endif %}
+                        {% if field.errors %}
+                            <div class="text-danger">
+                                {% for error in field.errors %}
+                                    <p>{{ error }}</p>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                {% endfor %}
+
+                <div class="text-center">
+                    <button type="submit" class="btn btn-success">
+                        <i class="fas fa-save"></i> Enregistrer
+                    </button>
+                    <a href="{% url 'liste_chambres' %}" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left"></i> Annuler
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

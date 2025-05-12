@@ -1,0 +1,404 @@
+{% extends "accuiel/base.html" %}
+{% load humanize %}
+
+{% block content %}
+<style>
+    /* ... (Tous les styles précédents : :root, body, .page-container, .stats-grid, .stat-card, etc.) ... */
+    
+    /* --- Conteneur pour Titre et Bouton --- */
+    .section-header {
+        display: flex; /* Active Flexbox */
+        justify-content: space-between; /* Espace entre titre et bouton */
+        align-items: center; /* Centre verticalement */
+        margin-bottom: 20px; /* Espace sous l'en-tête */
+        padding-bottom: 10px;
+        border-bottom: 1px solid var(--medium-gray);
+    }
+    
+    h1.section-title { 
+        /* Styles précédents pour le titre */
+        color: var(--dark-gray);
+        margin-bottom: 0; /* Enlevé car géré par .section-header */
+        padding-bottom: 0; /* Enlevé car géré par .section-header */
+        border-bottom: none; /* Enlevé car géré par .section-header */
+        font-weight: 600;
+        font-size: 1.5em;
+        flex-grow: 1; /* Permet au titre de prendre l'espace restant */
+    }
+
+    /* --- Styles du Bouton --- */
+    .btn {
+        display: inline-block;
+        font-weight: 500;
+        color: var(--white);
+        text-align: center;
+        vertical-align: middle;
+        cursor: pointer;
+        user-select: none;
+        background-color: transparent;
+        border: 1px solid transparent;
+        padding: 0.5rem 1rem; /* Taille du padding */
+        font-size: 0.95rem; /* Taille de police */
+        line-height: 1.5;
+        border-radius: var(--border-radius);
+        text-decoration: none; /* Enlève le soulignement des liens */
+        transition: color 0.15s ease-in-out, background-color 0.15s ease-in-out, border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+    }
+
+    .btn:hover {
+        text-decoration: none; /* Assure qu'aucun soulignement n'apparaît au survol */
+    }
+
+    .btn-primary {
+        color: var(--white);
+        background-color: var(--primary-color);
+        border-color: var(--primary-color);
+    }
+
+    .btn-primary:hover {
+        color: var(--white);
+        /* Légèrement plus foncé au survol */
+        background-color: color-mix(in srgb, var(--primary-color) 85%, black); 
+        border-color: color-mix(in srgb, var(--primary-color) 80%, black);
+    }
+    
+    .btn .icon { /* Style pour une éventuelle icône dans le bouton */
+         margin-right: 0.4em;
+         /* vertical-align: middle; */ /* Peut aider à aligner l'icône */
+    }
+    
+    /* ... (Tous les autres styles : .table-wrapper, table.elegant-table, etc.) ... */
+     :root {
+        /* Définir des couleurs primaires et secondaires (à adapter à votre thème) */
+        --primary-color: #007bff; /* Bleu Bootstrap par défaut */
+        --secondary-color: #6c757d; /* Gris secondaire */
+        --light-gray: #f8f9fa;
+        --medium-gray: #e9ecef;
+        --dark-gray: #495057;
+        --text-color: #343a40;
+        --white: #ffffff;
+        --success-color: #28a745;
+        --danger-color: #dc3545;
+        --info-color: #17a2b8;
+        --border-radius: 0.3rem; /* Rayon d'arrondi standard */
+    }
+
+    body {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; /* Alternative moderne */
+        background-color: var(--light-gray);
+        color: var(--text-color);
+        line-height: 1.6;
+    }
+
+    .page-container { /* Remplace table-responsive-container pour englober tout */
+        margin: 30px auto;
+        padding: 20px 30px; /* Plus de padding horizontal */
+        background-color: var(--white);
+        border-radius: var(--border-radius);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.07); /* Ombre légèrement plus prononcée */
+        max-width: 1300px; /* Un peu plus large */
+        overflow: hidden; /* Pour contenir les éléments flottants ou les marges */
+    }
+
+    /* --- Section Statistiques --- */
+    .stats-grid { /* Renommé depuis stats-container */
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); /* Légèrement plus large min */
+        gap: 20px; /* Plus d'espace */
+        margin-bottom: 40px;
+    }
+
+    .stat-card { /* Renommé depuis stat-item */
+        background-color: var(--white);
+        padding: 20px;
+        border-radius: var(--border-radius);
+        border: 1px solid var(--medium-gray); /* Bordure subtile */
+        text-align: left; /* Alignement à gauche pour un look plus pro */
+        transition: transform 0.2s ease-out, box-shadow 0.2s ease-out; /* Transition douce */
+        overflow: hidden; /* Pour les éléments positionnés */
+        position: relative;
+    }
+    
+    .stat-card:hover {
+        transform: translateY(-3px); /* Léger soulèvement */
+        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.08); /* Ombre accentuée au survol */
+    }
+
+    .stat-card .stat-icon {
+        font-size: 1.8em; /* Taille de l'icône */
+        color: var(--primary-color); /* Couleur primaire pour l'icône */
+        margin-bottom: 10px;
+        display: block;
+        /* Pourrait être positionné absolument pour un autre style */
+        /* position: absolute; top: 15px; right: 20px; opacity: 0.2; */
+    }
+    
+    .stat-card .stat-label {
+        font-size: 0.85em;
+        color: var(--secondary-color);
+        margin-bottom: 4px;
+        display: block;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        font-weight: 500;
+    }
+
+    .stat-card .stat-value {
+        font-size: 1.8em; /* Taille augmentée */
+        font-weight: 700; /* Plus gras */
+        color: var(--text-color);
+        line-height: 1.2;
+    }
+    
+    .stat-card .stat-value.currency { color: var(--success-color); }
+    .stat-card .stat-value.area { color: var(--info-color); }
+
+    .stat-card .stat-unit {
+        font-size: 0.8em;
+        color: var(--secondary-color);
+        margin-left: 4px;
+        font-weight: 400;
+    }
+
+    /* --- Tableau --- */
+    .table-wrapper {
+        overflow-x: auto; /* Assure le défilement horizontal sur le tableau seul */
+    }
+
+    table.elegant-table { /* Renommé depuis modern-table */
+        width: 100%;
+        border-collapse: collapse;
+        margin-bottom: 1rem; 
+    }
+
+    table.elegant-table thead th {
+        background-color: var(--white); /* Fond blanc pour l'en-tête */
+        color: var(--secondary-color); /* Gris pour le texte de l'en-tête */
+        border-bottom: 2px solid var(--primary-color); /* Soulignement couleur primaire */
+        padding: 14px 16px; /* Plus d'espacement */
+        text-align: left;
+        font-weight: 600;
+        text-transform: uppercase;
+        font-size: 0.8em;
+        letter-spacing: 0.05em;
+        position: sticky; top: 0; background-color: var(--white); z-index: 1; /* En-tête fixe */
+    }
+
+    table.elegant-table tbody td {
+        padding: 14px 16px;
+        border-bottom: 1px solid var(--medium-gray);
+        vertical-align: middle;
+        color: var(--text-color); /* Couleur de texte standard */
+        font-size: 0.95em; /* Taille de police ajustée */
+        transition: background-color 0.15s ease-in-out;
+    }
+
+    /* Pas de bordures verticales */
+    /* table.elegant-table td, table.elegant-table th { border-right: none; border-left: none; } */
+
+    table.elegant-table tbody tr:nth-of-type(even) td {
+        background-color: var(--light-gray); /* Gris très léger pour l'alternance */
+    }
+    
+    table.elegant-table tbody tr:nth-of-type(odd) td {
+        background-color: var(--white); /* Fond blanc */
+    }
+
+    table.elegant-table tbody tr:hover td {
+      /* background-color: #eef4ff; Couleur de survol douce basée sur le bleu */
+      background-color: color-mix(in srgb, var(--primary-color) 10%, white); /* Mélange pour couleur de survol */
+    }
+
+    /* --- Styles spécifiques aux cellules --- */
+     .cell-highlight {
+        font-weight: 500;
+    }
+    .locataire-name { color: var(--primary-color); }
+    .proprietaire-name { color: var(--secondary-color); }
+    .maison-info small { color: var(--secondary-color); font-size: 0.85em; display: block; margin-top: 2px;}
+    
+    .status-badge { /* Renommé depuis etat-occupee */
+        font-weight: 500; /* Moins gras */
+        padding: 5px 10px;
+        border-radius: var(--border-radius);
+        display: inline-flex; /* Pour aligner icône et texte */
+        align-items: center;
+        font-size: 0.85em;
+        gap: 5px; /* Espace entre icône et texte */
+        color: var(--danger-color);
+        background-color: color-mix(in srgb, var(--danger-color) 15%, transparent); /* Fond transparent coloré */
+    }
+    .status-badge .icon { font-size: 1.1em; } /* Taille de l'icône dans le badge */
+
+    .price {
+        font-weight: 600;
+        color: var(--success-color);
+    }
+    .area {
+         color: var(--info-color);
+    }
+
+    .mono-font { /* Pour les ID ou usernames */
+        font-family: 'Courier New', Courier, monospace;
+        background-color: var(--medium-gray);
+        padding: 2px 4px;
+        border-radius: 3px;
+        font-size: 0.9em;
+    }
+
+    /* --- Message si aucune donnée --- */
+    .no-data {
+        text-align: center;
+        padding: 40px 20px;
+        color: var(--secondary-color);
+        font-style: italic;
+        background-color: var(--light-gray);
+        border-radius: var(--border-radius);
+    }
+</style>
+
+<div class="page-container">
+
+    {# --- Section Statistiques --- #}
+    {% if stats %}
+    <div class="stats-grid">
+       {# ... Vos cartes de statistiques restent ici ... #}
+        <div class="stat-card">
+            <span class="stat-icon">🏠</span> {# Icône maison simple #}
+            <span class="stat-label">Chambres Occupées</span>
+            <span class="stat-value">{{ stats.total_occupied_rooms }}</span>
+        </div>
+        <div class="stat-card">
+            <span class="stat-icon">💰</span> {# Icône argent #}
+            <span class="stat-label">Loyer Mensuel Total</span>
+            <span class="stat-value currency">
+                {{ stats.total_monthly_rent|floatformat:"0"|intcomma }}
+                <span class="stat-unit">FCFA</span>
+            </span>
+        </div>
+        <div class="stat-card">
+                <span class="stat-icon">📊</span> {# Icône graphique/moyenne #}
+            <span class="stat-label">Loyer Mensuel Moyen</span>
+            <span class="stat-value currency">
+                {{ stats.average_monthly_rent|floatformat:"0"|intcomma }}
+                <span class="stat-unit">FCFA</span>
+            </span>
+        </div>
+        <div class="stat-card">
+            <span class="stat-icon">📐</span> {# Icône règle/surface #}
+            <span class="stat-label">Surface Totale Occupée</span>
+            <span class="stat-value area">
+                {{ stats.total_occupied_surface|floatformat:"1"|intcomma }}
+                <span class="stat-unit">m²</span>
+            </span>
+        </div>
+    </div>
+    {% endif %}
+    {# --- Fin Section Statistiques --- #}
+
+    {# --- Section Tableau avec Titre et Bouton --- #}
+    <div class="section-header"> 
+        <h1 class="section-title">Détail des Chambres Actuellement Occupées</h1>
+        
+        {# --- BOUTON AJOUTER --- #}
+        {# REMPLACEZ 'url_vers_ajout_location' par le nom réel de votre URL dans urls.py #}
+       
+        {# --- FIN BOUTON AJOUTER --- #}
+    </div>
+
+    {% if locations_occupees %}
+        <div class="table-wrapper"> 
+            <table class="elegant-table">
+                {# ... Thead et Tbody de votre tableau (inchangés) ... #}
+                 <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Type</th>
+                        <th>Locataire</th>
+                        <th>Username</th>
+                        <th>Surface</th>
+                        <th>Prix / mois</th>
+                        <th>Maison</th>
+                        <th>Propriétaire</th>
+                        <th>État</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for location in locations_occupees %}
+                        {% with chambre=location.chambre %}
+                            {% if chambre %}
+                            <tr>
+                                <td><span class="mono-font"> #{{ chambre.id }}</span></td>
+                                <td>{{ chambre.type_chambre.nom|default:"N/A" }}</td>
+                                <td>
+                                    {% if location.utilisateur %}
+                                        <span class="cell-highlight locataire-name">{{ location.utilisateur.prenom }} {{ location.utilisateur.nom }}</span>
+                                    {% else %}
+                                        <span style="color: var(--danger-color);">(Indéfini)</span>
+                                    {% endif %}
+                                </td>
+                                <td><span class="mono-font">{{ location.utilisateur.username|default:"N/A" }}</span></td>
+                                <td><span class="area">{{ chambre.surface|floatformat:"1"|default:"N/A" }} m²</span></td>
+                                <td>
+                                    {% if chambre.prix is not None %}
+                                        <span class="price">
+                                            {{ chambre.prix|floatformat:"0"|intcomma }} FCFA
+                                        </span>
+                                    {% else %} N/A {% endif %}
+                                </td>
+                                <td class="maison-info">
+                                    {% if chambre.maison %}
+                                        <span class="cell-highlight">{{ chambre.maison.nom }}</span>
+                                        <small>{{ chambre.maison.adresse }}</small>
+                                    {% else %} N/A {% endif %}
+                                </td>
+                                <td>
+                                    {% if chambre.maison and chambre.maison.proprietaire %}
+                                        <span class="proprietaire-name">
+                                            {{ chambre.maison.proprietaire.prenom }} {{ chambre.maison.proprietaire.nom }}
+                                        </span>
+                                    {% elif chambre.maison %} (Non défini)
+                                    {% else %} N/A {% endif %}
+                                </td>
+                                <td>
+                                    <span class="status-badge">
+                                        <span class="icon">🔴</span> {# Icône cercle rouge #}
+                                        {{ chambre.get_etat_display|default:"N/A" }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <a href="{url''}">
+                                        <span class="icon">+</span> {# Icône simple + #}
+                                        Ajouter Location
+                                    </a>
+                                </td>
+                            </tr>
+                            {% else %}
+                            <tr>
+                                <td colspan="9" class="no-data" style="color: red;">
+                                    Erreur : Location ID {{ location.id }} sans chambre associée.
+                                </td>
+                            </tr>
+                            {% endif %}
+                        {% endwith %}
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div> 
+    {% else %}
+        {# Affichage différent si aucune location, mais avec le bouton Ajouter #}
+         <div class="no-data">
+            <p>Aucune chambre n'est actuellement enregistrée comme occupée.</p>
+            {# Optionnel: Répéter le bouton ici si la liste est vide? #}
+            {# 
+            <a href="{% url 'url_vers_ajout_location' %}" class="btn btn-primary" style="margin-top: 15px;">
+                <span class="icon">+</span> Ajouter Location
+            </a> 
+            #}
+        </div>
+    {% endif %}
+    {# --- Fin Section Tableau --- #}
+
+</div> 
+{% endblock %}

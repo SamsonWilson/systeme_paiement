@@ -1,0 +1,17 @@
+{% extends "accubase.html" %}
+{% block content %}
+<div class="card mt-4">
+    <div class="card-header">
+        Détails de la Location
+    </div>
+    <div class="card-body">
+        <h5 class="card-title">{{ location.locataire }}</h5>
+        <p class="card-text"><strong>Chambre :</strong> {{ location.chambre.nom }}</p>
+        <p class="card-text"><strong>Date Début :</strong> {{ location.date_debut }}</p>
+        <p class="card-text"><strong>Date Fin :</strong> {{ location.date_fin|default:"N/A" }}</p>
+        <p class="card-text"><strong>Date Libération :</strong> {{ location.date_liberation|default:"N/A" }}</p>
+        <a href="{% url 'location_modifier' location.pk %}" class="btn btn-primary mt-3">Modifier</a>
+        <a href="{% url 'location_list' %}" class="btn btn-secondary mt-3">Retour à la liste</a>
+    </div>
+</div>
+{% endblock %}

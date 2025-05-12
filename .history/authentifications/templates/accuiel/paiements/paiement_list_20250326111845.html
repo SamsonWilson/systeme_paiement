@@ -1,0 +1,126 @@
+{% extends "accuiel/base.html" %}
+
+{% block content %}
+<h2 class="mt-4">Liste des Locations</h2>
+
+<!-- Ajouter le CSS directement dans le fichier -->
+<style>
+    .bg-danger {
+        background-color: #dc3545 !important;
+        color: white !important;
+    }
+    .text-white {
+        color: white !important;
+    }
+</style>
+
+<!-- Afficher les statistiques -->
+<div class="mb-3">
+    <p><strong>Total des locations :</strong> {{ total_locations }}</p>
+    <p><strong>Locations payées :</strong> {{ locations_payees }}</p>
+    <p><strong>Locations impayées :</strong> {{ locations_impayees }}</p>
+</div>
+
+{% if locations %}
+<table class="table mt-2 table-striped table-bordered">
+    <thead class="thead-dark">
+        <tr>
+            <th>#</th>
+            <th>Locataire</th>
+            <th>Chambre</th>
+            <th>Date Début</th>
+            <th>Date Fin</th>
+            <th>Montant Avance</th>
+            <th>Montant Caution</th>
+            <th>Montant Total</th>
+            <th>Statut Paiement</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+    {% for location in locations %}
+        <tr>
+            <td>{{ forloop.counter }}</td>
+            <td>{{ location.utilisateur.nom }} {{ location.utilisateur.prenom }}</td>
+            <td>{{ location.chambre.nom }}</td>
+            <td>{{ location.date_debut_location }}</td>
+            <td class="{% if location.date_fin_avance and location.date_fin_avance|date:"Y-m-d" < current_date_togo|date:"Y-m-d" %}bg-danger text-white{% endif %}">
+                {{ location.date_fin_avance|default:"N/A" }}
+            </td>
+            <td>{{ location.montant_avance|floatformat:2 }} CFA</td>
+            <td>{{ location.montant_caution|floatformat:2 }} CFA</td>
+            <td>{{ location.montant_total|floatformat:2 }} CFA</td>
+            <td>
+                {% if location.statut_paiement == "payé" %}
+                    <span class="badge bg-success">Payé</span>
+                {% elif location.statut_paiement == "impayé" %}
+                    <span class="badge bg-danger">Impayé</span>
+                {% else %}
+                    <span class="badge bg-warning">{{ location.statut_paiement }}</span>
+                {% endif %}
+            </td>
+            <td>
+                <a href="{% url 'modifier_location' location.pk %}" class="btn btn-warning btn-sm">Modifier</a>
+                <a href="{% url 'supprimer_location' location.pk %}" class="btn btn-danger btn-sm">Supprimer</a>
+            </td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
+
+<!-- Pagination -->
+<div class="mt-4">
+    <nav aria-label="Page navigation">
+        <ul class="pagination">
+            <!-- Lien vers la page précédente -->
+            {% if locations.has_previous %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ locations.previous_page_number }}" aria-label="Précédent">
+                        <span aria-hidden="true">&laquo;</span>
+                    </a>
+                </li>
+            {% endif %}
+
+            <!-- Liens vers toutes les pages -->
+            {% for page_num in locations.paginator.page_range %}
+                <li class="page-item {% if locations.number == page_num %}active{% endif %}">
+                    <a class="page-link" href="?page={{ page_num }}">{{ page_num }}</a>
+                </li>
+            {% endfor %}
+
+            <!-- Lien vers la page suivante -->
+            {% if locations.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ locations.next_page_number }}" aria-label="Suivant">
+                        <span aria-hidden="true">&raquo;</span>
+                    </a>
+                </li>
+            {% endif %}
+        </ul>
+    </nav>
+</div>
+{% else %}
+<p class="mt-4">Aucune location trouvée.</p>
+{% endif %}
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        // Récupérer toutes les cellules contenant les dates de fin
+        const dateCells = document.querySelectorAll(".date-fin");
+
+        // Obtenir la date actuelle en utilisant le fuseau horaire du Togo
+        const currentDate = new Date().toISOString().split("T")[0]; // Format YYYY-MM-DD
+
+        // Parcourir chaque cellule et vérifier la date
+        dateCells.forEach(cell => {
+            const dateFin = cell.getAttribute("data-date"); // Récupérer la date de fin
+            if (dateFin && dateFin < currentDate) {
+                // Si la date de fin est inférieure à la date actuelle, ajouter une classe rouge
+                cell.classList.add("bg-danger", "text-white");
+            }
+        });
+    });
+</script>
+
+
+{% endblock %}

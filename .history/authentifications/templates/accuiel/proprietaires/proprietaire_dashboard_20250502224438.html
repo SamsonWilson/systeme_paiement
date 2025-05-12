@@ -1,0 +1,57 @@
+{% extends "accuiel/base.html" %}
+{% load widget_tweaks %}
+{% block content %}
+<h1>Tableau de Bord pour {{ proprietaire.prenom }} {{ proprietaire.nom }}</h1>
+
+{# Utilise directement les propriétés du modèle #}
+<h2>Informations Générales</h2>
+<p>Email: {{ proprietaire.email }}</p>
+<p>Téléphone: {{ proprietaire.telephone }}</p>
+<p>Nombre total de maisons: {{ proprietaire.nombre_total_maisons }}</p>
+<p>Nombre total de chambres: {{ proprietaire.nombre_total_chambres }}</p>
+
+<h2>Statut des Chambres</h2>
+<ul>
+    <li>Libres: {{ proprietaire.chambres_par_etat.libre|default:0 }}</li> {# Ajout de default:0 #}
+    <li>Occupées: {{ proprietaire.chambres_par_etat.occupée|default:0 }}</li> {# Ajout de default:0 #}
+</ul>
+
+<h2>Finances</h2>
+<p>Valeur locative mensuelle totale (toutes chambres): {{ proprietaire.valeur_totale_chambres }} FCFA</p>
+<p>Commission potentielle mensuelle totale: {{ proprietaire.commission_potentielle_mensuelle_totale }} FCFA</p>
+<p>Nombre de locations actives: {{ proprietaire.nombre_locations_actives }}</p>
+<p>Loyer total collecté (confirmé): {{ proprietaire.loyer_total_collecte }} FCFA</p>
+<p>Commission totale perçue: {{ proprietaire.commission_totale_percue }} FCFA</p>
+<p>Avances totales reçues: {{ proprietaire.avances_totales_recues }} FCFA</p>
+<p>Caution totale détenue (locations actives): {{ proprietaire.caution_totale_detenue }} FCFA</p>
+
+<h2>Liste des Maisons</h2>
+<ul>
+    {% for maison in proprietaire.maisons.all %}
+        <li>
+            <strong>{{ maison.nom }}</strong> ({{ maison.adresse }}) - {{ maison.chambres.count }} chambre(s)
+            <ul>
+                {% for chambre in maison.chambres.all %}
+                    <li>{{ chambre.type_chambre.nom }} - {{ chambre.prix }} FCFA/mois - État: {{ chambre.get_etat_display }}</li>
+                {% endfor %}
+            </ul>
+        </li>
+    {% empty %}
+        <li>Aucune maison enregistrée.</li>
+    {% endfor %}
+</ul>
+
+<h2>Locations Actives</h2>
+<ul>
+    {% for location in proprietaire.locations_actives %}
+      <li>
+          Locataire: {{ location.utilisateur.username|default:"N/A" }} <br>
+          Chambre: {{ location.chambre }} <br> {# Utilise le __str__ de Chambre #}
+          Début: {{ location.date_debut_location|date:"d/m/Y" }} <br>
+          Avance: {{ location.montant_avance }} | Caution: {{ location.montant_caution }}
+      </li>
+    {% empty %}
+        <li>Aucune location active.</li>
+    {% endfor %}
+</ul>
+{% endblock %}

@@ -1,0 +1,135 @@
+{% extends "accuiel/base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <!-- En-tête avec titre -->
+    <div class="mb-4 d-flex justify-content-between align-items-center">
+        <h2>Liste des Locations</h2>
+    </div>
+
+    <!-- Cartes statistiques -->
+    <div class="mb-4 row">
+        <div class="col-md-4">
+            <div class="text-white card bg-primary">
+                <div class="card-body">
+                    <h5 class="card-title">Total des locations</h5>
+                    <h3 class="card-text">{{ total_locations|default:"0" }}</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="text-white card bg-success">
+                <div class="card-body">
+                    <h5 class="card-title">Locations payées</h5>
+                    <h3 class="card-text">{{ locations_payees|default:"0" }}</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="text-white card bg-danger">
+                <div class="card-body">
+                    <h5 class="card-title">Locations impayées</h5>
+                    <h3 class="card-text">{{ locations_impayees|default:"0" }}</h3>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% if locations %}
+    <div class="shadow card">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>#</th>
+                            <th>Locataire</th>
+                            <th>Chambre</th>
+                            <th>Date Début</th>
+                            <th>Date Fin</th>
+                            <th>Montant Total</th>
+                            <th>Statut</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for location in locations %}
+                        <tr>
+                            <td>{{ forloop.counter }}</td>
+                            <td>{{ location.utilisateur.nom }} {{ location.utilisateur.prenom }}</td>
+                            <td>{{ location.chambre.nom }}</td>
+                            <td>{{ location.date_debut_location|date:"d/m/Y" }}</td>
+                            <td class="{% if location.date_fin_avance and location.date_fin_avance|date:'Y-m-d' < current_date_togo|date:'Y-m-d' %}table-danger{% endif %}">
+                                {{ location.date_fin_avance|date:"d/m/Y"|default:"N/A" }}
+                            </td>
+                            <td>{{ location.montant_total|floatformat:0 }} CFA</td>
+                            <td>
+                                {% if location.statut_paiement == "payé" %}
+                                    <span class="badge bg-success">Payé</span>
+                                {% elif location.statut_paiement == "impayé" %}
+                                    <span class="badge bg-danger">Impayé</span>
+                                {% else %}
+                                    <span class="badge bg-warning">En attente</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <div class="btn-group">
+                                    <a href="{% url 'modifier_location' location.pk %}" class="btn btn-warning btn-sm" title="Modifier">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    <a href="{% url 'supprimer_location' location.pk %}" class="btn btn-danger btn-sm" title="Supprimer" 
+                                       onclick="return confirm('Êtes-vous sûr de vouloir supprimer cette location ?')">
+                                        <i class="fas fa-trash"></i>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            {% if locations.paginator.num_pages > 1 %}
+            <nav aria-label="Navigation des pages" class="mt-4">
+                <ul class="pagination justify-content-center">
+                    {% if locations.has_previous %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page=1" title="Première page">&laquo;</a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ locations.previous_page_number }}">Précédent</a>
+                        </li>
+                    {% endif %}
+
+                    {% for i in locations.paginator.page_range %}
+                        {% if locations.number == i %}
+                            <li class="page-item active">
+                                <span class="page-link">{{ i }}</span>
+                            </li>
+                        {% elif i > locations.number|add:'-3' and i < locations.number|add:'3' %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ i }}">{{ i }}</a>
+                            </li>
+                        {% endif %}
+                    {% endfor %}
+
+                    {% if locations.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ locations.next_page_number }}">Suivant</a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ locations.paginator.num_pages }}" title="Dernière page">&raquo;</a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </nav>
+            {% endif %}
+        </div>
+    </div>
+    {% else %}
+    <div class="alert alert-info">
+        <i class="fas fa-info-circle"></i> Aucune location n'a été trouvée.
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

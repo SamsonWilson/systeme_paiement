@@ -1,0 +1,212 @@
+{% extends "accuiel/Base.html" %}
+
+{% block content %}
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-6">
+                <h2 class="my-4 text-center">Inscription</h2>
+                {% if messages %}
+                    <div class="alert alert-success">
+                        {% for message in messages %}
+                            {{ message }}
+                        {% endfor %}
+                    </div>
+                {% endif %}
+                <form method="post" class="p-4 bg-white rounded shadow-sm" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <div class="mb-3 row">
+                        <div class="col-md-6">
+                            {{ form.username.label_tag }}
+                            {{ form.username }}
+                            {% if form.username.errors %}
+                                <div class="invalid-feedback">
+                                    {% for error in form.username.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-6">
+                            {{ form.nom.label_tag }}
+                            {{ form.nom }}
+                            {% if form.nom.errors %}
+                                <div class="invalid-feedback">
+                                    {% for error in form.nom.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="mb-3 row">
+                        <div class="col-md-6">
+                            {{ form.prenom.label_tag }}
+                            {{ form.prenom }}
+                             {% if form.prenom.errors %}
+                                <div class="invalid-feedback">
+                                    {% for error in form.prenom.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-6">
+                            {{ form.email.label_tag }}
+                            {{ form.email }}
+                             {% if form.email.errors %}
+                                <div class="invalid-feedback">
+                                    {% for error in form.email.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="mb-3 row">
+                        <div class="col-md-6">
+                            {{ form.tel.label_tag }}
+                            {{ form.tel }}
+                             {% if form.tel.errors %}
+                                <div class="invalid-feedback">
+                                    {% for error in form.tel.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-6">
+                            {{ form.gender.label_tag }}
+                            {{ form.gender }}
+                             {% if form.gender.errors %}
+                                <div class="invalid-feedback">
+                                    {% for error in form.gender.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="mb-3 row">
+                        <div class="col-md-6">
+                            {{ form.telephone_personne_prevenir.label_tag }}
+                            {{ form.telephone_personne_prevenir }}
+                             {% if form.telephone_personne_prevenir.errors %}
+                                <div class="invalid-feedback">
+                                    {% for error in form.telephone_personne_prevenir.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-6">
+                            {{ form.nom_personne_prevenir.label_tag }}
+                            {{ form.nom_personne_prevenir }}
+                             {% if form.nom_personne_prevenir.errors %}
+                                <div class="invalid-feedback">
+                                    {% for error in form.nom_personne_prevenir.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="mb-3 row">
+                        <div class="col-md-6">
+                            {{ form.prenom_personne_prevenir.label_tag }}
+                            {{ form.prenom_personne_prevenir }}
+                             {% if form.prenom_personne_prevenir.errors %}
+                                <div class="invalid-feedback">
+                                    {% for error in form.prenom_personne_prevenir.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-6">
+                            {{ form.type_utilisateur.label_tag }}
+                            {{ form.type_utilisateur }}
+                             {% if form.type_utilisateur.errors %}
+                                <div class="invalid-feedback">
+                                    {% for error in form.type_utilisateur.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                     <div class="mb-3 row">
+                        <div class="col-md-6">
+                            {{ form.new_password1.label_tag }}
+                            {{ form.new_password1 }}
+                             {% if form.new_password1.errors %}
+                                <div class="invalid-feedback">
+                                    {% for error in form.new_password1.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-6">
+                            {{ form.new_password2.label_tag }}
+                            {{ form.new_password2 }}
+                             {% if form.new_password2.errors %}
+                                <div class="invalid-feedback">
+                                    {% for error in form.new_password2.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="mb-3 row">
+                        <div class="col-md-12">
+                            {{ form.image.label_tag }}
+                            {{ form.image }}
+                             {% if form.image.errors %}
+                                <div class="invalid-feedback">
+                                    {% for error in form.image.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-block">S'inscrire</button>
+                </form>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+
+{% comment %} <!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign Up</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="bg-light">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-6">
+                <h2 class="my-4 text-center">Sign Up</h2>
+                {% if messages %}
+                    <div class="alert alert-success">
+                        {% for message in messages %}
+                            {{ message }}
+                        {% endfor %}
+                    </div>
+                {% endif %}
+                <form method="post" class="p-4 bg-white rounded shadow-sm">
+                    {% csrf_token %}
+                    {{ form.as_p }}
+                    <button type="submit" class="btn btn-primary btn-block">Sign Up</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</body>
+</html> {% endcomment %}
+

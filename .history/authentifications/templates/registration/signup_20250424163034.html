@@ -1,0 +1,110 @@
+{% extends "accuiel/Base.html" %}
+
+{% block content %}
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-6">
+                <h2 class="my-4 text-center">Inscription</h2>
+                {% if messages %}
+                    <div class="alert alert-success">
+                        {% for message in messages %}
+                            {{ message }}
+                        {% endfor %}
+                    </div>
+                {% endif %}
+                <form method="post" class="p-4 bg-white rounded shadow-sm">
+                    {% csrf_token %}
+                    <div class="mb-3 row">
+                        <div class="col-md-6">
+                            {{ form.username.label_tag }}
+                            {{ form.username }}
+                        </div>
+                        <div class="col-md-6">
+                            {{ form.nom.label_tag }}
+                            {{ form.nom }}
+                        </div>
+                    </div>
+                    <div class="mb-3 row">
+                        <div class="col-md-6">
+                            {{ form.prenom.label_tag }}
+                            {{ form.prenom }}
+                        </div>
+                        <div class="col-md-6">
+                            {{ form.email.label_tag }}
+                            {{ form.email }}
+                        </div>
+                    </div>
+                    <div class="mb-3 row">
+                        <div class="col-md-6">
+                            {{ form.tel.label_tag }}
+                            {{ form.tel }}
+                        </div>
+                        <div class="col-md-6">
+                            {{ form.gender.label_tag }}
+                            {{ form.gender }}
+                        </div>
+                    </div>
+                    <div class="mb-3 row">
+                        <div class="col-md-6">
+                            {{ form.telephone_personne_prevenir.label_tag }}
+                            {{ form.telephone_personne_prevenir }}
+                        </div>
+                        <div class="col-md-6">
+                            {{ form.nom_personne_prevenir.label_tag }}
+                            {{ form.nom_personne_prevenir }}
+                        </div>
+                    </div>
+                    <div class="mb-3 row">
+                        <div class="col-md-6">
+                            {{ form.prenom_personne_prevenir.label_tag }}
+                            {{ form.prenom_personne_prevenir }}
+                        </div>
+                        <div class="col-md-6">
+                            {{ form.type_utilisateur.label_tag }}
+                            {{ form.type_utilisateur }}
+                        </div>
+                    </div>
+                    <div class="mb-3 row">
+                        <div class="col-md-12">
+                            {{ form.image.label_tag }}
+                            {{ form.image }}
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-block">S'inscrire</button>
+                </form>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% comment %} <!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign Up</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="bg-light">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-6">
+                <h2 class="my-4 text-center">Sign Up</h2>
+                {% if messages %}
+                    <div class="alert alert-success">
+                        {% for message in messages %}
+                            {{ message }}
+                        {% endfor %}
+                    </div>
+                {% endif %}
+                <form method="post" class="p-4 bg-white rounded shadow-sm">
+                    {% csrf_token %}
+                    {{ form.as_p }}
+                    <button type="submit" class="btn btn-primary btn-block">Sign Up</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</body>
+</html> {% endcomment %}
+

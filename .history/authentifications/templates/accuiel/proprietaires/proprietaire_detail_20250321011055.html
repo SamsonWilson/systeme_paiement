@@ -1,0 +1,27 @@
+{% extends "accuiel/Base.html" %}
+
+{% block title %}
+    Détails du Propriétaire
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Détails du Propriétaire</h2>
+    <div class="mb-4 text-center">
+        {% if proprietaire.image %}
+            <img src="{{ proprietaire.image.url }}" alt="Image de {{ proprietaire.nom }}" class="img-thumbnail" width="200">
+        {% else %}
+            <p>Aucune image disponible</p>
+        {% endif %}
+    </div>
+    <ul class="list-group">
+        <li class="list-group-item"><strong>Nom :</strong> {{ proprietaire.nom }}</li>
+        <li class="list-group-item"><strong>Prénom :</strong> {{ proprietaire.prenom }}</li>
+        <li class="list-group-item"><strong>Email :</strong> {{ proprietaire.email }}</li>
+        <li class="list-group-item"><strong>Téléphone :</strong> {{ proprietaire.telephone }}</li>
+        <li class="list-group-item"><strong>Adresse :</strong> {{ proprietaire.adresse }}</li>
+        <li class="list-group-item"><strong>Sexe :</strong> {{ proprietaire.gender }}</li>
+    </ul>
+    <a href="{% url 'liste_proprietaire' %}" class="mt-3 btn btn-secondary">Retour à la liste</a>
+</div>
+{% endblock %}

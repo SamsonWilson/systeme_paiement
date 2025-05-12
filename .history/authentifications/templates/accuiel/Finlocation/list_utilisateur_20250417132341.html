@@ -1,0 +1,68 @@
+{% extends "accuiel/base.html" %}
+
+{% block content %}
+<style>
+    body { font-family: sans-serif; }
+    .chambre-item { border: 1px solid #cc0000; background-color: #ffeeee; padding: 15px; margin-bottom: 10px; border-radius: 5px; }
+    .chambre-item h3 { margin-top: 0; color: #a00000; }
+    .locataire-info { margin-top: 10px; font-weight: bold; }
+</style>
+</head>
+<body>
+
+<h1>{{ titre_page|default:"Liste des Chambres Occupées" }}</h1>
+
+{% if chambres_occupées %}
+    {% for chambre in chambres_occupées %}
+        <div class="chambre-item">
+            <h3>Chambre {{ chambre.id }} - Type : {{ chambre.type_chambre.nom }}</h3>
+            <p><strong>Surface :</strong> {{ chambre.surface }} m²</p>
+            <p><strong>Prix :</strong> {{ chambre.prix }} FCFA / mois</p>
+            
+            {% if chambre.maison %}
+                <p><strong>Maison :</strong> {{ chambre.maison.nom }} (Adresse : {{ chambre.maison.adresse }})</p>
+                {% if chambre.maison.proprietaire %}
+                    <p><strong>Propriétaire :</strong> {{ chambre.maison.proprietaire.prenom }} {{ chambre.maison.proprietaire.nom }}</p>
+                {% else %}
+                    <p><strong>Propriétaire :</strong> Information non disponible</p>
+                {% endif %}
+            {% else %}
+                 <p><strong>Maison :</strong> Information non disponible</p>
+            {% endif %}
+
+            {# === Affichage du Locataire === #}
+            {% with locations=chambre.locations.all %} {# Récupère les locations préchargées #}
+                {% if locations %}
+                    {% for location in locations %} {# Normalement une seule location active par chambre occupée #}
+                        {% if location.utilisateur %}
+                        <div class="locataire-info">
+                            Occupée par : {{ location.utilisateur.prenom }} {{ location.utilisateur.nom }} 
+                            (Utilisateur: {{ location.utilisateur.username }})
+                            <br>
+                            Email: {{ location.utilisateur.email|default:"N/A" }} | Tél: {{ location.utilisateur.tel|default:"N/A" }}
+                            <br>
+                            <small>Début location: {{ location.date_debut_location|date:"d/m/Y" }} </small> 
+                            {% if location.get_absolute_url %}
+                                <a href="{{ location.get_absolute_url }}">(Voir détails location)</a>
+                            {% endif %}
+                        </div>
+                        {% else %}
+                        <p><em>Locataire non assigné à cette location active (ID: {{ location.id }}).</em></p>
+                        {% endif %}
+                    {% endfor %}
+                {% else %}
+                     <p><em>Erreur : Chambre marquée comme occupée, mais aucune location associée trouvée.</em></p>
+                {% endif %}
+            {% endwith %}
+            {# ============================== #}
+
+            <p><em>État : {{ chambre.get_etat_display|upper }}</em></p>
+        </div>
+    {% endfor %}
+{% else %}
+    <p>Aucune chambre n'est actuellement marquée comme occupée.</p>
+{% endif %}
+
+</body>
+</body>
+{% endblock %}

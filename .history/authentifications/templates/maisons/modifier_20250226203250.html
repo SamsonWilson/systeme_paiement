@@ -1,0 +1,12 @@
+{% extends "accuiel/base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>{% block title %} Modifier une maison{% endblock %}</h2>
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit" class="btn btn-success mt-2">Soumettre</button>
+    </form>
+</div>
+{% endblock %}

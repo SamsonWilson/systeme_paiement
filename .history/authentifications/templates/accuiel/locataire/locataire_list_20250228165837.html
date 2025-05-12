@@ -1,0 +1,59 @@
+{% extends "accuiel/base.html" %}
+{% block content %}
+{% comment %} <h2 class="mt-4">Liste des Locataires</h2>
+<table class="table table-striped mt-2">
+    <thead>
+        <tr>
+            <th>Nom</th>
+            <th>Email</th>
+            <th>Téléphone</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+    {% for locataire in locataires %}
+        <tr>
+            <td>
+                <a href="{% url 'locataire_detail' locataire.pk %}">{{ locataire }}</a>
+            </td>
+            <td>{{ locataire.email }}</td>
+            <td>{{ locataire.telephone }}</td>
+            <td>
+                <a href="{% url 'locataire_modifier' locataire.pk %}" class="btn btn-sm btn-primary">Modifier</a>
+                <a href="{% url 'locataire_supprimer' locataire.pk %}" class="btn btn-sm btn-danger">Supprimer</a>
+            </td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
+<a href="{% url 'locataire_ajouter' %}" class="btn btn-success">Ajouter un Locataire</a> {% endcomment %}
+
+
+<h2 class="mt-4">Liste des Locataires</h2>
+<table class="table table-striped mt-2">
+    <thead>
+        <tr>
+            <th>Nom</th>
+            <th>Email</th>
+            <th>Téléphone</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+    {% for locataire in locataires %}
+        <tr>
+            <td>
+                <a href="{% url 'locataire_detail' locataire.pk %}">{{ locataire }}</a>
+            </td>
+            <td>{{ locataire.email }}</td>
+            <td>{{ locataire.telephone }}</td>
+            <td>
+                <a href="{% url 'locataire_modifier' locataire.pk %}" class="btn btn-sm btn-primary">Modifier</a>
+                <a href="{% url 'locataire_supprimer' locataire.pk %}" class="btn btn-sm btn-danger">Supprimer</a>
+            </td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
+<a href="{% url 'locataire_create' %}" class="btn btn-success">Ajouter un Locataire</a>
+{% endblock %}

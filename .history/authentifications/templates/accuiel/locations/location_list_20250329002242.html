@@ -1,0 +1,183 @@
+{% extends "accuiel/base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <!-- En-tête avec titre et bouton d'ajout -->
+    <div class="mb-4 d-flex justify-content-between align-items-center">
+        <h2><i class="fas fa-key me-2"></i>Gestion des Locations</h2>
+        {% comment %} <a href="{% url 'creer_location' %}" class="btn btn-primary">
+            <i class="fas fa-plus-circle me-2"></i>Nouvelle Location
+        </a> {% endcomment %}
+    </div>
+
+    <!-- Cartes de statistiques -->
+    <div class="mb-4 row">
+        <div class="col-md-3">
+            <div class="text-white card bg-primary">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h6 class="card-title">Total Locations</h6>
+                            <h3>{{ total_locations|default:"0" }}</h3>
+                        </div>
+                        <i class="fas fa-home fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="text-white card bg-success">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h6 class="card-title">Payées</h6>
+                            <h3>{{ locations_payees|default:"0" }}</h3>
+                        </div>
+                        <i class="fas fa-check-circle fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="text-white card bg-warning">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h6 class="card-title">Caution Payée</h6>
+                            <h3>{{ caution_payee|default:"0" }}</h3>
+                        </div>
+                        <i class="fas fa-clock fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="text-white card bg-info">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h6 class="card-title">Avance Payée</h6>
+                            <h3>{{ avance_payee|default:"0" }}</h3>
+                        </div>
+                        <i class="fas fa-money-bill fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Liste des locations -->
+    {% if locations %}
+    <div class="shadow-sm card">
+        <div class="card-header bg-light">
+            <h5 class="mb-0 card-title">
+                <i class="fas fa-list me-2"></i>Liste des Locations
+            </h5>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table align-middle table-hover">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>#</th>
+                            <th>Locataire</th>
+                            <th>Chambre</th>
+                            <th>Période</th>
+                            <th>Montant</th>
+                            <th>Statut</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for location in locations %}
+                        <tr>
+                            <td>{{ forloop.counter }}</td>
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    <i class="fas fa-user-circle fa-2x me-2 text-secondary"></i>
+                                    <div>
+                                        <div class="fw-bold">{{ location.utilisateur.nom }} {{ location.utilisateur.prenom }}</div>
+                                        <small class="text-muted">ID: {{ location.utilisateur.id }}</small>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>{{ location.chambre.nom }}</td>
+                            <td>
+                                <div>Début: {{ location.date_debut_location|date:"d/m/Y" }}</div>
+                                <div class="{% if location.date_fin_avance and location.date_fin_avance|date:'Y-m-d' < current_date_togo|date:'Y-m-d' %}text-danger{% endif %}">
+                                    Fin: {{ location.date_fin_avance|date:"d/m/Y"|default:"N/A" }}
+                                </div>
+                            </td>
+                            <td>
+                                <div class="fw-bold">{{ location.montant_total|floatformat:0 }} CFA</div>
+                                <small class="text-muted">Caution: {{ location.montant_caution|floatformat:0 }} CFA</small>
+                            </td>
+                            <td>
+                                {% if location.statut_paiement == "payé" %}
+                                    <span class="badge bg-success"><i class="fas fa-check me-1"></i>Payé</span>
+                                {% elif location.statut_paiement == "caution payée, pas avance" %}
+                                    <span class="badge bg-warning"><i class="fas fa-clock me-1"></i>Caution payée</span>
+                                {% elif location.statut_paiement == "avance payée, pas caution" %}
+                                    <span class="badge bg-info"><i class="fas fa-money-bill me-1"></i>Avance payée</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <div class="btn-group">
+                                    <a href="{% url 'detail_location' location.pk %}" class="btn btn-info btn-sm" title="Détails">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                    <a href="{% url 'modifier_location' location.pk %}" class="btn btn-warning btn-sm" title="Modifier">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    <button type="button" class="btn btn-danger btn-sm" title="Supprimer" 
+                                            onclick="confirmDelete('{% url 'supprimer_location' location.pk %}')">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Pagination -->
+            {% include "accuiel/partials/pagination.html" %}
+        </div>
+    </div>
+    {% else %}
+    <div class="alert alert-info">
+        <i class="fas fa-info-circle me-2"></i>Aucune location n'a été trouvée.
+    </div>
+    {% endif %}
+</div>
+
+<!-- Modal de confirmation -->
+<div class="modal fade" id="deleteModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Confirmation de suppression</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                Êtes-vous sûr de vouloir supprimer cette location ?
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                <a href="" class="btn btn-danger" id="deleteLink">Supprimer</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function confirmDelete(url) {
+    document.getElementById('deleteLink').href = url;
+    new bootstrap.Modal(document.getElementById('deleteModal')).show();
+}
+</script>
+{% endblock %}

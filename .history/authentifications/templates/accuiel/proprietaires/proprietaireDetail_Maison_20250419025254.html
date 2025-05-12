@@ -1,0 +1,55 @@
+{% extends "accuiel/Base.html" %}
+
+{% block title %}
+    Liste des Propriétaires
+{% endblock %}
+
+{% block header %}
+    Liste des Propriétaires
+{% endblock %}
+
+{% block content %}
+<h2>Statistiques du propriétaire : {{ proprietaire.nom }} {{ proprietaire.prenom }}</h2>
+<p>Total paiements reçus global : {{ total_paiements_global }} FCFA</p>
+<p>Total commission globale : {{ total_commission_global }} FCFA</p>
+{% for maison_stat in stats %}
+  <h3>Maison : {{ maison_stat.maison.nom }} ({{ maison_stat.maison.adresse }})</h3>
+  <ul>
+    <li>Chambres libres: {{ maison_stat.chambres_libres }}</li>
+    <li>Chambres occupées: {{ maison_stat.chambres_occupees }}</li>
+  </ul>
+  <table border="1">
+    <thead>
+      <tr>
+        <th>Chambre</th>
+        <th>État</th>
+        <th>Locataire</th>
+        <th>Date libération</th>
+        <th>Total paiements</th>
+        <th>Commission</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for chambre_stat in maison_stat.chambres_stats %}
+      <tr>
+        <td>{{ chambre_stat.chambre.nom }}</td>
+        <td>{{ chambre_stat.etat }}</td>
+        <td>
+          {% if chambre_stat.utilisateur %}
+            {{ chambre_stat.utilisateur.username }}
+          {% else %}
+            -
+          {% endif %}
+        </td>
+        <td>{{ chambre_stat.date_liberation|default:"-" }}</td>
+        <td>{{ chambre_stat.total_paiements }} FCFA</td>
+        <td>{{ chambre_stat.commission }} FCFA</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+{% endfor %}
+
+  <a href="{% url 'liste_proprietaire' %}">Retour à la liste des propriétaires</a> {# Assurez-vous que 'proprietaire_list' est le nom de votre URL pour la liste #}
+
+{% endblock %}

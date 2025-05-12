@@ -1,0 +1,101 @@
+{% extends "accuiel/base.html" %}
+{% load humanize %} {# Pour formater les nombres, installez django-humanize et ajoutez 'django.contrib.humanize' à INSTALLED_APPS #}
+{% block title %}Détails de la Chambre: {{ chambre.type_chambre.nom }} - {{ chambre.maison.nom }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="card">
+        <div class="text-white card-header bg-primary">
+            <h2>Détails de la Chambre : {{ chambre.type_chambre.nom }} ({{ chambre.id }})</h2>
+        </div>
+        <div class="card-body">
+            <h5 class="card-title">Informations sur la Chambre</h5>
+            <p><strong>Maison :</strong> {{ chambre.maison.nom }} - {{ chambre.maison.adresse }}</p>
+            <p><strong>Type :</strong> {{ chambre.type_chambre.nom }}</p>
+            <p><strong>Surface :</strong> {{ chambre.surface }} m²</p>
+            <p><strong>Prix Mensuel :</strong> {{ chambre.prix|floatformat:2|intcomma }} FCFA</p>
+            <p><strong>Taux de Commission :</strong> {{ chambre.taux_commission }}%</p>
+            <p><strong>État Actuel :</strong> <span class="badge {% if chambre.etat == 'libre' %}bg-success{% else %}bg-danger{% endif %}">{{ chambre.get_etat_display }}</span></p>
+            <p><strong>Description :</strong> {{ chambre.description|default:"Aucune description" }}</p>
+        </div>
+    </div>
+
+    <div class="mt-4 card">
+        <div class="text-white card-header bg-info">
+            <h3>Statistiques Globales pour cette Chambre</h3>
+        </div>
+        <div class="card-body">
+            <p><strong>Montant Total Récolté :</strong> {{ montant_total_recolte_global|floatformat:2|intcomma }} FCFA</p>
+            <p><strong>Commission Totale Générée :</strong> {{ commission_totale_globale|floatformat:2|intcomma }} FCFA</p>
+            <p><strong>Net à Payer au Propriétaire :</strong> {{ net_a_payer_global|floatformat:2|intcomma }} FCFA</p>
+        </div>
+    </div>
+
+    <div class="mt-4 card">
+        <div class="card-header">
+            <h3>Historique des Locations et Occupants</h3>
+        </div>
+        <div class="card-body">
+            {% if locations_details %}
+                <div class="accordion" id="accordionLocations">
+                    {% for detail in locations_details %}
+                    <div class="accordion-item">
+                        <h2 class="accordion-header" id="heading{{ forloop.counter }}">
+                            <button class="accordion-button {% if not forloop.first %}collapsed{% endif %}" type="button" data-bs-toggle="collapse" data-bs-target="#collapse{{ forloop.counter }}" aria-expanded="{% if forloop.first %}true{% else %}false{% endif %}" aria-controls="collapse{{ forloop.counter }}">
+                                Location par <strong>{{ detail.utilisateur }}</strong> ({{ detail.location.get_statut_paiement_display }}) - Du {{ detail.date_debut|date:"d/m/Y" }}
+                                {% if detail.location.fin_location %}
+                                    au {{ detail.location.fin_location.date_fin_location|date:"d/m/Y" }}
+                                {% elif detail.date_fin_avance %}
+                                    (Avance jusqu'au {{ detail.date_fin_avance|date:"d/m/Y" }})
+                                {% else %}
+                                    (En cours)
+                                {% endif %}
+                            </button>
+                        </h2>
+                        <div id="collapse{{ forloop.counter }}" class="accordion-collapse collapse {% if forloop.first %}show{% endif %}" aria-labelledby="heading{{ forloop.counter }}" data-bs-parent="#accordionLocations">
+                            <div class="accordion-body">
+                                <p><strong>Locataire :</strong> {{ detail.utilisateur }}</p>
+                                <p><strong>Date de début :</strong> {{ detail.date_debut|date:"d M Y" }}</p>
+                                {% if detail.location.fin_location %}
+                                <p><strong>Date de fin réelle :</strong> {{ detail.location.fin_location.date_fin_location|date:"d M Y" }}</p>
+                                {% endif %}
+                                <p><strong>Statut Paiement Initial :</strong> {{ detail.location.get_statut_paiement_display }}</p>
+                                <p><strong>Montant Avance :</strong> {{ detail.montant_avance|floatformat:2|intcomma }} FCFA</p>
+                                <p><strong>Commission sur Avance :</strong> {{ detail.commission_location|floatformat:2|intcomma }} FCFA</p>
+                                
+                                <h6 class="mt-3">Paiements de Loyer pour cette location :</h6>
+                                {% if detail.paiements_loyer %}
+                                    <ul class="list-group list-group-flush">
+                                    {% for paiement in detail.paiements_loyer %}
+                                        <li class="list-group-item">
+                                            {{ paiement.date_paiement|date:"d M Y" }} - {{ paiement.montant_paye|floatformat:2|intcomma }} FCFA 
+                                            (Commission: {{ paiement.commission|floatformat:2|intcomma }} FCFA) - {{ paiement.nombre_mois_paye }} mois
+                                        </li>
+                                    {% endfor %}
+                                    </ul>
+                                    <p class="mt-2"><strong>Total Loyers Payés (hors avance) :</strong> {{ detail.total_loyers_payes_pour_location|floatformat:2|intcomma }} FCFA</p>
+                                    <p><strong>Total Commission sur Loyers (hors avance) :</strong> {{ detail.total_commission_loyers_pour_location|floatformat:2|intcomma }} FCFA</p>
+                                {% else %}
+                                    <p>Aucun paiement de loyer supplémentaire pour cette location.</p>
+                                {% endif %}
+                                <hr>
+                                <p><strong>Montant Total Généré par cette location :</strong> {{ detail.montant_total_genere_par_location|floatformat:2|intcomma }} FCFA</p>
+                                <p><strong>Commission Totale pour cette location :</strong> {{ detail.commission_totale_generee_par_location|floatformat:2|intcomma }} FCFA</p>
+                                <p><strong>Net pour cette location :</strong> {{ detail.net_pour_location|floatformat:2|intcomma }} FCFA</p>
+
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <p class="text-muted">Cette chambre n'a jamais été louée ou n'a pas d'historique de location enregistré.</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="mt-4 mb-4">
+        <a href="javascript:history.back()" class="btn btn-secondary">Retour</a>
+    </div>
+</div>
+{% endblock %}

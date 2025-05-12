@@ -1,0 +1,439 @@
+{% extends "accuiel/base.html" %}
+{% load humanize %}
+
+{% block content %}
+<style>
+:root {
+    --primary-color: #007bff;
+    --secondary-color: #6c757d;
+    --light-gray: #f8f9fa;
+    --medium-gray: #e9ecef;
+    --dark-gray: #495057;
+    --text-color: #343a40;
+    --white: #ffffff;
+    --success-color: #25c36f;
+    --danger-color: #dc3545;
+    --info-color: #17a2b8;
+    --warning-color: #ffc107;
+    --border-radius: 0.6rem;
+}
+/* FONT */
+body {
+    font-family: 'Inter', Arial, 'Segoe UI', Verdana, sans-serif;
+    background-color: var(--light-gray);
+    color: var(--text-color);
+    line-height: 1.64;
+    font-size: 1.06rem;
+}
+.page-container {
+    margin: 35px auto 20px auto;
+    padding: 32px 18px;
+    background-color: var(--white);
+    border-radius: var(--border-radius);
+    box-shadow: 0 7px 24px 0 rgba(60,80,100,0.11);
+    max-width: 1240px;
+    min-height: 78vh;
+}
+
+/* INFO GRID */
+.info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 30px;
+    margin-bottom: 32px;
+    padding-bottom: 6px;
+}
+.info-card {
+    background: var(--white);
+    padding: 26px 28px;
+    border-radius: var(--border-radius);
+    border: 1px solid var(--medium-gray);
+    box-shadow: 0 2px 12px rgba(70,110,220,0.04);
+    transition: box-shadow .26s cubic-bezier(.4,0,.2,1), transform .2s;
+}
+.info-card:hover {
+    box-shadow: 0 7px 24px 0 rgba(30,104,198,0.10), 0 1.5px 5px rgba(0,0,0,0.02);
+    transform: translateY(-4px) scale(1.011);
+}
+.card-title {
+    font-size: 1.13em;
+    font-weight: 600;
+    color: var(--primary-color);
+    margin-top: 0;
+    margin-bottom: 19px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--medium-gray);
+    display: flex;
+    align-items: center;
+    gap: 13px;
+    letter-spacing: 0.02em;
+}
+.card-title i {
+    font-size: 1.19em;
+}
+
+/* Details */
+.detail-list {
+    list-style: none;
+    margin: 0; padding: 0;
+}
+.detail-list li {
+    padding: 7px 0 7px 0;
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    border-bottom: 1px dotted #e4eaf5;
+}
+.detail-list li:last-child { border-bottom: none; }
+.detail-list .label {
+    font-size: 1em;
+    color: var(--secondary-color);
+    min-width: 115px;
+    opacity: .91;
+    margin-right: 14px;
+}
+.detail-list .value {
+    font-weight: 500; text-align: right;
+}
+.detail-list .price {
+    color: var(--success-color);
+    font-weight: 650;
+}
+.detail-list .date { color: var(--info-color); }
+
+/* Résumé Statistique */
+.summary-card {
+    text-align: center;
+    border-left: 4px solid var(--success-color);
+    background: linear-gradient(90deg, #e6f9ee 0%, #f6fffd 100%);
+}
+.summary-value {
+    font-size: 2.6em;
+    font-weight: 800;
+    margin-top: 14px;
+    color: var(--success-color);
+    line-height: 1.1;
+    letter-spacing: 1.4px;
+}
+.summary-unit { font-size: .6em; color: var(--secondary-color); margin-left: 5px;}
+.summary-label { color: var(--secondary-color); font-size: .98em; margin-top: .3em; display: block; }
+
+.section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+    padding-bottom: 12px;
+    border-bottom: 1.5px solid var(--medium-gray);
+}
+.section-title {
+    color: var(--dark-gray);
+    margin: 0; padding: 0;
+    border: none;
+    font-weight: 700;
+    font-size: 1.29em;
+    flex-grow: 1;
+    letter-spacing: .015em;
+}
+
+/* Table */
+.table-wrapper { overflow-x: auto; }
+.elegant-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 1.6em;
+}
+.elegant-table thead th {
+    background: var(--white);
+    color: var(--secondary-color);
+    border-bottom: 2.5px solid var(--primary-color);
+    padding: 15px 17px;
+    font-weight: 700;
+    text-transform: uppercase;
+    font-size: .91em;
+    letter-spacing: .055em;
+}
+.elegant-table tbody td {
+    padding: 13px 15px;
+    border-bottom: 1px solid var(--medium-gray);
+    color: var(--text-color);
+    vertical-align: middle;
+    font-size: 1em;
+    transition: background-color .15s, color .15s;
+}
+.elegant-table tbody tr:nth-of-type(even) td { background-color: var(--light-gray);}
+.elegant-table tbody tr:nth-of-type(odd) td { background-color: var(--white);}
+.elegant-table tbody tr:hover td {
+    background: linear-gradient(90deg, var(--primary-color) 0%, #e3edf7 100%);
+    color: var(--primary-color);
+}
+.price { font-weight: 700; color: var(--success-color);}
+.status-badge {
+    font-weight: 600;
+    padding: 5px 12px;
+    border-radius: 18px;
+    font-size: .99em;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    background: #e4fce8;
+    color: var(--success-color);
+    border: 1.2px solid #c3f7d6;
+    transition: background .2s, color .2s;
+}
+.status-badge.confirmé { color: var(--success-color); background: #e3f7ed; border-color: #b8eacf; }
+.status-badge.en-attente { color: var(--warning-color); background: #fffbe5; border-color: #ffe9a2; }
+.status-badge.rejeté { color: var(--danger-color); background: #fff0f2; border-color: #ffcfd6; }
+td .icon, .status-badge i, .receipt-link i { vertical-align: middle; margin-right: 5px; font-size: 1.1em;}
+.receipt-link { color: var(--primary-color); text-decoration: none; font-weight: 600; display: inline-flex; align-items: center; gap: 5px;}
+.receipt-link:hover { color: #0257b6; text-decoration: underline;}
+.no-receipt { color: var(--secondary-color); font-style: italic; font-size: .98em; }
+.no-data {
+    text-align: center;
+    padding: 38px 22px;
+    color: var(--secondary-color);
+    font-style: italic;
+    background: linear-gradient(90deg, #f9fdff 0%, #f7fafb 100%);
+    border-radius: var(--border-radius);
+    box-shadow: 0 2px 8px 0 rgba(200,210,220,0.06);
+}
+.pagination { margin-top: 15px; text-align: center; }
+.step-links { display: inline-block;}
+.step-links a, .step-links .current {
+    color: var(--primary-color);
+    float: left;
+    padding: 8px 16px;
+    text-decoration: none;
+    font-weight: 600;
+    border: 1px solid var(--medium-gray);
+    margin: 0 4px;
+    border-radius: var(--border-radius);
+    transition: background .17s;
+}
+.step-links a:hover { background-color: var(--light-gray);}
+.step-links .current { background: var(--primary-color); color: white; border: 1px solid var(--primary-color);}
+.step-links .disabled { color: var(--secondary-color); background: #f7f7f7; pointer-events: none; border-color: var(--light-gray);}
+@media (max-width: 768px) {
+    .info-grid { grid-template-columns: 1fr;}
+    .page-container { padding: 9px;}
+    .summary-card { padding: 17px 13px; }
+}
+@media (max-width: 500px) {
+    .elegant-table thead, .elegant-table td { font-size: .93em;}
+    .card-title, .section-title { font-size: 1em;}
+}
+</style>
+
+<div class="page-container">
+
+    {% if location %}
+    <div class="info-grid">
+
+        <!-- Carte détails de la location -->
+        <div class="info-card location-details-card">
+            <h2 class="card-title">
+                <i class="fa-solid fa-house-circle-check"></i>
+                Détails Location #{{ location.id }}
+            </h2>
+            <ul class="detail-list">
+                <li>
+                  <span class="label">Locataire&nbsp;:</span>
+                  <span class="value">
+                    <i class="fa-solid fa-user"></i>
+                    {{ location.utilisateur.nom }} {{ location.utilisateur.prenom }}
+                  </span>
+                </li>
+                <li>
+                  <span class="label">Maison&nbsp;:</span>
+                  <span class="value"><i class="fa-solid fa-building-user"></i> {{ location.chambre.maison.nom|default:'N/A' }}</span>
+                </li>
+                <li>
+                  <span class="label">Adresse&nbsp;:</span>
+                  <span class="value"><i class="fa-solid fa-location-dot"></i> {{ location.chambre.maison.adresse|default:'N/A' }}</span>
+                </li>
+                <li>
+                  <span class="label">Chambre&nbsp;:</span>
+                  <span class="value">
+                    <i class="fa-solid fa-bed"></i>
+                    {{ location.chambre.type_chambre.nom|default:'N/A' }} (#{{ location.chambre.id }})
+                    {% if location.chambre.surface %}({{ location.chambre.surface|floatformat:"0" }} m²){% endif %}
+                  </span>
+                </li>
+                <li>
+                  <span class="label">Loyer / Mois&nbsp;:</span>
+                  <span class="value price">
+                    <i class="fa-solid fa-tags"></i>
+                    {{ location.chambre.prix|floatformat:"0"|intcomma }} FCFA
+                  </span>
+                </li>
+                <li>
+                  <span class="label">Début Location&nbsp;:</span>
+                  <span class="value date">
+                    <i class="fa-solid fa-calendar-check"></i>
+                    {{ location.date_debut_location|date:"d M Y"|default:"-" }}
+                  </span>
+                </li>
+                <li>
+                  <span class="label">Fin Avance&nbsp;:</span>
+                  <span class="value date">
+                    <i class="fa-solid fa-calendar-days"></i>
+                    {{ location.date_fin_avance|date:"d M Y"|default:"-" }}
+                  </span>
+                </li>
+                {% if location.montant_total %}
+                 <li>
+                   <span class="label">1er Paiement&nbsp;:</span>
+                   <span class="value price">
+                        <i class="fa-solid fa-coins"></i>
+                        {{ location.montant_total|floatformat:"0"|intcomma }} FCFA ({{location.nombre_mois_paye}} mois)
+                   </span>
+                 </li>
+                 <li>
+                    <span class="label">1er Paiement&nbsp;:</span>
+                    <span class="value price">
+                         <i class="fa-solid fa-coins"></i>
+                         {{ location.montant_total|floatformat:"0"|intcommois)
+                    </span>
+                  </li>
+                {% endif %}
+                 {% if location.commission %}
+                 <li>
+                   <span class="label">Commission Initiale&nbsp;:</span>
+                   <span class="value">
+                        <i class="fa-solid fa-percent"></i>
+                        {{ location.commission|floatformat:"0"|intcomma }} FCFA
+                   </span>
+                 </li>
+                 {% endif %}
+            </ul>
+        </div>
+
+        <!-- Carte Statistique -->
+        <div class="info-card summary-card">
+             <h2 class="card-title">
+                <i class="fa-solid fa-wallet"></i>
+                Total des Paiements Reçus
+             </h2>
+             <span class="summary-value">
+                 {{ total_paid_amount|floatformat:"0"|intcomma }}
+                 <span class="summary-unit">FCFA</span>
+             </span>
+             <span class="summary-label">
+                <i class="fa-solid fa-coins"></i>
+                Montant cumulé de tous les paiements enregistrés pour cette location
+             </span>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Tableau des paiements -->
+    <div class="section-header">
+        <div class="section-title"><i class="fa-solid fa-clock-rotate-left"></i> Historique des Paiements</div>
+        {% comment %} {% url 'url_vers_ajout_paiement' location.id %} {% endcomment %}
+         <a href="" class="btn btn-primary">
+              <span class="icon"><i class="fa-solid fa-plus"></i></span> Ajouter Paiement
+         </a>
+        
+    </div>
+    {% if paiements %}
+        <div class="table-wrapper">
+            <table class="elegant-table">
+                <thead>
+                    <tr>
+                        <th>Date Paiement</th>
+                        <th>Montant Payé</th>
+                        <th>Mois</th>
+                        <th>Fin Couverte</th>
+                        <th>Mode</th>
+                        <th>Statut</th>
+                        <th>Commission</th>
+                        <th>Commentaire</th>
+                        <th>Reçu PDF</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for paiement in paiements %}
+                    <tr>
+                        <td><i class="fa-solid fa-calendar-day"></i> {{ paiement.date_paiement|date:"d/m/y H:i" }}</td>
+                        <td class="price"><i class="fa-solid fa-coins"></i> {{ paiement.montant_paye|floatformat:"0"|intcomma }} FCFA</td>
+                        <td><i class="fa-solid fa-calendar-days"></i> {{ paiement.nombre_mois_paye }}</td>
+                        <td>
+                            {% if paiement.date_fin_paiement %}
+                                <i class="fa-solid fa-calendar-check"></i> {{ paiement.date_fin_paiement|date:"d/m/y" }}
+                            {% else %}
+                                -
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if paiement.mode_paiement == 'espèce' %}
+                                <i class="fa-solid fa-money-bill-wave"></i>
+                            {% elif paiement.mode_paiement == 'mobile' %}
+                                <i class="fa-solid fa-mobile-screen-button"></i>
+                            {% endif %}
+                            {{ paiement.get_mode_paiement_display }}
+                        </td>
+                        <td>
+                            <span class="status-badge {{ paiement.statut_paiement|lower }}">
+                                {% if paiement.statut_paiement == 'confirmé' %}
+                                    <i class="fa-solid fa-circle-check"></i>
+                                {% elif paiement.statut_paiement == 'en attente' %}
+                                    <i class="fa-solid fa-hourglass-half"></i>
+                                {% elif paiement.statut_paiement == 'rejeté' %}
+                                    <i class="fa-solid fa-circle-xmark"></i>
+                                {% endif %}
+                                {{ paiement.get_statut_paiement_display }}
+                            </span>
+                        </td>
+                        <td>{{ paiement.commission|floatformat:"0"|intcomma }} FCFA</td>
+                        <td>{{ paiement.commentaire|default:""|truncatewords:8 }}</td>
+                        <td>
+                            {% if paiement.Recu_pdf %}
+                                <a href="{{ paiement.Recu_pdf.url }}" target="_blank" class="receipt-link" title="Voir le reçu">
+                                    <i class="fa-solid fa-file-pdf"></i> Voir
+                                </a>
+                            {% else %}
+                                <span class="no-receipt">-</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        {% if is_paginated %}
+            <div class="pagination">
+                <span class="step-links">
+                    {% if page_obj.has_previous %}
+                        <a href="?page=1" title="Première page">&laquo;</a>
+                        <a href="?page={{ page_obj.previous_page_number }}" title="Page précédente">Préc.</a>
+                    {% else %}
+                        <span class="disabled">&laquo;</span>
+                        <span class="disabled">Préc.</span>
+                    {% endif %}
+                    <span class="current">
+                        Page {{ page_obj.number }}/{{ page_obj.paginator.num_pages }}
+                    </span>
+                    {% if page_obj.has_next %}
+                        <a href="?page={{ page_obj.next_page_number }}" title="Page suivante">Suiv.</a>
+                        <a href="?page={{ page_obj.paginator.num_pages }}" title="Dernière page">&raquo;</a>
+                    {% else %}
+                        <span class="disabled">Suiv.</span>
+                        <span class="disabled">&raquo;</span>
+                    {% endif %}
+                </span>
+            </div>
+        {% endif %}
+
+    {% else %}
+        <div class="no-data">
+            <i class="fa-solid fa-inbox"></i>
+            <p>Aucun paiement n'a encore été enregistré pour cette location.</p>
+            {# <a href="{% url 'url_ajouter_paiement' location.id %}" class="btn btn-primary" style="margin-top: 15px;">
+                 <i class="fa-solid fa-plus"></i> Enregistrer un Paiement
+               </a>
+            #}
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

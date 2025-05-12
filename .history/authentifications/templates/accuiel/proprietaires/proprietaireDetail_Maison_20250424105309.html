@@ -1,0 +1,108 @@
+{% extends "accuiel/Base.html" %}
+
+{% block title %}
+    Liste des Propriétaires
+{% endblock %}
+
+{% block header %}
+    Liste des Propriétaires
+{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+  <div class="mb-4 shadow card">
+    <div class="card-body">
+      <h2 class="card-title">Statistiques du propriétaire</h2>
+      <p><strong>Nom :</strong> {{ proprietaire.nom }} {{ proprietaire.prenom }}</p>
+      <p><strong>Total paiements reçus :</strong> <span class="text-success">{{ total_paiements_global }} FCFA</span></p>
+      <p><strong>Total commission globale :</strong> <span class="text-primary">{{ total_commission_global }} FCFA</span></p>
+    </div>
+  </div>
+
+  {% for maison_stat in stats %}
+    <div class="mb-4 shadow card">
+      <div class="text-white card-header bg-secondary">
+        <h3 class="mb-0">Maison : {{ maison_stat.maison.nom }}</h3>
+      </div>
+      <div class="card-body">
+        {% for chambre_stat in maison_stat.chambres_stats %}
+          <div class="pb-3 mb-4 border-bottom">
+            <h5 class="text-info">Chambre : {{ chambre_stat.chambre.nom }} | <span class="text-muted">État : {{ chambre_stat.etat }}</span></h5>
+            <ul class="mb-3 list-group list-group-flush">
+              <li class="list-group-item">Surface : {{ chambre_stat.surface }}</li>
+              <li class="list-group-item">Prix : {{ chambre_stat.prix }} FCFA</li>
+              <li class="list-group-item">Taux commission : {{ chambre_stat.taux_commission }}%</li>
+              <li class="list-group-item">Total paiements : <span class="text-success">{{ chambre_stat.total_paiements }} FCFA</span></li>
+              <li class="list-group-item">Total commissions : <span class="text-primary">{{ chambre_stat.commission }} FCFA</span></li>
+            </ul>
+
+            <h6>🕓 Historique d'occupation :</h6>
+            <div class="mb-3 table-responsive">
+              <table class="table table-sm table-bordered">
+                <thead class="table-light">
+                  <tr>
+                    <th>Période</th>
+                    <th>Occupant</th>
+                    <th>Libéré le</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for etape in chambre_stat.etapes %}
+                  <tr>
+                    <td>{{ etape.date_debut|default:"-" }}</td>
+                    <td>{{ etape.occupant.username|default:"-" }}</td>
+                    <td>{{ etape.date_liberation|default:"En cours" }}</td>
+                  </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+
+            <h6>💰 Locations & Paiements associés :</h6>
+            <div class="table-responsive">
+              <table class="table table-bordered table-hover table-sm">
+                <thead class="table-light">
+                  <tr>
+                    <th>Locataire</th>
+                    <th>Période</th>
+                    <th>Avance</th>
+                    <th>Caution</th>
+                    <th>Statut paiement</th>
+                    <th>Mode paiement</th>
+                    <th>Montant total</th>
+                    <th>Paiements détaillés</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for loc in chambre_stat.locations_details %}
+                  <tr>
+                    <td>{{ loc.utilisateur.username|default:"-" }}</td>
+                    <td>
+                      Du {{ loc.periode.date_debut }} 
+                      {% if loc.periode.en_cours %}(en cours){% else %}au {{ loc.periode.date_fin }}{% endif %}
+                    </td>
+                    <td>{{ loc.montant_avance }} FCFA</td>
+                    <td>{{ loc.montant_caution }} FCFA</td>
+                    <td>{{ loc.statut_paiement }}</td>
+                    <td>{{ loc.mode_paiement }}</td>
+                    <td>{{ loc.montant_total }} FCFA</td>
+                    <td>
+                      <ul class="list-unstyled">
+                        {% for p in loc.paiements %}
+                          <li>{{ p.date }} : {{ p.montant }} FCFA ({{ p.mode }}, {{ p.statut }})</li>
+                        {% endfor %}
+                      </ul>
+                    </td>
+                  </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    </div>
+  {% endfor %}
+</div>
+{% endblock %}
+sk-9caaa***********************85be	

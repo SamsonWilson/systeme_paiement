@@ -1,0 +1,35 @@
+{% extends "accuiel/Base.html" %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2 class="text-center">Liste des Utilisateurs pour la Chambre</h2>
+    <table class="table mt-4 table-striped">
+        <thead>
+            <tr>
+                <th>Nom d'utilisateur</th>
+                <th>Email</th>
+                <th>Téléphone</th>
+                <th>Date de début de location</th>
+                <th>Statut de paiement</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% if locations %}
+            {% for location in locations %}
+                <tr>
+                    <td>{{ location.utilisateur.username }}</td>
+                    <td>{{ location.utilisateur.email }}</td>
+                    <td>{{ location.utilisateur.tel|default:"Non renseigné" }}</td>
+                    <td>{{ location.date_debut_location|date:"d/m/Y" }}</td>
+                    <td>{{ location.statut_paiement }}</td>
+                </tr>
+            {% endfor %}
+        {% else %}
+            <tr>
+                <td colspan="5" class="text-center">Aucun utilisateur trouvé pour cette chambre.</td>
+            </tr>
+        {% endif %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

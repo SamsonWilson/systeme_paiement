@@ -1,0 +1,71 @@
+{% extends "accuiel/Base.html" %}
+
+{% block title %}
+    proprietaire 
+{% endblock %}
+
+{% block header %}
+Proprietaire 
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2 class="mb-4">Liste des Proprietaire</h2>
+
+    <!-- Bouton Ajouter -->
+    <div class="mb-3">
+        <a href="{% url 'add_Quatier' %}" class="btn btn-success">Ajouter un Quartier</a>
+        {% comment %} <a href="#" class="btn btn-success">Ajouter une ville</a> {% endcomment %}
+    </div>
+
+    <!-- Formulaire de Recherche -->
+    <form method="get" class="mb-4 form-inline">
+        <div class="mb-2 form-group mx-sm-3">
+            {{ form.recherche.label_tag }}
+            {% comment %} {{ form.recherche|add_class:"form-control mx-sm-3" }} {% endcomment %}
+        </div>
+        <button type="submit" class="mb-2 btn btn-primary">Rechercher</button>
+    </form>
+   
+    <!-- Tableau des Villes -->
+    <div class="table-responsive">
+        <table class="table table-bordered table-hover table-striped table-sm">
+            <thead class="thead-dark">
+                <tr>
+                    <th scope="col">Nom</th>
+                    <th scope="col">Prenom</th>
+                    <th scope="col">Email</th>
+                    <th scope="col">Téléphone</th>
+                    <th scope="col">Adresse</th>
+                    <th scope="col">sexe</th>
+                    <th scope="col">Actions</th>
+
+                </tr>
+            </thead>
+            <tbody>
+                {% if proprietaires %}
+                {% for proprietaire in proprietaires %}
+                        <tr>
+                            <td>{{ proprietaire.nom }}</td>
+                            <td>{{ proprietaire.prenom }}</td>
+                            <td>{{ proprietaire.email }}</td>
+                            <td>{{ proprietaire.telephone }}</td>
+                            <td>{{ proprietaire.adresse }}</td>
+                            <td>{{ proprietaire.gen }}</td>
+                            <td>
+                                <a href="{% url 'modifier_proprietaire' proprietaire.pk %}" class="btn btn-warning btn-sm">Modifier</a>
+                                <a href="{% url 'supprimer_proprietaire' proprietaire.pk %}" class="btn btn-danger btn-sm">Supprimer</a>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                {% else %}
+                    <tr>
+                        <td colspan="3" class="text-center">Aucune ville trouvée.</td>
+                    </tr>
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+
+</div>
+{% endblock %}

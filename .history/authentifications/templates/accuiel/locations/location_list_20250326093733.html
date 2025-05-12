@@ -1,0 +1,92 @@
+{% extends "accuiel/base.html" %}
+
+{% block content %}
+<h2 class="mt-4">Liste des Locations</h2>
+
+<!-- Afficher les statistiques -->
+<div class="mb-3">
+    <p><strong>Total des locations :</strong> {{ total_locations }}</p>
+    <p><strong>Locations payées :</strong> {{ locations_payees }}</p>
+    <p><strong>Locations impayées :</strong> {{ locations_impayees }}</p>
+</div>
+
+{% if locations %}
+<table class="table mt-2 table-striped table-bordered">
+    <thead class="thead-dark">
+        <tr>
+            <th>#</th>
+            <th>Locataire</th>
+            <th>Chambre</th>
+            <th>Date Début</th>
+            <th>Date Fin</th>
+            <th>Montant Avance</th>
+            <th>Montant </th>
+            <th>Statut Paiement</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+    {% for location in locations %}
+        <tr>
+            <td>{{ forloop.counter }}</td>
+            <td>{{ location.utilisateur.nom }} {{ location.utilisateur.prenom }}</td>
+            <td>{{ location.chambre.nom }}</td>
+            <td>{{ location.date_debut_location }}</td>
+            <td>{{ location.date_fin_avance|default:"N/A" }}</td>
+            <td>{{ location.montant_avance|floatformat:2 }} CFA</td>
+            <td>
+                {% if location.statut_paiement == "payé" %}
+                    <span class="badge bg-success">Payé</span>
+                {% elif location.statut_paiement == "impayé" %}
+                    <span class="badge bg-danger">Impayé</span>
+                {% else %}
+                    <span class="badge bg-warning">{{ location.statut_paiement }}</span>
+                {% endif %}
+            </td>
+            <td>
+                <a href="{% url 'modifier_location' location.pk %}" class="btn btn-warning btn-sm">Modifier</a>
+                <a href="{% url 'supprimer_location' location.pk %}" class="btn btn-danger btn-sm">Supprimer</a>
+            </td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
+
+<!-- Pagination -->
+<!-- Pagination -->
+<div class="mt-4">
+    <nav aria-label="Page navigation">
+        <ul class="pagination">
+            <!-- Lien vers la page précédente -->
+            {% if locations.has_previous %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ locations.previous_page_number }}" aria-label="Précédent">
+                        <span aria-hidden="true">&laquo;</span>
+                    </a>
+                </li>
+            {% endif %}
+
+            <!-- Liens vers toutes les pages -->
+            {% for page_num in locations.paginator.page_range %}
+                <li class="page-item {% if locations.number == page_num %}active{% endif %}">
+                    <a class="page-link" href="?page={{ page_num }}">{{ page_num }}</a>
+                </li>
+            {% endfor %}
+
+            <!-- Lien vers la page suivante -->
+            {% if locations.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ locations.next_page_number }}" aria-label="Suivant">
+                        <span aria-hidden="true">&raquo;</span>
+                    </a>
+                </li>
+            {% endif %}
+        </ul>
+    </nav>
+</div>
+{% else %}
+<p class="mt-4">Aucune location trouvée.</p>
+{% endif %}
+
+{% comment %} <a href="{% url 'creer_location' %}" class="mt-3 btn btn-success">Ajouter une Location</a> {% endcomment %}
+{% endblock %}

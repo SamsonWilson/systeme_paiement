@@ -1,0 +1,37 @@
+{% extends "accuiel/Base.html" %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2 class="text-center">Liste des Utilisateurs pour la Chambre</h2>
+    <table class="table mt-4 table-striped">
+        <thead>
+            <tr>
+                <th>Nom d'utilisateur</th>
+                <th>Nom</th>
+                <th>Prénom</th>
+                <th>Email</th>
+                <th>Téléphone</th>
+                <th>Type d'utilisateur</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% if utilisateurs %}
+            {% for utilisateur in utilisateurs %}
+                <tr>
+                    <td>{{ utilisateur.username }}</td>
+                    <td>{{ utilisateur.nom }}</td>
+                    <td>{{ utilisateur.prenom }}</td>
+                    <td>{{ utilisateur.email }}</td>
+                    <td>{{ utilisateur.tel|default:"Non renseigné" }}</td>
+                    <td>{{ utilisateur.type_utilisateur.nom|default:"Non spécifié" }}</td>
+                </tr>
+            {% endfor %}
+        {% else %}
+            <tr>
+                <td colspan="6" class="text-center">Aucun utilisateur trouvé pour cette chambre.</td>
+            </tr>
+        {% endif %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

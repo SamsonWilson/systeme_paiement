@@ -1,0 +1,73 @@
+{% extends "accuiel/Base.html" %}
+
+{% block title %}
+    Liste des Propriétaires
+{% endblock %}
+
+{% block header %}
+    Liste des Propriétaires
+{% endblock %}
+
+{% block content %}
+<h2>Statistiques du propriétaire : {{ proprietaire.nom }} {{ proprietaire.prenom }}</h2>
+<p>Total paiements reçus global : {{ total_paiements_global }} FCFA</p>
+<p>Total commission globale : {{ total_commission_global }} FCFA</p>
+{% for maison_stat in stats %}
+  <h2>Maison : {{ maison_stat.maison.nom }} ({{ maison_stat.maison.adresse }})</h2>
+  <ul>
+    <li>Chambres libres: {{ maison_stat.chambres_libres }}</li>
+    <li>Chambres occupées: {{ maison_stat.chambres_occupees }}</li>
+  </ul>
+  {% for chambre_stat in maison_stat.chambres_stats %}
+    <h3>Chambre : {{ chambre_stat.chambre.nom }}</h3>
+    <ul>
+      <li>Surface: {{ chambre_stat.surface }}</li>
+      <li>Prix: {{ chambre_stat.prix }}</li>
+      <li>Taux commission: {{ chambre_stat.taux_commission }}%</li>
+      <li>État: {{ chambre_stat.etat }}</li>
+      <li>Total paiements: {{ chambre_stat.total_paiements }} FCFA</li>
+      <li>Total commissions : {{ chambre_stat.commission }} FCFA</li>
+    </ul>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Locataire</th>
+          <th>Période</th>
+          <th>Avance</th>
+          <th>Caution</th>
+          <th>Statut paiement</th>
+          <th>Mode paiement</th>
+          <th>Montant total</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for loc in chambre_stat.locations_details %}
+        <tr>
+          <td>
+            {% if loc.utilisateur %}
+              {{ loc.utilisateur.username }} ({{ loc.utilisateur.nom }} {{ loc.utilisateur.prenom }})
+            {% else %}
+              -
+            {% endif %}
+          </td>
+          <td>
+            Du {{ loc.periode.date_debut|date:"d/m/Y" }}
+            {% if loc.periode.en_cours %}
+              (en cours)
+            {% else %}
+              au {{ loc.periode.date_fin|date:"d/m/Y" }}
+            {% endif %}
+          </td>
+          <td>{{ loc.montant_avance }} FCFA</td>
+          <td>{{ loc.montant_caution }} FCFA</td>
+          <td>{{ loc.statut_paiement }}</td>
+          <td>{{ loc.mode_paiement }}</td>
+          <td>{{ loc.montant_total }} FCFA</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% endfor %}
+{% endfor %}
+{% endblock %}

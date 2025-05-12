@@ -1,0 +1,50 @@
+{% extends 'accuiel/base.html' %}
+
+{% block content %}
+
+
+
+<h1>Chat avec {{ chat_user.username }}</h1>
+
+<!-- Boîte de discussion -->
+<div id="chat-box">
+    {% for message in messages %}
+        <div class="message {% if message.sender == user %}sent{% else %}received{% endif %}">
+            <p><strong>{{ message.sender.username }}</strong>: {{ message.message }}</p>
+            <p class="timestamp">{{ message.timestamp }}</p>
+        </div>
+    {% endfor %}
+</div>
+
+<!-- Formulaire d'envoi de message -->
+<form id="message-form" method="POST" action="{% url 'send_message' %}">
+    {% csrf_token %}
+    <input type="hidden" name="receiver_id" value="{{ chat_user.id }}">
+    <textarea name="message" placeholder="Écrivez votre message ici..." required></textarea>
+    <button type="submit">Envoyer</button>
+</form>
+
+<script>
+    // Gestion de l'envoi du formulaire sans recharger la page
+    const form = document.getElementById('message-form');
+    form.onsubmit = async (e) => {
+        e.preventDefault(); // Empêcher le rechargement de la page
+        const formData = new FormData(form);
+
+        const response = await fetch(form.action, {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-CSRFToken': form.querySelector('[name=csrfmiddlewaretoken]').value,
+            }
+        });
+
+        const result = await response.json();
+        if (result.status === 'Message envoyé avec succès') {
+            location.reload(); // Recharge les messages après envoi
+        } else {
+            alert('Erreur lors de l\'envoi du message : ' + result.error);
+        }
+    };
+</script>
+{% endblock %}

@@ -1,0 +1,225 @@
+{% extends "accuiel/base.html" %}
+{% comment %} {% extends 'base.html' %} {# Or your actual base template #} {% endcomment %}
+{% load static %}
+{% load humanize %} {# Optional: For better number formatting (add 'django.contrib.humanize' to INSTALLED_APPS) #}
+
+{% block title %}Tableau de Bord Propriétaire{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+
+    {# Owner Information Section #}
+    <div class="mb-4 shadow-sm card">
+        <div class="text-white card-header bg-primary">
+            <h2 class="mb-0 h4">Bonjour, {{ proprietaire.get_nom_complet }} !</h2>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="text-center col-md-3">
+                    {% if proprietaire.image %}
+                        <img src="{{ proprietaire.image.url }}" alt="Photo de {{ proprietaire.prenom }}" class="mb-3 img-thumbnail rounded-circle" style="width: 150px; height: 150px; object-fit: cover;">
+                    {% else %}
+                        <img src="{% static 'images/default_avatar.png' %}" alt="Avatar par défaut" class="mb-3 img-thumbnail rounded-circle" style="width: 150px; height: 150px;">
+                         {# Make sure you have a default_avatar.png in your static files #}
+                    {% endif %}
+                </div>
+                <div class="col-md-9">
+                    <h5 class="card-title">Vos Informations</h5>
+                    <p><strong>Email :</strong> {{ proprietaire.email }}</p>
+                    <p><strong>Téléphone :</strong> {{ proprietaire.telephone }}</p>
+                    <p><strong>Adresse :</strong> {{ proprietaire.adresse|linebreaksbr }}</p>
+                     {# Link to edit profile page if you have one #}
+                     {# <a href="#" class="btn btn-sm btn-outline-secondary">Modifier le Profil</a> #}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {# Summary Section #}
+     <div class="mb-4 row">
+        <div class="col-md-3">
+            <div class="text-center shadow-sm card">
+                <div class="card-body">
+                    <h5 class="card-title">Maisons</h5>
+                    <p class="card-text display-4">{{ total_maisons }}</p>
+                </div>
+            </div>
+        </div>
+         <div class="col-md-3">
+            <div class="text-center shadow-sm card text-success">
+                <div class="card-body">
+                    <h5 class="card-title">Chambres Libres</h5>
+                    <p class="card-text display-4">{{ total_chambres_libres }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="text-center shadow-sm card text-danger">
+                <div class="card-body">
+                    <h5 class="card-title">Chambres Occupées</h5>
+                    <p class="card-text display-4">{{ total_chambres_occupees }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="text-center shadow-sm card text-info">
+                <div class="card-body">
+                    <h5 class="card-title">Total Paiements Reçus</h5>
+                     {# Use intcomma from humanize for formatting large numbers #}
+                    <p class="card-text h3">{{ grand_total_paiements|floatformat:0|intcomma }} FCFA</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="text-center shadow-sm card text-info">
+                <div class="card-body">
+                    <h5 class="card-title">Commision</h5>
+                     {# Use intcomma from humanize for formatting large numbers #}
+                    <p class="card-text h3">{{ grand_total_paiements|floatformat:0|intcomma }} FCFA</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    {# Properties and Rooms Section #}
+    <h3 class="mb-3">Vos Propriétés et Chambres</h3>
+
+    {% if maisons_details %}
+        {% for maison_detail in maisons_details %}
+        <div class="mb-4 shadow-sm card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                 <h4 class="mb-0 h5">{{ maison_detail.maison.nom }} <small class="text-muted">({{ maison_detail.maison.adresse }})</small></h4>
+                 <span class="p-2 badge bg-light text-dark">
+                     {{ maison_detail.count_libres }} Libre(s) / {{ maison_detail.count_occupees }} Occupée(s) | Total Paiements: {{ maison_detail.total_paiements|floatformat:0|intcomma }} FCFA
+                 </span>
+            </div>
+            <div class="card-body">
+                {% if maison_detail.chambres %}
+                <table class="table table-hover table-sm small">
+                    <thead class="table-light">
+                        <tr>
+                            <th># Chambre</th>
+                            <th>Type</th>
+                            <th>Prix</th>
+                            <th>Statut</th>
+                            <th>t</th>
+                            <th>Locataire Actuel</th>
+                            <th>Total Paiements (Location Actuelle)</th>
+                            <th>Actions</th> {# Optional actions column #}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for chambre_detail in maison_detail.chambres %}
+                        <tr class="{% if chambre_detail.status == 'Libre' %}table-success{% elif chambre_detail.status == 'Occupée' %}table-warning{% endif %}">
+                            <td>{{ chambre_detail.chambre.id }}</td> {# Or another identifier #}
+                            <td>{{ chambre_detail.chambre.type_chambre.nom }}</td>
+                             {# Apply number formatting if desired #}
+                            <td>{{ chambre_detail.chambre.prix|floatformat:0|intcomma }} FCFA</td>
+                            <td>
+                                <span class="badge {% if chambre_detail.status == 'Libre' %}bg-success{% elif chambre_detail.status == 'Occupée' %}bg-danger{% endif %}">
+                                    {{ chambre_detail.status }}
+                                </span>
+                            </td>
+                            <td>
+                                {% if chambre_detail.status == 'Occupée' and chambre_detail.locataire %}
+                                    {{ chambre_detail.locataire.get_full_name }} ({{ chambre_detail.locataire.username }})
+                                    {% if chambre_detail.current_location %}
+                                     {# Link to location detail if the URL and view exist #}
+                                     <a href="" class="ms-1" title="Voir détails location"><i class="fas fa-external-link-alt"></i></a>
+                                    {% endif %}
+                                {% elif chambre_detail.status == 'Occupée' %}
+                                    <span class="text-muted fst-italic">Location active non trouvée</span>
+                                {% else %}
+                                    -
+                                {% endif %}
+                            </td>
+                             <td class="text-end">
+                                {% if chambre_detail.status == 'Occupée' %}
+                                    {{ chambre_detail.total_paid|floatformat:0|intcomma }} FCFA
+                                {% else %}
+                                    -
+                                {% endif %}
+                            </td>
+                             <td>
+                                 {# Add links to view/edit chambre if you have those views #}
+                                 {# <a href="#" class="btn btn-sm btn-outline-info">Voir</a> #}
+                             </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                {% else %}
+                <p class="text-muted">Aucune chambre enregistrée pour cette maison.</p>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+    {% else %}
+        <div class="alert alert-info" role="alert">
+            Vous n'avez aucune maison enregistrée pour le moment.
+        </div>
+    {% endif %}
+
+</div>
+
+{# Include FontAwesome if you use icons like fas fa-external-link-alt #}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" integrity="sha512-9usAa10IRO0HhonpyAIVpjrylPvoDwiPUiKdWk5t3PyolY1cOd4DSE0Ga+ri4AuTroPR5aQvXU9xC6qOPnzFeg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+
+{% comment %} {% endblock %} {% endcomment %}
+{% comment %} {% load widget_tweaks %}
+{% block content %}
+<h1>Tableau de Bord pour {{ proprietaire.prenom }} {{ proprietaire.nom }}</h1>
+
+{# Utilise directement les propriétés du modèle #}
+<h2>Informations Générales</h2>
+<p>Email: {{ proprietaire.email }}</p>
+<p>Téléphone: {{ proprietaire.telephone }}</p>
+<p>Nombre total de maisons: {{ proprietaire.nombre_total_maisons }}</p>
+<p>Nombre total de chambres: {{ proprietaire.nombre_total_chambres }}</p>
+
+<h2>Statut des Chambres</h2>
+<ul>
+    <li>Libres: {{ proprietaire.chambres_par_etat.libre|default:0 }}</li> {# Ajout de default:0 #}
+    <li>Occupées: {{ proprietaire.chambres_par_etat.occupée|default:0 }}</li> {# Ajout de default:0 #}
+</ul>
+
+<h2>Finances</h2>
+<p>Valeur locative mensuelle totale (toutes chambres): {{ proprietaire.valeur_totale_chambres }} FCFA</p>
+<p>Commission potentielle mensuelle totale: {{ proprietaire.commission_potentielle_mensuelle_totale }} FCFA</p>
+<p>Nombre de locations actives: {{ proprietaire.nombre_locations_actives }}</p>
+<p>Loyer total collecté (confirmé): {{ proprietaire.loyer_total_collecte }} FCFA</p>
+<p>Commission totale perçue: {{ proprietaire.commission_totale_percue }} FCFA</p>
+<p>Avances totales reçues: {{ proprietaire.avances_totales_recues }} FCFA</p>
+<p>Caution totale détenue (locations actives): {{ proprietaire.caution_totale_detenue }} FCFA</p>
+
+<h2>Liste des Maisons</h2>
+<ul>
+    {% for maison in proprietaire.maisons.all %}
+        <li>
+            <strong>{{ maison.nom }}</strong> ({{ maison.adresse }}) - {{ maison.chambres.count }} chambre(s)
+            <ul>
+                {% for chambre in maison.chambres.all %}
+                    <li>{{ chambre.type_chambre.nom }} - {{ chambre.prix }} FCFA/mois - État: {{ chambre.get_etat_display }}</li>
+                {% endfor %}
+            </ul>
+        </li>
+    {% empty %}
+        <li>Aucune maison enregistrée.</li>
+    {% endfor %}
+</ul>
+
+<h2>Locations Actives</h2>
+<ul>
+    {% for location in proprietaire.locations_actives %}
+      <li>
+          Locataire: {{ location.utilisateur.username|default:"N/A" }} <br>
+          Chambre: {{ location.chambre }} <br> {# Utilise le __str__ de Chambre #}
+          Début: {{ location.date_debut_location|date:"d/m/Y" }} <br>
+          Avance: {{ location.montant_avance }} | Caution: {{ location.montant_caution }}
+      </li>
+    {% empty %}
+        <li>Aucune location active.</li>
+    {% endfor %}
+</ul> {% endcomment %}
+{% endblock %}

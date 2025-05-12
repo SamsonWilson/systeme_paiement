@@ -1,0 +1,71 @@
+{% extends "accuiel/Base.html" %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="shadow-lg card">
+        <div class="text-center text-white card-header bg-primary">
+            <h2>Liste des Chambres</h2>
+        </div>
+        <div class="card-body">
+            <!-- Bouton Ajouter -->
+            <div class="mb-3 text-center">
+                <a href="{% url 'creer_chambre' %}" class="btn btn-success">
+                    <i class="fas fa-plus"></i> Ajouter une Chambre
+                </a>
+            </div>
+
+            <!-- Tableau des Chambres -->
+            <div class="table-responsive">
+                <table class="table table-bordered table-hover table-striped">
+                    <thead class="thead-dark">
+                        <tr>
+                            <th>Nom</th>
+                            <th>Prix</th>
+                            <th>Description</th>
+                            <th>Superficie</th>
+                            <th>Nombre de Lits</th>
+                            <th>Disponible</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% if chambres %}
+                            {% for chambre in chambres %}
+                                <tr>
+                                    <td>{{ chambre.nom }}</td>
+                                    <td>{{ chambre.prix }}</td>
+                                    <td>{{ chambre.description|default:"Non spécifiée" }}</td>
+                                    <td>{{ chambre.superficie|default:"-" }} m²</td>
+                                    <td>{{ chambre.nombre_lits }}</td>
+                                    <td>
+                                        {% if chambre.disponible %}
+                                            <span class="badge bg-success">Oui</span>
+                                        {% else %}
+                                            <span class="badge bg-danger">Non</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <a href="{% url 'chambre_detail' chambre.pk %}" class="btn btn-info btn-sm">
+                                            <i class="fas fa-eye"></i> Détails
+                                        </a>
+                                        <a href="{% url 'modifier_chambre' chambre.pk %}" class="btn btn-warning btn-sm">
+                                            <i class="fas fa-edit"></i> Modifier
+                                        </a>
+                                        <a href="{% url 'supprimer_chambre' chambre.pk %}" class="btn btn-danger btn-sm">
+                                            <i class="fas fa-trash"></i> Supprimer
+                                        </a>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        {% else %}
+                            <tr>
+                                <td colspan="7" class="text-center">Aucune chambre disponible.</td>
+                            </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

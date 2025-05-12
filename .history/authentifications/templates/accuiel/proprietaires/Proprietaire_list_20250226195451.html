@@ -1,0 +1,19 @@
+{% extends "accuiel/Base.htmlbase.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Liste des propriétaires</h2>
+    <a href="{% url 'proprietaire_creer' %}" class="btn btn-primary mb-2">Ajouter un propriétaire</a>
+    <div class="list-group">
+    {% for proprietaire in proprietaires %}
+        <div class="list-group-item">
+            <h5>{{ proprietaire }}</h5>
+            <p>Email: {{ proprietaire.email }}</p>
+            <p>Sexe: {% if proprietaire.sexe == 'M' %}Male{% else %}Female{% endif %}</p>
+            <a href="{% url 'proprietaire_modifier' proprietaire.pk %}" class="btn btn-warning btn-sm">Modifier</a>
+            <a href="{% url 'proprietaire_supprimer' proprietaire.pk %}" class="btn btn-danger btn-sm">Supprimer</a>
+        </div>
+    {% endfor %}
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Reçu de Location</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #eee;
+            padding: 40px;
+        }
+
+        .recu {
+            background-color: #fff;
+            max-width: 700px;
+            margin: 0 auto;
+            padding: 30px;
+            border: 2px dashed #333;
+            border-radius: 10px;
+        }
+
+        .recu h1 {
+            text-align: center;
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        .recu .section {
+            margin-bottom: 15px;
+        }
+
+        .recu p {
+            margin: 6px 0;
+        }
+
+        .ligne {
+            border-top: 1px dashed #999;
+            margin: 20px 0;
+        }
+
+        .footer {
+            text-align: center;
+            font-size: 0.9em;
+            color: #777;
+            margin-top: 30px;
+        }
+    </style>
+</head>
+<body>
+    <div class="recu">
+        <h1>🧾 Reçu de Location</h1>
+
+        <div class="section">
+            <p><strong>Date de paiement :</strong> {{ location.date_paiement }}</p>
+            <p><strong>Référence location :</strong> #{{ location.id }}</p>
+        </div>
+
+        <div class="ligne"></div>
+
+        <div class="section">
+            <p><strong>Nom de l'utilisateur :</strong> {{ location.utilisateur.username }}</p>
+            <p><strong>Maison :</strong> {{ location.chambre.maison.nom }}</p>
+            <p><strong>Chambre :</strong> {{ location.chambre.nom }}</p>
+            <p><strong>Type de chambre :</strong> {{ location.chambre.type_chambre.nom }}</p>
+        </div>
+
+        <div class="ligne"></div>
+
+        <div class="section">
+            <p><strong>Date début location :</strong> {{ location.date_debut_location }}</p>
+            <p><strong>Date fin avance :</strong> {{ location.date_fin_avance }}</p>
+            <p><strong>Nombre de mois payé :</strong> {{ location.nombre_mois_paye }}</p>
+        </div>
+
+        <div class="ligne"></div>
+
+        <div class="section">
+            <p><strong>Montant avance :</strong> {{ location.montant_avance }} CFA</p>
+            <p><strong>Montant caution :</strong> {{ location.montant_caution }} CFA</p>
+            <p><strong>Montant total payé :</strong> {{ location.montant_total }} CFA</p>
+            <p><strong>Statut de paiement :</strong> {{ location.statut_paiement }}</p>
+            <p><strong>Mode de paiement :</strong> {{ location.mode_paiement }}</p>
+        </div>
+
+        <div class="footer">
+            Merci pour votre paiement. Ce reçu a été généré automatiquement.
+        </div>
+    </div>
+</body>
+</html>

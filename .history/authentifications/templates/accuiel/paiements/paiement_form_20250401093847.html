@@ -1,0 +1,348 @@
+{% extends "accuiel/Base.html" %}
+{% block content %}
+<div class="container mt-4">
+    <div class="shadow-sm card">
+        <div class="text-white card-header bg-primary d-flex justify-content-between align-items-center">
+            <h2 class="mb-0 h5">
+                <i class="fas fa-money-bill-wave me-2"></i>
+                {% if form.instance.pk %}Modifier{% else %}Nouveau{% endif %} Paiement
+            </h2>
+            {% if location %}
+            <span class="badge bg-light text-primary">
+                <i class="fas fa-home me-1"></i>
+                Chambre {{ location.chambre.numero }} - {{ location.utilisateur.nom }}
+            </span>
+            {% endif %}
+        </div>
+        
+        <div class="card-body">
+            <!-- Résumé du paiement -->
+            {% if location %}
+            <div class="mb-4 alert alert-info">
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <div class="mb-2 d-flex align-items-center">
+                            <i class="fas fa-user text-primary me-2"></i>
+                            <div>
+                                <small class="text-muted">Locataire</small>
+                                <div class="fw-bold">{{ location.utilisateur.nom }}</div>
+                            </div>
+                        </div>
+                        <div class="d-flex align-items-center">
+                            <i class="fas fa-envelope text-primary me-2"></i>
+                            <div>
+                                <small class="text-muted">Email</small>
+                                <div>{{ location.utilisateur.email }}</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="mb-2 d-flex align-items-center">
+                            <i class="fas fa-building text-primary me-2"></i>
+                            <div>
+                                <small class="text-muted">Type de chambre</small>
+                                <div class="fw-bold">{{ location.chambre.type_chambre.nom }}</div>
+                            </div>
+                        </div>
+                        <div class="mb-2 d-flex align-items-center">
+                            <i class="fas fa-building text-primary me-2"></i>
+                            <div>
+                                <small class="text-muted">la Date fin location </small>
+                                <div class="fw-bold">{{ location.date_fin_avance }}</div>
+                            </div>
+                        </div>
+                        <div class="d-flex align-items-center">
+                            <i class="fas fa-money-bill text-primary me-2"></i>
+                            <div>
+                                <small class="text-muted">Loyer mensuel</small>
+                                <div class="fw-bold">{{ location.chambre.prix }} CFA</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <form method="post" class="needs-validation" novalidate>
+                {% csrf_token %}
+                
+                <!-- Champ Location caché -->
+                {{ form.location.as_hidden }}
+
+                <div class="row g-3">
+                    <!-- Nombre de mois et Montant -->
+                    <div class="col-md-6">
+                        <div class="form-floating">
+                            {{ form.nombre_mois_paye }}
+                            <label for="{{ form.nombre_mois_paye.id_for_label }}">
+                                <i class="fas fa-calendar-alt me-1"></i>Nombre de mois
+                            </label>
+                        </div>
+                        {% if form.nombre_mois_paye.errors %}
+                        <div class="invalid-feedback d-block">{{ form.nombre_mois_paye.errors }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="form-floating">
+                            {{ form.montant_paye }}
+                            <label for="{{ form.montant_paye.id_for_label }}">
+                                <i class="fas fa-coins me-1"></i>Montant (CFA)
+                            </label>
+                        </div>
+                        {% if form.montant_paye.errors %}
+                        <div class="invalid-feedback d-block">{{ form.montant_paye.errors }}</div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Dates -->
+                    <div class="col-md-6">
+                        <div class="form-floating">
+                            {{ form.date_paiement }}
+                            <label for="{{ form.date_paiement.id_for_label }}">
+                                <i class="fas fa-calendar-check me-1"></i>Date de paiement
+                            </label>
+                        </div>
+                        {% if form.date_paiement.errors %}
+                        <div class="invalid-feedback d-block">{{ form.date_paiement.errors }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="form-floating">
+                            {{ form.date_fin_paiement }}
+                            <label for="{{ form.date_fin_paiement.id_for_label }}">
+                                <i class="fas fa-calendar-times me-1"></i>Date de fin
+                            </label>
+                        </div>
+                        {% if form.date_fin_paiement.errors %}
+                        <div class="invalid-feedback d-block">{{ form.date_fin_paiement.errors }}</div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Mode et Statut -->
+                    <div class="col-md-6">
+                        <div class="form-floating">
+                            {{ form.mode_paiement }}
+                            <label for="{{ form.mode_paiement.id_for_label }}">
+                                <i class="fas fa-credit-card me-1"></i>Mode de paiement
+                            </label>
+                        </div>
+                        {% if form.mode_paiement.errors %}
+                        <div class="invalid-feedback d-block">{{ form.mode_paiement.errors }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="form-floating">
+                            {{ form.statut_paiement }}
+                            <label for="{{ form.statut_paiement.id_for_label }}">
+                                <i class="fas fa-check-circle me-1"></i>Statut
+                            </label>
+                        </div>
+                        {% if form.statut_paiement.errors %}
+                        <div class="invalid-feedback d-block">{{ form.statut_paiement.errors }}</div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Commentaire -->
+                    <div class="col-12">
+                        <div class="form-floating">
+                            {{ form.commentaire }}
+                            <label for="{{ form.commentaire.id_for_label }}">
+                                <i class="fas fa-comment me-1"></i>Commentaire (optionnel)
+                            </label>
+                        </div>
+                        {% if form.commentaire.errors %}
+                        <div class="invalid-feedback d-block">{{ form.commentaire.errors }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Boutons d'action -->
+                <div class="mt-4 d-flex justify-content-between">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas {% if form.instance.pk %}fa-save{% else %}fa-plus-circle{% endif %} me-2"></i>
+                        {% if form.instance.pk %}Mettre à jour{% else %}Créer{% endif %} le paiement
+                    </button>
+                    <a href="{% url 'liste_paiements' %}" class="btn btn-outline-secondary">
+                        <i class="fas fa-times me-2"></i>Annuler
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<style>
+.form-floating {
+    position: relative;
+}
+
+.form-floating > .form-control,
+.form-floating > .form-select {
+    height: calc(3.5rem + 2px);
+    padding: 1rem 0.75rem;
+}
+
+.form-floating > label {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    padding: 1rem 0.75rem;
+    pointer-events: none;
+    border: 1px solid transparent;
+    transform-origin: 0 0;
+    transition: opacity .1s ease-in-out,transform .1s ease-in-out;
+}
+
+.form-floating > textarea.form-control {
+    height: auto;
+    min-height: 100px;
+}
+
+.card {
+    border-radius: 1rem;
+    border: none;
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+}
+.alert-info {
+    background-color: rgba(13, 202, 240, 0.1);
+    border-left: 4px solid #0dcaf0;
+}
+
+.form-control:disabled {
+    background-color: #f8f9fa;
+    opacity: 0.8;
+}
+</style>
+
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Récupération des éléments
+        const nombreMoisInput = document.getElementById('{{ form.nombre_mois_paye.id_for_label }}');
+        const montantInput = document.getElementById('{{ form.montant_paye.id_for_label }}');
+        const dateFinInput = document.getElementById('{{ form.date_fin_paiement.id_for_label }}');
+        const datePaiementInput = document.getElementById('{{ form.date_paiement.id_for_label }}');
+        
+        // Valeurs de la location
+        const montantMensuel = {{ location.montant_total|default:0 }};
+        const dateFinAvance = new Date('{{ location.date_fin_avance|date:"Y-m-d" }}');
+    
+        // Configuration des datepickers
+        flatpickr(datePaiementInput, {
+            dateFormat: 'Y-m-d',
+            locale: 'fr',
+            defaultDate: dateFinAvance,
+            disable: [
+                {
+                    from: "1900-01-01",
+                    to: dateFinAvance
+                }
+            ]
+        });
+    
+        flatpickr(dateFinInput, {
+            dateFormat: 'Y-m-d',
+            locale: 'fr',
+            minDate: dateFinAvance
+        });
+    
+        // Fonction de calcul global
+        function calculerPaiement() {
+            const nombreMois = parseInt(nombreMoisInput.value) || 0;
+            
+            // Calcul du montant
+            if (montantInput) {
+                montantInput.value = (nombreMois * montantMensuel).toFixed(0);
+            }
+    
+            // Calcul de la date de fin
+            if (dateFinInput && nombreMois > 0) {
+                const dateDebut = new Date(dateFinAvance);
+                const dateFin = new Date(dateDebut);
+                dateFin.setMonth(dateDebut.getMonth() + nombreMois);
+                dateFinInput._flatpickr.setDate(dateFin);
+            }
+        }
+    
+        // Écouteurs d'événements
+        if (nombreMoisInput) {
+            nombreMoisInput.addEventListener('input', calculerPaiement);
+            nombreMoisInput.addEventListener('change', calculerPaiement);
+        }
+    
+        // Initialisation au chargement
+        calculerPaiement();
+    });
+    </script>
+    <script>
+        // Ajouter cette fonction pour mettre à jour le récapitulatif
+        function updateRecapitulatif(montant) {
+            const totalAPayer = document.getElementById('total-a-payer');
+            if (totalAPayer) {
+                totalAPayer.textContent = `${montant.toLocaleString()} CFA`;
+            }
+        }
+        
+        // Modifier la fonction calculerPaiement pour inclure la mise à jour du récapitulatif
+        function calculerPaiement() {
+            const nombreMois = parseInt(nombreMoisInput.value) || 0;
+            const montantTotal = nombreMois * montantMensuel;
+            
+            if (montantInput) {
+                montantInput.value = montantTotal.toFixed(0);
+                updateRecapitulatif(montantTotal);
+            }
+            
+            // ...rest of the calculation code...
+        }
+        </script>
+    
+{% comment %} <script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Calcul automatique du montant
+    const nombreMoisInput = document.getElementById('{{ form.nombre_mois_paye.id_for_label }}');
+    const montantInput = document.getElementById('{{ form.montant_paye.id_for_label }}');
+    const montantMensuel = {{ location.montant_total|default:0 }};
+
+    if (nombreMoisInput && montantInput) {
+        nombreMoisInput.addEventListener('change', function() {
+            const nombreMois = parseInt(this.value) || 0;
+            montantInput.value = (nombreMois * montantMensuel).toString();
+        });
+    }
+
+    // Datepickers
+    const datePaiementInput = document.getElementById('{{ form.date_paiement.id_for_label }}');
+    const dateFinInput = document.getElementById('{{ form.date_fin_paiement.id_for_label }}');
+
+    flatpickr(datePaiementInput, {
+        dateFormat: 'Y-m-d',
+        locale: 'fr',
+        defaultDate: 'today'
+    });
+
+    flatpickr(dateFinInput, {
+        dateFormat: 'Y-m-d',
+        locale: 'fr',
+        minDate: 'today'
+    });
+
+    // Calcul automatique de la date de fin
+    if (nombreMoisInput && dateFinInput && datePaiementInput) {
+        nombreMoisInput.addEventListener('change', function() {
+            const nombreMois = parseInt(this.value) || 0;
+            const dateDebut = new Date(datePaiementInput.value);
+            if (dateDebut && nombreMois > 0) {
+                const dateFin = new Date(dateDebut);
+                dateFin.setMonth(dateFin.getMonth() + nombreMois);
+                dateFinInput._flatpickr.setDate(dateFin);
+            }
+        });
+    }
+});
+</script> {% endcomment %}
+{% endblock %}

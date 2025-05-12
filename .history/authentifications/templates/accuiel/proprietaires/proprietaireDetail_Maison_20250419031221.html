@@ -1,0 +1,98 @@
+{% extends "accuiel/Base.html" %}
+
+{% block title %}
+    Liste des Propriétaires
+{% endblock %}
+
+{% block header %}
+    Liste des Propriétaires
+{% endblock %}
+
+{% block content %}
+<h2>Statistiques du propriétaire : {{ proprietaire.nom }} {{ proprietaire.prenom }}</h2>
+<p>Total paiements reçus global : {{ total_paiements_global }} FCFA</p>
+<p>Total commission globale : {{ total_commission_global }} FCFA</p>
+{% for maison_stat in stats %}
+  <h2>Maison : {{ maison_stat.maison.nom }}</h2>
+  {% for chambre_stat in maison_stat.chambres_stats %}
+    <h3>Chambre : {{ chambre_stat.chambre.nom }} | État actuel : {{ chambre_stat.etat }}</h3>
+    <ul>
+      <li>Surface : {{ chambre_stat.surface }}</li>
+      <li>Prix : {{ chambre_stat.prix }}</li>
+      <li>Taux commission: {{ chambre_stat.taux_commission }}%</li>
+      <li>Total paiements: {{ chambre_stat.total_paiements }} FCFA</li>
+      <li>Total commissions: {{ chambre_stat.commission }} FCFA</li>
+    </ul>
+
+    <b>Historique d'occupation :</b>
+    <table>
+      <tr>
+        <th>Période</th>
+        <th>Occupant</th>
+        <th>Libéré le</th>
+      </tr>
+      {% for etape in chambre_stat.etapes %}
+        <tr>
+          <td>{% if etape.date_debut %}{{ etape.date_debut }}{% endif %}</td>
+          <td>
+            {% if etape.occupant %}
+              {{ etape.occupant.username }}
+            {% else %}-{% endif %}
+          </td>
+          <td>
+            {% if etape.date_liberation %}
+              {{ etape.date_liberation }}
+            {% else %}
+              en cours
+            {% endif %}
+          </td>
+        </tr>
+      {% endfor %}
+    </table>
+
+    <b>Locations & paiements associés :</b>
+    <table>
+      <thead>
+        <tr>
+          <th>Locataire</th>
+          <th>Période</th>
+          <th>Avance</th>
+          <th>Caution</th>
+          <th>Statut paiement</th>
+          <th>Mode paiement</th>
+          <th>Montant total</th>
+          <th>Paiements détaillés</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for loc in chambre_stat.locations_details %}
+        <tr>
+          <td>
+            {% if loc.utilisateur %}
+              {{ loc.utilisateur.username }}
+            {% else %}
+              -
+            {% endif %}
+          </td>
+          <td>
+            Du {{ loc.periode.date_debut }} {% if loc.periode.en_cours %}(en cours){% else %}au {{ loc.periode.date_fin }}{% endif %}
+          </td>
+          <td>{{ loc.montant_avance }} FCFA</td>
+          <td>{{ loc.montant_caution }} FCFA</td>
+          <td>{{ loc.statut_paiement }}</td>
+          <td>{{ loc.mode_paiement }}</td>
+          <td>{{ loc.montant_total }} FCFA</td>
+          <td>
+            <ul>
+              {% for p in loc.paiements %}
+                <li>{{ p.date }} : {{ p.montant }} FCFA ({{ p.mode }}, {{ p.statut }})</li>
+              {% endfor %}
+            </ul>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% endfor %}
+{% endfor %}
+{% endblock %}

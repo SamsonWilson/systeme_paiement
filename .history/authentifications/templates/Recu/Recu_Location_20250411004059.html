@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Reçu de Location</title>
+    <style>
+        @page {
+            size: A4;
+            margin: 0;
+        }
+        body {
+            font-family: 'Arial', sans-serif;
+            line-height: 1.4;
+            margin: 0;
+            padding: 0;
+            background: #fff;
+        }
+        .recu {
+            width: 21cm;
+            min-height: 29.7cm;
+            padding: 2cm;
+            background: #fff;
+            position: relative;
+            box-sizing: border-box;
+        }
+        .header {
+            text-align: center;
+            padding-bottom: 1cm;
+            border-bottom: 3px double #000;
+            margin-bottom: 1cm;
+        }
+        .header h1 {
+            color: #2c3e50;
+            font-size: 28px;
+            margin: 0;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+        .numero-recu {
+            font-size: 16px;
+            color: #34495e;
+            margin-top: 0.5cm;
+        }
+        .info-section {
+            margin: 0.8cm 0;
+            padding: 0.5cm;
+            background: #f8f9fa;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+        .info-section h3 {
+            color: #2c3e50;
+            margin: 0 0 0.5cm 0;
+            padding-bottom: 0.2cm;
+            border-bottom: 1px solid #dee2e6;
+        }
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 0.5cm;
+            margin-top: 0.3cm;
+        }
+        .info-grid p {
+            margin: 0.2cm 0;
+            font-size: 14px;
+        }
+        .montants {
+            margin-top: 1cm;
+            background: #f8f9fa;
+            padding: 0.5cm;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+        .montant-total {
+            font-size: 18px;
+            font-weight: bold;
+            color: #2c3e50;
+            text-align: right;
+            margin-top: 0.5cm;
+            padding: 0.3cm;
+            background: #e9ecef;
+            border-radius: 4px;
+        }
+        .signature {
+            margin-top: 1.5cm;
+            display: flex;
+            justify-content: space-between;
+            padding: 0 2cm;
+        }
+        .signature-box {
+            width: 6cm;
+            text-align: center;
+        }
+        .signature-line {
+            border-top: 1px solid #000;
+            margin-top: 2cm;
+            padding-top: 0.2cm;
+            font-size: 14px;
+        }
+        .footer {
+            position: absolute;
+            bottom: 2cm;
+            left: 2cm;
+            right: 2cm;
+            text-align: center;
+            font-size: 12px;
+            color: #6c757d;
+            border-top: 1px solid #dee2e6;
+            padding-top: 0.5cm;
+        }
+        strong {
+            color: #2c3e50;
+        }
+        .logo {
+            text-align: center;
+            margin-bottom: 0.5cm;
+        }
+        .stamp {
+            position: absolute;
+            right: 2cm;
+            bottom: 4cm;
+            opacity: 0.3;
+            transform: rotate(-10deg);
+            z-index: 10;
+            font-family: 'Courier New', monospace;
+            color: #8B0000;
+            border: 2px dashed #8B0000;
+            padding: 10px 15px;
+            box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2);
+            background-color: rgba(255, 255, 255, 0.8);
+            font-size: 18px;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+    </style>
+</head>
+<body>
+    <div class="recu">
+        <div class="header">
+            <div class="logo">
+                <!-- Insérez votre logo ici -->
+                <!-- <img src="chemin/vers/logo.png" alt="Logo" height="60"> -->
+            </div>
+            <h1>Reçu de Location</h1>
+            <div class="numero-recu">Reçu N° 00123</div>
+        </div>
+
+        <div class="info-section">
+            <h3>Informations du locataire</h3>
+            <div class="info-grid">
+                <p><strong>Nom d'utilisateur :</strong> utilisateur123</p>
+                <p><strong>Nom complet :</strong> Jean Dupont</p>
+                <p><strong>Date de début :</strong> 10/04/2025</p>
+                <p><strong>Date fin avance :</strong> 10/05/2025</p>
+                <p><strong>Date de paiement :</strong> 09/04/2025</p>
+                <p><strong>Mode de paiement :</strong> Virement bancaire</p>
+            </div>
+        </div>
+
+        <div class="info-section">
+            <h3>Détails de la location</h3>
+            <div class="info-grid">
+                <p><strong>Type de chambre :</strong> Standard</p>
+                <p><strong>Chambre :</strong> Résidence Les Érables</p>
+                <p><strong>Nombre de mois payé :</strong> 1</p>
+                <p><strong>Statut paiement :</strong> Payé</p>
+            </div>
+        </div>
+
+        <div class="montants">
+            <p><strong>Montant de l’avance :</strong> 150 000 CFA</p>
+            <p><strong>Montant de la caution :</strong> 50 000 CFA</p>
+            <div class="montant-total">
+                Montant total payé : 200 000 CFA
+            </div>
+        </div>
+
+        <div class="signature">
+            <div class="signature-box">
+                <div class="signature-line">Signature du locataire</div>
+            </div>
+            <div class="signature-box">
+                <div class="signature-line">Signature du gestionnaire</div>
+            </div>
+        </div>
+
+        <div class="footer">
+            Merci pour votre confiance. Ce reçu est généré automatiquement par notre système.
+        </div>
+
+        <div class="stamp">
+            PAYÉ
+        </div>
+    </div>
+</body>
+</html>
+
+
+{% comment %} <!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Reçu de Location</title>
+    <style>
+        @page {
+            size: A4;
+            margin: 0;
+        }
+        body {
+            font-family: 'Arial', sans-serif;
+            line-height: 1.4;
+            margin: 0;
+            padding: 0;
+            background: #fff;
+        }
+        .recu {
+            width: 21cm;
+            min-height: 29.7cm;
+            padding: 2cm;
+            background: #fff;
+            position: relative;
+        }
+        .header {
+            text-align: center;
+            padding-bottom: 1cm;
+            border-bottom: 3px double #000;
+            margin-bottom: 1cm;
+        }
+        .header h1 {
+            color: #2c3e50;
+            font-size: 28px;
+            margin: 0;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+        .numero-recu {
+            font-size: 16px;
+            color: #34495e;
+            margin-top: 0.5cm;
+        }
+        .info-section {
+            margin: 0.8cm 0;
+            padding: 0.5cm;
+            background: #f8f9fa;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        .info-section h3 {
+            color: #2c3e50;
+            margin: 0 0 0.5cm 0;
+            padding-bottom: 0.2cm;
+            border-bottom: 1px solid #dee2e6;
+        }
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 0.5cm;
+            margin-top: 0.3cm;
+        }
+        .info-grid p {
+            margin: 0.2cm 0;
+            font-size: 14px;
+        }
+        .montants {
+            margin-top: 1cm;
+            background: #f8f9fa;
+            padding: 0.5cm;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        .montant-total {
+            font-size: 18px;
+            font-weight: bold;
+            color: #2c3e50;
+            text-align: right;
+            margin-top: 0.5cm;
+            padding: 0.3cm;
+            background: #e9ecef;
+            border-radius: 4px;
+        }
+        .signature {
+            margin-top: 1.5cm;
+            display: flex;
+            justify-content: space-between;
+            padding: 0 2cm;
+        }
+        .signature-box {
+            width: 6cm;
+            text-align: center;
+        }
+        .signature-line {
+            border-top: 1px solid #000;
+            margin-top: 2cm;
+            padding-top: 0.2cm;
+            font-size: 14px;
+        }
+        .footer {
+            position: absolute;
+            bottom: 2cm;
+            left: 2cm;
+            right: 2cm;
+            text-align: center;
+            font-size: 12px;
+            color: #6c757d;
+            border-top: 1px solid #dee2e6;
+            padding-top: 0.5cm;
+        }
+        strong {
+            color: #2c3e50;
+        }
+        .logo {
+            text-align: center;
+            margin-bottom: 0.5cm;
+        }
+        .stamp {
+            position: absolute;
+            right: 10%; /* Utilisation d'une unité relative */
+            bottom: 20%; /* Utilisation d'une unité relative */
+            opacity: 0.3; /* Opacité réduite */
+            transform: rotate(-10deg); /* Rotation légèrement ajustée */
+            z-index: 10; /* Gestion de l'ordre d'empilement */
+            font-family: 'Courier New', monospace; /* Police stylisée */
+            color: #8B0000; /* Couleur de texte rouille */
+            border: 2px dashed #8B0000; /* Bordure en pointillés */
+            padding: 5px 10px; /* Espacement interne */
+            box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2); /* Ombre portée */
+            background-color: rgba(255, 255, 255, 0.7); /* Fond légèrement opaque */
+        }
+    </style>
+</head>
+<body>
+    <div class="recu">
+        <div class="header">
+           
+            <h1>Reçu de Location</h1>
+            <div class="numero-recu">Reçu N° {{ location.id|stringformat:"05d" }}</div>
+        </div>
+
+        <div class="info-section">
+            <h3>Informations du locataire</h3>
+            <div class="info-grid">
+                <p><strong>Nom d'utilisateur :</strong> {{ location.utilisateur.username }}</p>
+                <p><strong>Nom complet :</strong> {{ location.utilisateur.first_name }} {{ location.utilisateur.last_name }}</p>
+                <p><strong>Date de début :</strong> {{ location.date_debut_location }}</p>
+                <p><strong>Date fin avance :</strong> {{ location.date_fin_avance }}</p>
+                <p><strong>Date de paiement :</strong> {{ location.date_paiement }}</p>
+                <p><strong>Mode de paiement :</strong> {{ location.mode_paiement }}</p>
+            </div>
+        </div>
+
+        <div class="info-section">
+            <h3>Détails de la location</h3>
+            <div class="info-grid">
+                <p><strong>Type de chambre :</strong> {{ location.chambre.type_chambre.nom }}</p>
+                <p><strong>Chambre :</strong> {{ location.chambre.maiison.nom }}</p>
+                <p><strong>Nombre de mois payé :</strong> {{ location.nombre_mois_paye }}</p>
+                <p><strong>Statut paiement :</strong> {{ location.statut_paiement }}</p>
+            </div>
+        </div>
+
+        <div class="montants">
+            <p><strong>Montant de l’avance :</strong> {{ location.montant_avance }} CFA</p>
+            <p><strong>Montant de la caution :</strong> {{ location.montant_caution }} CFA</p>
+            <div class="montant-total">
+                Montant total payé : {{ location.montant_total }} CFA
+            </div>
+        </div>
+
+        <div class="signature">
+            <div class="signature-box">
+                <div class="signature-line">Signature du locataire</div>
+            </div>
+            <div class="signature-box">
+                <div class="signature-line">Signature du gestionnaire</div>
+            </div>
+        </div>
+
+        <div class="footer">
+            Merci pour votre confiance. Ce reçu est généré automatiquement par notre système.
+        </div>
+    </div>
+</body>
+</html> {% endcomment %}

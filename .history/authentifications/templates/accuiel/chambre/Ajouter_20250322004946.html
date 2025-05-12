@@ -1,0 +1,31 @@
+<form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    <!-- Boucle sur tous les champs du formulaire sauf 'etat' -->
+    {% for field in form %}
+        {% if field.name != 'etat' %}
+            <div class="mb-3">
+                <label for="{{ field.id_for_label }}" class="form-label"><strong>{{ field.label }}</strong></label>
+                {{ field|add_class:"form-control" }}
+                {% if field.help_text %}
+                    <small class="form-text text-muted">{{ field.help_text }}</small>
+                {% endif %}
+                {% if field.errors %}
+                    <div class="text-danger">
+                        {% for error in field.errors %}
+                            <p>{{ error }}</p>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+        {% endif %}
+    {% endfor %}
+
+    <div class="text-center">
+        <button type="submit" class="btn btn-success">
+            <i class="fas fa-save"></i> Enregistrer
+        </button>
+        <a href="{% url 'liste_chambres' %}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> Annuler
+        </a>
+    </div>
+</form>

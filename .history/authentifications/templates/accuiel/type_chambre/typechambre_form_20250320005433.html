@@ -1,0 +1,30 @@
+{% extends 'accuiel/base.html' %}
+{% block content %}
+<h2>Liste des Chambres</h2>
+<table class="table">
+    <thead>
+        <tr>
+            <th>Numéro</th>
+            <th>Type</th>
+            <th>Prix</th>
+            <!-- Ajoutez d'autres colonnes selon vos besoins -->
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for chambre in chambre_list %}
+        <tr>
+            <td>{{ chambre.numero }}</td>
+            <td>{{ chambre.type_chambre }}</td>
+            <td>{{ chambre.prix }}</td>
+            <td>
+                <a href="{% url 'chambre_update' chambre.id %}" class="btn btn-secondary">Modifier</a>
+                <a href="{% url 'chambre_delete' chambre.id %}" class="btn btn-danger">Supprimer</a>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+<a href="{% url 'chambre_create' %}" class="btn btn-primary">Ajouter une Chambre</a>
+{% endblock %}
+{% endblock %}

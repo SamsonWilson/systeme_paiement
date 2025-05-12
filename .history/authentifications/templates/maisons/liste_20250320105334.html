@@ -1,0 +1,70 @@
+{% extends "accuiel/base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>{% if maison %}Modifier{% else %}Ajouter{% endif %} une maison</h2>
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        <!-- Nom de la maison -->
+        <div class="form-group">
+            <label for="{{ form.nom.id_for_label }}">Nom de la maison</label>
+            {{ form.nom }}
+            {% if form.nom.errors %}
+                <div class="text-danger">
+                    {{ form.nom.errors }}
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- Adresse -->
+        <div class="form-group">
+            <label for="{{ form.adresse.id_for_label }}">Adresse</label>
+            {{ form.adresse }}
+            {% if form.adresse.errors %}
+                <div class="text-danger">
+                    {{ form.adresse.errors }}
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- Code Postal -->
+        <div class="form-group">
+            <label for="{{ form.code_postal.id_for_label }}">Code Postal</label>
+            {{ form.code_postal }}
+            {% if form.code_postal.errors %}
+                <div class="text-danger">
+                    {{ form.code_postal.errors }}
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- Quartier -->
+        <div class="form-group">
+            <label for="{{ form.quartier.id_for_label }}">Quartier</label>
+            {{ form.quartier }}
+            {% if form.quartier.errors %}
+                <div class="text-danger">
+                    {{ form.quartier.errors }}
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- Image -->
+        <div class="form-group">
+            <label for="{{ form.image.id_for_label }}">Image de la maison</label>
+            {{ form.image }}
+            {% if form.image.errors %}
+                <div class="text-danger">
+                    {{ form.image.errors }}
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- Bouton de soumission -->
+        <button type="submit" class="btn btn-primary">
+            {% if maison %}Modifier{% else %}Ajouter{% endif %}
+        </button>
+        <a href="{% url 'maison_liste' %}" class="btn btn-secondary">Annuler</a>
+    </form>
+</div>
+{% endblock %}

@@ -1,0 +1,49 @@
+{% extends "accuiel/Base.html" %}
+
+{% block title %}
+    Liste des Propriétaires
+{% endblock %}
+
+{% block header %}
+    Liste des Propriétaires
+{% endblock %}
+
+{% block content %}
+  <h1>Détails du Propriétaire: {{ proprietaire.prenom }} {{ proprietaire.nom }}</h1>
+
+  <p>Email: {{ proprietaire.email }}</p>
+  <p>Téléphone: {{ proprietaire.telephone }}</p>
+  <p>Adresse: {{ proprietaire.adresse }}</p>
+
+  <h2>Statistiques</h2>
+  <ul>
+    <li>Nombre de maisons: {{ maisons_count }}</li>
+    <li>Nombre total de chambres: {{ chambres_count }}</li>
+    <li>Total des commissions attendues: {{ total_commissions_attendues }}</li>
+    <li>Total des commissions perçues: {{ total_commissions_perçues }}</li>
+    <li>Total des loyers attendus: {{ total_loyers_attendus }}</li>
+    <li>Loyer mensuel moyen par chambre: {{ loyers_mensuels_moyens }}</li>
+    <li>Nombre de chambres libres: {{ chambres_libres_count }}</li>
+    <li>Nombre de chambres occupées: {{ chambres_occupees_count }}</li>
+    <li>Taux d'occupation: {{ taux_occupation }}%</li>
+    <li>Montant total des avances des locations: {{ total_montant_avance_locations }}</li>
+    <li>Montant total des cautions des locations: {{ total_montant_caution_locations }}</li>
+    <li>Locations en cours: {{ locations_en_cours_count }}</li>
+    <li>Locations terminées: {{ locations_terminees_count }}</li>
+    <li>Revenus Totaux Estimés: {{ revenus_totaux }}</li>
+
+    <li>Derniers paiements de loyer (max 5):
+      <ul>
+        {% for paiement in derniers_paiements_loyer %}
+          <li>{{ paiement }} - Date: {{ paiement.date_paiement }}</li>
+        {% empty %}
+          <li>Aucun paiement récent</li>
+        {% endfor %}
+      </ul>
+    </li>
+  </ul>
+
+  <a href="{% url 'proprietaire_list' %}">Retour à la liste des propriétaires</a> {# Assurez-vous que 'proprietaire_list' est le nom de votre URL pour la liste #}
+
+{% endblock %}
+{% endblock %}

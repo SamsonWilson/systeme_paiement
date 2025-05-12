@@ -1,0 +1,14 @@
+{% extends "accbase.html" %}
+{% block content %}
+<h2>Liste des Locataires</h2>
+<ul>
+{% for locataire in locataires %}
+    <li>
+        <a href="{% url 'locataire_detail' locataire.pk %}">{{ locataire }}</a>
+        <a href="{% url 'locataire_modifier' locataire.pk %}">Modifier</a>
+        <a href="{% url 'locataire_supprimer' locataire.pk %}">Supprimer</a>
+    </li>
+{% endfor %}
+</ul>
+<a href="{% url 'locataire_ajouter' %}">Ajouter un Locataire</a>
+{% endblock %}

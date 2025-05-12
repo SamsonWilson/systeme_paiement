@@ -1,0 +1,22 @@
+{% extends "accuiel/base.html" %}
+{% block content %}
+<div class="container">
+    <h2>
+        <i class="fa-solid fa-door-closed"></i> 
+        Terminer la Location #{{ location.id }} 
+        (Locataire : {{ location.utilisateur.get_full_name }})
+    </h2>
+
+    <form method="post" enctype="multipart/form-data" class="form-styled">
+        {% csrf_token %}
+        {{ form.as_p }}  {# Affiche les champs : date_fin_reelle, commentaire, etc. #}
+
+        <button type="submit" class="btn btn-success">
+            <i class="fa fa-check"></i> Terminer la Location
+        </button>
+        <a href="{% url 'liste_paiements' location.id %}" class="btn btn-secondary">
+            Annuler
+        </a>
+    </form>
+</div>
+{% endblock %}

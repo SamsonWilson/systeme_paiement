@@ -1,0 +1,14 @@
+{% extends "accuiel/Base.html" %}
+
+{% block content %}
+  <h2>Détails du Paiement</h2>
+  <ul class="list-group">
+    <li class="list-group-item"><strong>Location:</strong> {{ paiement.location }}</li>
+    <li class="list-group-item"><strong>Date de Paiement:</strong> {{ paiement.date_paiement }}</li>
+    <li class="list-group-item"><strong>Montant:</strong> {{ paiement.montant }} CFA</li>
+    <li class="list-group-item"><strong>Mode de Paiement:</strong> {{ paiement.mode_paiement }}</li>
+  </ul>
+  <a href="{% url 'paiement_edit' paiement.pk %}" class="btn btn-warning">Modifier</a>
+  <a href="{% url 'paiement_delete' paiement.pk %}" class="btn btn-danger">Supprimer</a>
+  <a href="{% url 'paiement_list' %}" class="btn btn-secondary">Retour à la liste</a>
+{% endblock %}

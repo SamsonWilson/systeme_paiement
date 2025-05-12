@@ -1,0 +1,87 @@
+{% extends "accuiel/base.html" %}
+
+{% block content %}
+<h2 class="mt-4">Liste des Paiements</h2>
+
+<!-- Afficher les statistiques -->
+<div class="mb-3">
+    <p><strong>Total des paiements :</strong> {{ total_paiements }}</p>
+    <p><strong>Paiements confirmés :</strong> {{ paiements_confirmes }}</p>
+    <p><strong>Paiements en attente :</strong> {{ paiements_en_attente }}</p>
+</div>
+
+{% if paiements %}
+<table class="table mt-2 table-striped table-bordered">
+    <thead class="thead-dark">
+        <tr>
+            <th>#</th>
+            <th>Location</th>
+            <th>Nombre de Mois Payés</th>
+            <th>Montant Payé</th>
+            <th>Date Paiement</th>
+            <th>Date Fin Paiement</th>
+            <th>Mode Paiement</th>
+            <th>Statut Paiement</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+    {% for paiement in paiements %}
+        <tr>
+            <td>{{ forloop.counter }}</td>
+            <td>{{ paiement.location }}</td>
+            <td>{{ paiement.nombre_mois_paye }}</td>
+            <td>{{ paiement.montant_paye|floatformat:2 }} CFA</td>
+            <td>{{ paiement.date_paiement }}</td>
+            <td class="date-fin {% if paiement.date_fin_paiement and paiement.date_fin_paiement|date:"Y-m-d" < current_date_togo|date:"Y-m-d" %}bg-danger text-white{% endif %}" data-date="{{ paiement.date_fin_paiement|default:'' }}">
+                {{ paiement.date_fin_paiement|default:"N/A" }}
+            </td>
+            <td>{{ paiement.mode_paiement }}</td>
+            <td>
+                {% if paiement.statut_paiement == "confirmé" %}
+                    <span class="badge bg-success">Confirmé</span>
+                {% elif paiement.statut_paiement == "en attente" %}
+                    <span class="badge bg-warning">En attente</span>
+                {% else %}
+                    <span class="badge bg-danger">{{ paiement.statut_paiement }}</span>
+                {% endif %}
+            </td>
+            <td>
+                <a href="{% url 'modifier_paiement' paiement.pk %}" class="btn btn-warning btn-sm">Modifier</a>
+                <a href="{% url 'supprimer_paiement' paiement.pk %}" class="btn btn-danger btn-sm">Supprimer</a>
+            </td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
+
+<!-- Pagination -->
+<div class="mt-4">
+    <nav aria-label="Page navigation">
+        <ul class="pagination">
+            {% if paiements.has_previous %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ paiements.previous_page_number }}" aria-label="Précédent">
+                        <span aria-hidden="true">&laquo;</span>
+                    </a>
+                </li>
+            {% endif %}
+            {% for page_num in paiements.paginator.page_range %}
+                <li class="page-item {% if paiements.number == page_num %}active{% endif %}">
+                    <a class="page-link" href="?page={{ page_num }}">{{ page_num }}</a>
+                </li>
+            {% endfor %}
+            {% if paiements.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ paiements.next_page_number }}" aria-label="Suivant">
+                        <span aria-hidden="true">&raquo;</span>
+                    </a>
+                </li>
+            {% endif %}
+        </ul>
+    </nav>
+</div>
+{% else %}
+<p class="mt-4">Aucun paiement trouvé.</p>
+{% endif %}
+{% endblock %}

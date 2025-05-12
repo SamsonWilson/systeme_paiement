@@ -1,0 +1,40 @@
+{% extends "accuiel/base.html" %}
+
+{% block content %}
+<style>
+    body { font-family: sans-serif; }
+    .chambre-item { border: 1px solid #ccc; padding: 15px; margin-bottom: 10px; border-radius: 5px; }
+    .chambre-item h3 { margin-top: 0; }
+</style>
+
+<h1>Liste des Chambres Occupées</h1>
+
+{% if locations_occupees %}
+    {% for location in locations_occupees %}
+        {% with chambre=location.chambre %}
+            <div class="chambre-item">
+                <h3>Chambre {{ chambre.id }} - Type : {{ chambre.type_chambre.nom }}</h3>
+                <p><strong>Surface :</strong> {{ chambre.surface }} m²</p>
+                <p><strong>Prix :</strong> {{ chambre.prix }} FCFA / mois</p>
+                <p><strong>Description :</strong> {{ chambre.description|default:"Aucune description" }}</p>
+
+                {% if chambre.maison %}
+                    <p><strong>Maison :</strong> {{ chambre.maison.nom }} (Adresse : {{ chambre.maison.adresse }})</p>
+                    {% if chambre.maison.proprietaire %}
+                        <p><strong>Propriétaire :</strong> {{ chambre.maison.proprietaire.prenom }} {{ chambre.maison.proprietaire.nom }}</p>
+                    {% else %}
+                        <p><strong>Propriétaire :</strong> Information non disponible</p>
+                    {% endif %}
+                {% else %}
+                    <p><strong>Maison :</strong> Information non disponible</p>
+                {% endif %}
+
+                <p><em>État : {{ chambre.get_etat_display|upper }}</em></p>
+            </div>
+        {% endwith %}
+    {% endfor %}
+{% else %}
+    <p>Aucune chambre n'est actuellement occupée.</p>
+{% endif %}
+
+{% endblock %}

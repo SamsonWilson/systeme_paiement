@@ -1,0 +1,133 @@
+{% extends "accuiel/base.html" %}
+{% block content %}
+
+
+
+<h1>Bienvenue, {{ locataire.username }}</h1>
+
+<!-- Affichage des informations de location -->
+<div class="location-info">
+    <h2>Vos Contrats de Location</h2>
+    {% for location in locations %}
+    <div class="location-card">
+        <p>Maison : {{ location.maison.nom }}</p>
+        <p>Chambre : {{ location.chambre.nom }}</p>
+        <p>Date de début : {{ location.date_debut_location }}</p>
+        <p>Date de fin : {{ location.date_fin_location }}</p>
+    </div>
+    {% endfor %}
+</div>
+
+<!-- Affichage des paiements -->
+<div class="paiements-info">
+    <h2>État des Paiements</h2>
+    <p>Montant total dû : {{ montant_total }} EUR</p>
+    <p>Montant payé : {{ montant_paye }} EUR</p>
+    <p>Montant restant à payer : {{ montant_restant }} EUR</p>
+</div>
+
+<!-- Affichage des paiements en cours -->
+<div class="paiements-en-cours">
+    <h3>Paiements en Cours</h3>
+    <ul>
+        {% for paiement in paiements %}
+        <li>
+            <p>Montant payé : {{ paiement.paiement }} EUR</p>
+            <p>Date de paiement : {{ paiement.date_paiement }}</p>
+        </li>
+        {% endfor %}
+    </ul>
+</div>
+
+<!-- Affichage des fins de location -->
+<div class="fins-location">
+    <h3>Fins de Location</h3>
+    <ul>
+        {% for fin in fins_locations %}
+        <li>
+            <p>Maison : {{ fin.location.maison.nom }}</p>
+            <p>Date de fin : {{ fin.date_fin_location }}</p>
+        </li>
+        {% endfor %}
+    </ul>
+</div>
+
+{% comment %} 
+ 
+    <h2>Locations Actuelles</h2>
+    {% if locations %}
+        <table>
+            <thead>
+                <tr>
+                    <th>Chambre</th>
+                    <th>Début</th>
+                    <th>Montant Total</th>
+                    <th>Statut</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for location in locations %}
+                <tr>
+                    <td>{{ location.chambre }}</td>
+                    <td>{{ location.date_debut_location }}</td>
+                    <td>{{ location.montant_total }}</td>
+                    <td>{{ location.statut_paiement }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p>Aucune location actuelle.</p>
+    {% endif %}
+
+    <h2>Paiements</h2>
+    {% if paiements %}
+        <table>
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Montant</th>
+                    <th>Mode de Paiement</th>
+                    <th>Statut</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for paiement in paiements %}
+                <tr>
+                    <td>{{ paiement.date_paiement }}</td>
+                    <td>{{ paiement.montant_paye }}</td>
+                    <td>{{ paiement.mode_paiement }}</td>
+                    <td>{{ paiement.statut_paiement }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p>Aucun paiement enregistré.</p>
+    {% endif %}
+
+    <h2>Fin des Locations</h2>
+    {% if fins_locations %}
+        <table>
+            <thead>
+                <tr>
+                    <th>Date de Fin</th>
+                    <th>Montant Restant</th>
+                    <th>Raison</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for fin_location in fins_locations %}
+                <tr>
+                    <td>{{ fin_location.date_fin_location }}</td>
+                    <td>{{ fin_location.montant_restant }}</td>
+                    <td>{{ fin_location.raison_fin }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p>Aucune location terminée.</p>
+    {% endif %} {% endcomment %}
+
+{% endblock %}

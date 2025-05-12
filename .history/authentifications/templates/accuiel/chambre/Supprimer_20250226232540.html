@@ -1,0 +1,13 @@
+{% extends "accuiel/Base.html" %}
+{% block content %}
+<div class="container mt-4">
+    <h2>Supprimer la Chambre {{ chambre.nom }}</h2>
+    <p>Êtes-vous sûr de vouloir supprimer cette chambre ?</p>
+    <form method="post">
+      {% csrf_token %}
+      <button type="submit">Confirmer</button>
+    </form>
+    <a href="{% url 'chambre_list' %}">Annuler</a>
+    
+</div>
+{% endblock %}

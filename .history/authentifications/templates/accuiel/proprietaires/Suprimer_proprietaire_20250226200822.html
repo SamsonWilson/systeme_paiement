@@ -1,0 +1,13 @@
+{% extends "accuiel/base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>{% block title %}Ajouter/Modifier un propriétaire{% endblock %}</h2>
+    <p>Êtes-vous sûr de vouloir supprimer "{{ object }}" ?</p>
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit" class="btn btn-success mt-2">Soumettre</button>
+    </form>
+</div>
+{% endblock %}

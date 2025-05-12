@@ -1,0 +1,15 @@
+{% extends "accuiel/base.html" %}
+{% block content %}
+<h2>{% if object %}Modifier{% else %}Créer{% endif %} Fin de Location</h2>
+
+  <form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    {{ form.as_p }}  <!-- Affiche tous les champs du formulaire -->
+    
+    <button type="submit">{% if object %}Mettre à jour{% else %}Créer{% endif %}</button>
+  </form>
+
+  {% if object %}
+    <a href="{% url 'fin_location_list' %}">Retour à la liste</a>
+  {% endif %}
+{% endblock %}

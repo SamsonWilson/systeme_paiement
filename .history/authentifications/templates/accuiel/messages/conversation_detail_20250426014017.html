@@ -1,0 +1,33 @@
+{% extends 'accuiel/base.html' %}
+
+{% block content %}
+<h1>Mes Conversations</h1>
+<ul>
+    {% for message in messages %}
+        <li>
+            <a href="{% url 'conversation_detail' message.pk %}">
+                {% if message.is_group_message %}
+                    Groupe : {{ message.group_receivers.count }} membres
+                {% else %}
+                    {{ message.receiver.username }}
+                {% endif %}
+            </a>
+        </li>
+    {% endfor %}
+</ul>
+<a href="{% url 'message_create' %}">Nouveau Message</a>
+{% endblock %}
+
+
+
+
+
+
+
+
+
+
+
+
+
+

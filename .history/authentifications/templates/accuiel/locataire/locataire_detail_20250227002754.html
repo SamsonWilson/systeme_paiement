@@ -1,0 +1,19 @@
+{% extends "accueil/base.html" %}
+{% block content %}
+<div class="card mt-4">
+    <div class="card-header">
+        Détails du Locataire
+    </div>
+    <div class="card-body">
+        <h5 class="card-title">{{ locataire.prenom }} {{ locataire.nom }}</h5>
+        <p class="card-text"><strong>Adresse :</strong> {{ locataire.adresse }}</p>
+        <p class="card-text"><strong>Email :</strong> {{ locataire.email }}</p>
+        <p class="card-text"><strong>Téléphone :</strong> {{ locataire.telephone }}</p>
+        {% if locataire.image %}
+            <img src="{{ locataire.image.url }}" class="img-thumbnail" alt="Image de {{ locataire }}">
+        {% endif %}
+        <a href="{% url 'locataire_modifier' locataire.pk %}" class="btn btn-primary mt-3">Modifier</a>
+        <a href="{% url 'locataire_list' %}" class="btn btn-secondary mt-3">Retour à la liste</a>
+    </div>
+</div>
+{% endblock %}

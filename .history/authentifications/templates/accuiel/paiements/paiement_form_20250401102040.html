@@ -1,0 +1,119 @@
+{% extends "accuiel/Base.html" %}
+{% block content %}
+<div class="container mt-4">
+    <div class="shadow card">
+        <div class="text-white card-header bg-primary d-flex justify-content-between align-items-center">
+            <h2 class="mb-0 h5">
+                <i class="fas fa-money-bill-wave me-2"></i>
+                {% if form.instance.pk %}Modifier{% else %}Nouveau{% endif %} Paiement
+            </h2>
+            {% if location %}
+            <span class="badge bg-light text-primary">
+                <i class="fas fa-home me-1"></i>
+                Chambre {{ location.chambre.numero }} - {{ location.utilisateur.nom }}
+            </span>
+            {% endif %}
+        </div>
+
+        <div class="card-body">
+            {% if location %}
+            <div class="border-4 alert alert-info border-start border-info">
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <div class="mb-2 d-flex align-items-center">
+                                <i class="fas fa-user text-primary me-2"></i>
+                                <div>
+                                    <small class="text-muted d-block">Locataire</small>
+                                    <strong>{{ location.utilisateur.nom }}</strong>
+                                </div>
+                            </div>
+                            <div class="d-flex align-items-center">
+                                <i class="fas fa-envelope text-primary me-2"></i>
+                                <div>
+                                    <small class="text-muted d-block">Email</small>
+                                    {{ location.utilisateur.email }}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <div class="mb-2 d-flex align-items-center">
+                                <i class="fas fa-building text-primary me-2"></i>
+                                <div>
+                                    <small class="text-muted d-block">Type de chambre</small>
+                                    <strong>{{ location.chambre.type_chambre.nom }}</strong>
+                                </div>
+                            </div>
+                            <div class="mb-2 d-flex align-items-center">
+                                <i class="fas fa-calendar text-primary me-2"></i>
+                                <div>
+                                    <small class="text-muted d-block">Date de fin d'avance</small>
+                                    <strong>{{ location.date_fin_avance|date:"d/m/Y" }}</strong>
+                                </div>
+                            </div>
+                            <div class="d-flex align-items-center">
+                                <i class="fas fa-money-bill text-primary me-2"></i>
+                                <div>
+                                    <small class="text-muted d-block">Loyer mensuel</small>
+                                    <strong>{{ location.montant_total|floatformat:0 }} CFA</strong>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <form method="post" class="needs-validation" novalidate>
+                {% csrf_token %}
+                {{ form.location.as_hidden }}
+
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <div class="form-floating">
+                            {{ form.nombre_mois_paye }}
+                            <label for="{{ form.nombre_mois_paye.id_for_label }}">Nombre de mois</label>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-floating">
+                            {{ form.montant_paye }}
+                            <label for="{{ form.montant_paye.id_for_label }}">Montant total (CFA)</label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-4 d-flex justify-content-between">
+                    <button type="submit" class="btn btn-primary" disabled>
+                        {% if form.instance.pk %}Mettre à jour{% else %}Créer{% endif %} le paiement
+                    </button>
+                    <a href="{% url 'liste_paiements' %}" class="btn btn-outline-secondary">Annuler</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const nombreMoisInput = document.getElementById('{{ form.nombre_mois_paye.id_for_label }}');
+        const montantInput = document.getElementById('{{ form.montant_paye.id_for_label }}');
+        const submitButton = document.querySelector('button[type="submit"]');
+        
+        const montantMensuel = {{ location.montant_total|default:0 }};
+        const dateFinAvance = new Date('{{ location.date_fin_avance|date:"Y-m-d" }}T00:00:00');
+
+        function calculerPaiement() {
+            const nombreMois = parseInt(nombreMoisInput.value) || 0;
+            const montantCalcule = nombreMois * montantMensuel;
+            montantInput.value = montantCalcule.toFixed(0);
+            submitButton.disabled = nombreMois <= 0;
+        }
+
+        nombreMoisInput.addEventListener('input', calculerPaiement);
+        calculerPaiement();
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,76 @@
+{% extends "accuiel/Base.html" %}
+{% block content %}
+<div class="container mt-4">
+    <div class="shadow-sm card">
+        <div class="text-white card-header bg-primary d-flex justify-content-between align-items-center">
+            <h2 class="mb-0 h5">
+                <i class="fas fa-money-bill-wave me-2"></i>
+                {% if form.instance.pk %}Modifier{% else %}Nouveau{% endif %} Paiement
+            </h2>
+            {% if location %}
+            <span class="badge bg-light text-primary">
+                <i class="fas fa-home me-1"></i>
+                Chambre {{ location.chambre.numero }} - {{ location.utilisateur.nom }}
+            </span>
+            {% endif %}
+        </div>
+        
+        <div class="card-body">
+            {% if location %}
+            <div class="mb-4 alert alert-info">
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <p><strong>Locataire :</strong> {{ location.utilisateur.nom }}</p>
+                        <p><strong>Email :</strong> {{ location.utilisateur.email }}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <p><strong>Type de chambre :</strong> {{ location.chambre.type_chambre.nom }}</p>
+                        <p><strong>Loyer mensuel :</strong> {{ location.chambre.prix }} CFA</p>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <form method="post" class="needs-validation" novalidate>
+                {% csrf_token %}
+                {{ form.location.as_hidden }}
+                
+                <div class="row g-3">
+                    <div class="col-md-6">{{ form.nombre_mois_paye.label_tag }}{{ form.nombre_mois_paye }}</div>
+                    <div class="col-md-6">{{ form.montant_paye.label_tag }}{{ form.montant_paye }}</div>
+                    <div class="col-md-6">{{ form.date_paiement.label_tag }}{{ form.date_paiement }}</div>
+                    <div class="col-md-6">{{ form.date_fin_paiement.label_tag }}{{ form.date_fin_paiement }}</div>
+                    <div class="col-md-6">{{ form.mode_paiement.label_tag }}{{ form.mode_paiement }}</div>
+                    <div class="col-md-6">{{ form.statut_paiement.label_tag }}{{ form.statut_paiement }}</div>
+                    <div class="col-12">{{ form.commentaire.label_tag }}{{ form.commentaire }}</div>
+                </div>
+
+                <div class="mt-4 d-flex justify-content-between">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas {% if form.instance.pk %}fa-save{% else %}fa-plus-circle{% endif %} me-2"></i>
+                        {% if form.instance.pk %}Mettre à jour{% else %}Créer{% endif %} le paiement
+                    </button>
+                    <a href="{% url 'liste_paiements' %}" class="btn btn-outline-secondary">
+                        <i class="fas fa-times me-2"></i>Annuler
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const nombreMoisInput = document.getElementById('{{ form.nombre_mois_paye.id_for_label }}');
+    const montantInput = document.getElementById('{{ form.montant_paye.id_for_label }}');
+    const montantMensuel = {{ location.chambre.prix|default:0 }};
+    
+    if (nombreMoisInput && montantInput) {
+        nombreMoisInput.addEventListener('change', function() {
+            const nombreMois = parseInt(this.value) || 0;
+            montantInput.value = (nombreMois * montantMensuel).toString();
+        });
+    }
+});
+</script>
+{% endblock %}

@@ -1,0 +1,66 @@
+{% extends "accuiel/Base.html" %}
+
+{% block title %}
+    Liste des Propriétaires
+{% endblock %}
+
+{% block header %}
+    Liste des Propriétaires
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4 text-center">
+    <h2 class="mb-4">Liste des Propriétaires</h2>
+    <!-- Bouton Ajouter -->
+    <div class="mb-3 d-flex justify-content-center">
+        <a href="{% url 'creer_proprietaire' %}" class="btn btn-success">Ajouter un Propriétaire</a>
+    </div>
+
+    <!-- Formulaire de Recherche -->
+    <form method="get" class="mb-4 form-inline d-flex justify-content-center">
+        <div class="mb-2 form-group mx-sm-3">
+            {{ form.recherche.label_tag }}
+        </div>
+        <button type="submit" class="mb-2 btn btn-primary">Rechercher</button>
+    </form>
+    <!-- Tableau des Propriétaires -->
+    <div class="table-responsive d-flex justify-content-center">
+        <table class="table text-center table-bordered table-hover table-striped table-sm">
+            <thead class="thead-dark">
+                <tr>
+                    <th scope="col">Nom</th>
+                    <th scope="col">Prénom</th>
+                    <th scope="col">Email</th>
+                    <th scope="col">Téléphone</th>
+                    <th scope="col">Adresse</th>
+                    <th scope="col">Sexe</th>
+                    <th scope="col">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% if proprietaires %}
+                    {% for proprietaire in proprietaires %}
+                        <tr>
+                            <td>{{ proprietaire.nom|default:"Non spécifié" }}</td>
+                            <td>{{ proprietaire.prenom|default:"Non spécifié" }}</td>
+                            <td>{{ proprietaire.email|default:"Non spécifié" }}</td>
+                            <td>{{ proprietaire.telephone|default:"Non spécifié" }}</td>
+                            <td>{{ proprietaire.adresse|default:"Non spécifié" }}</td>
+                            <td>{{ proprietaire.sexe|default:"Non spécifié" }}</td>
+                            <td>
+                                <a href="{% url 'modifier_proprietaire' proprietaire.pk %}" class="btn btn-warning btn-sm">Modifier</a>
+                                <a href="{% url 'supprimer_proprietaire' proprietaire.pk %}" class="btn btn-danger btn-sm">Supprimer</a>
+                                <a href="{% url 'supprimer_proprietaire' proprietaire.pk %}" class="btn btn-danger btn-sm">Supprimer</a>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                {% else %}
+                    <tr>
+                        <td colspan="8" class="text-center">Aucun propriétaire trouvé.</td>
+                    </tr>
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

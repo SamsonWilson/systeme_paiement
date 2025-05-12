@@ -1,0 +1,21 @@
+{% extends 'accuiel/base.html' %}
+
+
+{% block content %}
+<h1>Messages</h1>
+<ul>
+    {% for message in messages %}
+    <li>
+        <strong>{{ message.sender.username }}</strong> à 
+        <strong>{{ message.receiver.username }}</strong>:
+        {{ message.message }} ({{ message.timestamp }})
+    </li>
+    {% endfor %}
+</ul>
+{% endblock %}
+
+
+
+
+
+

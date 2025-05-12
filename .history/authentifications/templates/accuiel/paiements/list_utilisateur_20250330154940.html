@@ -1,0 +1,94 @@
+{% extends "accuiel/base.html" %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <!-- En-tête avec statistiques -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card bg-primary text-white">
+                <div class="card-body">
+                    <h5 class="card-title">Total Locataires</h5>
+                    <h2 class="mb-0">{{ total_locataires }}</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-success text-white">
+                <div class="card-body">
+                    <h5 class="card-title">Sans Paiement</h5>
+                    <h2 class="mb-0">{{ locataires_sans_paiement }}</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-info text-white">
+                <div class="card-body">
+                    <h5 class="card-title">Avec Paiement</h5>
+                    <h2 class="mb-0">{{ locataires_avec_paiement }}</h2>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Barre de recherche -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="get" class="d-flex gap-2">
+                <input type="text" name="q" class="form-control" 
+                       placeholder="Rechercher un locataire..." 
+                       value="{{ search_query }}">
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-search"></i> Rechercher
+                </button>
+            </form>
+        </div>
+    </div>
+
+    {% for detail in locataires_details %}
+    <div class="card mb-3">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">{{ detail.utilisateur.nom }} {{ detail.utilisateur.prenom }}</h5>
+            <span class="badge bg-info">{{ detail.locations_sans_paiement }} location(s) sans paiement</span>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Chambre</th>
+                            <th>Date début</th>
+                            <th>Statut paiement</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for loc in detail.locations %}
+                            {% if not loc.a_des_paiements %}
+                            <tr>
+                                <td>{{ loc.chambre.numero }}</td>
+                                <td>{{ loc.location.date_debut_location|date:"d/m/Y" }}</td>
+                                <td>
+                                    <span class="badge bg-warning">En attente de paiement</span>
+                                </td>
+                                <td>
+                                    <a href="{% url 'creer_paiement' loc.location.id %}" 
+                                       class="btn btn-sm btn-primary">
+                                        <i class="fas fa-plus-circle"></i> Nouveau Paiement
+                                    </a>
+                                </td>
+                            </tr>
+                            {% endif %}
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    {% empty %}
+    <div class="alert alert-info">
+        <i class="fas fa-info-circle me-2"></i>
+        Aucun locataire n'a de location en attente de paiement.
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

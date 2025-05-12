@@ -1,0 +1,91 @@
+{% extends "accuiel/base.html" %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <!-- En-tête avec statistiques -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card bg-primary text-white">
+                <div class="card-body">
+                    <h5 class="card-title">Total Locataires</h5>
+                    <h2 class="mb-0">{{ total_locataires }}</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-success text-white">
+                <div class="card-body">
+                    <h5 class="card-title">Sans Paiement</h5>
+                    <h2 class="mb-0">{{ locataires_sans_paiement }}</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-info text-white">
+                <div class="card-body">
+                    <h5 class="card-title">Avec Paiement</h5>
+                    <h2 class="mb-0">{{ locataires_avec_paiement }}</h2>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Barre de recherche -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="get" class="d-flex gap-2">
+                <input type="text" name="q" class="form-control" 
+                       placeholder="Rechercher un locataire..." 
+                       value="{{ search_query }}">
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-search"></i> Rechercher
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Liste des locataires -->
+    <div class="card">
+        <div class="card-body">
+            <h5 class="card-title">Locataires sans paiement</h5>
+            {% if utilisateurs %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Nom</th>
+                                <th>Prénom</th>
+                                <th>Email</th>
+                                <th>Téléphone</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for utilisateur in utilisateurs %}
+                            <tr>
+                                <td>{{ utilisateur.nom }}</td>
+                                <td>{{ utilisateur.prenom }}</td>
+                                <td>{{ utilisateur.email }}</td>
+                                <td>{{ utilisateur.telephone }}</td>
+                                <td>
+                                    <a href="{% url 'creer_paiement' utilisateur.id %}" 
+                                       class="btn btn-sm btn-primary">
+                                        <i class="fas fa-plus-circle"></i> 
+                                        Nouveau Paiement
+                                    </a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle"></i>
+                    Aucun locataire sans paiement trouvé.
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

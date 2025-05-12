@@ -1,0 +1,167 @@
+{% extends "accuiel/Base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="card shadow-sm">
+        <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+            <h2 class="mb-0 h5">
+                <i class="fas fa-money-bill-wave me-2"></i>
+                {% if form.instance.pk %}Modifier{% else %}Nouveau{% endif %} Paiement
+            </h2>
+            {% if location %}
+            <span class="badge bg-light text-primary">
+                Chambre {{ location.chambre.numero }} - {{ location.utilisateur.nom }}
+            </span>
+            {% endif %}
+        </div>
+        
+        <div class="card-body">
+            <form method="post" enctype="multipart/form-data" class="needs-validation" novalidate>
+                {% csrf_token %}
+
+                <!-- Informations de la location -->
+                {% if location %}
+                <div class="alert alert-info mb-4">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p class="mb-1"><strong>Locataire:</strong> {{ location.utilisateur.nom }}</p>
+                            <p class="mb-1"><strong>Email:</strong> {{ location.utilisateur.email }}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <p class="mb-1"><strong>Chambre:</strong> {{ location.chambre.numero }}</p>
+                            <p class="mb-1"><strong>Loyer mensuel:</strong> {{ location.montant_total }} CFA</p>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+
+                <div class="row">
+                    <!-- Champ Location -->
+                    <div class="col-md-6 mb-3">
+                        <label for="{{ form.location.id_for_label }}" class="form-label fw-bold">
+                            <i class="fas fa-home me-1"></i>Location
+                        </label>
+                        {{ form.location }}
+                        {% if form.location.errors %}
+                            <div class="invalid-feedback d-block">{{ form.location.errors }}</div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Champ Nombre de Mois -->
+                    <div class="col-md-6 mb-3">
+                        <label for="{{ form.nombre_mois_paye.id_for_label }}" class="form-label fw-bold">
+                            <i class="fas fa-calendar-alt me-1"></i>Nombre de Mois
+                        </label>
+                        {{ form.nombre_mois_paye }}
+                        {% if form.nombre_mois_paye.errors %}
+                            <div class="invalid-feedback d-block">{{ form.nombre_mois_paye.errors }}</div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Champ Montant -->
+                    <div class="col-md-6 mb-3">
+                        <label for="{{ form.montant_paye.id_for_label }}" class="form-label fw-bold">
+                            <i class="fas fa-coins me-1"></i>Montant (CFA)
+                        </label>
+                        {{ form.montant_paye }}
+                        {% if form.montant_paye.errors %}
+                            <div class="invalid-feedback d-block">{{ form.montant_paye.errors }}</div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Dates -->
+                    <div class="col-md-6 mb-3">
+                        <label for="{{ form.date_paiement.id_for_label }}" class="form-label fw-bold">
+                            <i class="fas fa-calendar-check me-1"></i>Date de Paiement
+                        </label>
+                        {{ form.date_paiement }}
+                        {% if form.date_paiement.errors %}
+                            <div class="invalid-feedback d-block">{{ form.date_paiement.errors }}</div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Mode et Statut -->
+                    <div class="col-md-6 mb-3">
+                        <label for="{{ form.mode_paiement.id_for_label }}" class="form-label fw-bold">
+                            <i class="fas fa-credit-card me-1"></i>Mode de Paiement
+                        </label>
+                        {{ form.mode_paiement }}
+                        {% if form.mode_paiement.errors %}
+                            <div class="invalid-feedback d-block">{{ form.mode_paiement.errors }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <label for="{{ form.statut_paiement.id_for_label }}" class="form-label fw-bold">
+                            <i class="fas fa-check-circle me-1"></i>Statut
+                        </label>
+                        {{ form.statut_paiement }}
+                        {% if form.statut_paiement.errors %}
+                            <div class="invalid-feedback d-block">{{ form.statut_paiement.errors }}</div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Commentaire -->
+                    <div class="col-12 mb-3">
+                        <label for="{{ form.commentaire.id_for_label }}" class="form-label fw-bold">
+                            <i class="fas fa-comment me-1"></i>Commentaire
+                        </label>
+                        {{ form.commentaire }}
+                        {% if form.commentaire.errors %}
+                            <div class="invalid-feedback d-block">{{ form.commentaire.errors }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Boutons d'action -->
+                <div class="d-flex justify-content-between mt-4">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas {% if form.instance.pk %}fa-save{% else %}fa-plus-circle{% endif %} me-2"></i>
+                        {% if form.instance.pk %}Mettre à jour{% else %}Créer{% endif %} le Paiement
+                    </button>
+                    <a href="{% url 'liste_paiements' %}" class="btn btn-outline-secondary">
+                        <i class="fas fa-times me-2"></i>Annuler
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<style>
+    .form-control, .form-select {
+        border-radius: 0.5rem;
+        border: 1px solid #dee2e6;
+        padding: 0.75rem 1rem;
+    }
+
+    .form-control:focus, .form-select:focus {
+        border-color: #86b7fe;
+        box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.1);
+    }
+
+    .card {
+        border-radius: 1rem;
+        border: none;
+    }
+
+    .card-header {
+        border-top-left-radius: 1rem !important;
+        border-top-right-radius: 1rem !important;
+    }
+
+    .alert {
+        border-radius: 0.5rem;
+    }
+
+    .badge {
+        font-size: 0.9rem;
+        padding: 0.5rem 1rem;
+    }
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Calcul automatique du montant en fonction du nombre de mois
+    const nombreMoisInput = document.getElementById('{{ form.nombre_mois_paye.id_for_label }}');
+    const montantInput = document.getElementById('{{

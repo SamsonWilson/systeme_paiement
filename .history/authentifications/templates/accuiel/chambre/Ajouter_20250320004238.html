@@ -1,0 +1,63 @@
+{% extends "accuiel/Base.html" %}
+{% block content %}
+{% comment %}<div class="container mt-4">
+    <h2>{% if form.instance.pk %}Modifier{% else %}Ajouter{% endif %} une Chambre</h2>
+    <form method="post" enctype="multipart/form-data">
+      {% csrf_token %}
+      {{ form.as_p }}
+        {% if form.errors %}
+            <div class="errors">
+                <ul>
+                    {% for field in form %}
+                        {% for error in field.errors %}
+                            <li>{{ field.label }}: {{ error }}</li>
+                        {% endfor %}
+                    {% endfor %}
+                    {% for error in form.non_field_errors %}
+                        <li>{{ error }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        {% endif %}
+        <button type="submit" class="btn btn-success">Ajouter</button>
+        <a href="{% url 'chambre_list' %}">Annuler</a>
+    </form>
+</div> {% endcomment %}
+
+
+<title>Ajouter une Chambre</title>
+</head>
+<body class="bg-light">
+<div class="container mt-5">
+    <div class="shadow-sm card">
+        <div class="card-body">
+            <h2 class="text-center card-title">Ajouter une Chambre</h2>
+            <form method="POST" novalidate>
+                {% csrf_token %}
+                <div class="form-group">
+                    <!-- Affichage dynamique des champs avec Bootstrap -->
+                    {% for field in form %}
+                    <div class="form-group">
+                        <label for="{{ field.id_for_label }}" class="font-weight-bold">{{ field.label }}</label>
+                        {{ field }}
+                        {% if field.help_text %}
+                        <small class="form-text text-muted">{{ field.help_text }}</small>
+                        {% endif %}
+                        {% for error in field.errors %}
+                        <div class="text-danger">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+                    {% endfor %}
+                </div>
+                <button type="submit" class="btn btn-primary btn-block">Enregistrer</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Inclure Bootstrap JS et ses dépendances (Optional : pour les fonctionnalités JavaScript de Bootstrap) -->
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+{% endblock %}

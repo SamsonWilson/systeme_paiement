@@ -1,0 +1,10 @@
+{% extends "accubase.html" %}
+{% block content %}
+<h2>Confirmez la Suppression du Locataire</h2>
+<p>Êtes-vous sûr de vouloir supprimer le locataire {{ locataire }} ?</p>
+<form method="post">
+    {% csrf_token %}
+    <button type="submit">Confirmer</button>
+</form>
+<a href="{% url 'locataire_list' %}">Annuler</a>
+{% endblock %}

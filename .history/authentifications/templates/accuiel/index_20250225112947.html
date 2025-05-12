@@ -1,0 +1,32 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tableau de Bord d'Administrateur</title>
+    <link rel="stylesheet" href="{% static 'accuiel/css/style.css' %}">
+</head>
+<body>
+    <div class="sidebar">
+        <h2>{{ user.username }}</h1></h2>
+        <ul>
+            <li><a href="#">Tableau de Bord</a></li>
+            <li><a href="#">Utilisateurs</a></li>
+            <li><a href="#">Supervisions</a></li>
+            <li><a href="#">Établissements</a></li>
+            <li><a href="#">Paramètres</a></li>
+            <li><a href="#">Déconnexion</a></li>
+        </ul>
+    </div>
+    <div class="main-content">
+        <div class="header">
+            <h1>Tableau de Bord</h1>
+        </div>
+        <div class="content">
+            <h2>Bienvenue, Administrateur !</h2>
+            <p>Cette section peut être utilisée pour afficher des statistiques, graphiques, rapports et autres informations pertinentes pour l'administration.</p>
+        </div>
+    </div>
+</body>
+</html>

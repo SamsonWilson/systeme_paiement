@@ -1,0 +1,10 @@
+{% extends "accuielbase.html" %}
+{% block content %}
+<h2 class="mt-4">Confirmez la Suppression de la Location</h2>
+<p>Êtes-vous sûr de vouloir supprimer cette location pour {{ location.locataire }} et {{ location.chambre.nom }} ?</p>
+<form method="post">
+    {% csrf_token %}
+    <button type="submit" class="btn btn-danger">Confirmer</button>
+    <a href="{% url 'location_list' %}" class="btn btn-secondary">Annuler</a>
+</form>
+{% endblock %}

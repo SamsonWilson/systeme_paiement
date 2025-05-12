@@ -1,0 +1,56 @@
+{% extends "accuiel/base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2 class="mb-4">Liste des Maisons</h2>
+
+    <!-- Bouton Ajouter -->
+    <div class="mb-3">
+        <a href="{% url 'maison_creer' %}" class="btn btn-success">
+            <i class="fas fa-plus"></i> Ajouter une Maison
+        </a>
+    </div>
+
+    <!-- Tableau des Maisons -->
+    <div class="table-responsive">
+        <table class="table table-bordered table-hover table-striped table-sm">
+            <thead class="thead-dark">
+                <tr>
+                    <th scope="col">Nom</th>
+                    <th scope="col">Adresse</th>
+                    <th scope="col">Nombre de Pièces</th>
+                    <th scope="col">Code Postal</th>
+                    <th scope="col">Quartier</th>
+                    <th scope="col">Propriétaire</th>
+                    <th scope="col">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% if maisons %}
+                    {% for maison in maisons %}
+                        <tr>
+                            <td>{{ maison.nom }}</td>
+                            <td>{{ maison.adresse }}</td>
+                            <td>{{ maison.nombre_piece }}</td>
+                            <td>{{ maison.code_postal }}</td>
+                            <td>{{ maison.quartier.nom }}</td>
+                            <td>{{ maison.proprietaire.nom }}</td>
+                            <td>
+                                {% if maison.image %}
+                                    <img src="{{ maison.image.url }}" alt="Image de {{ maison.nom }}" class="img-thumbnail" width="100">
+                                {% else %}
+                                    <p class="text-muted">Pas d'image</p>
+                                {% endif %}
+                            </td>
+                        </tr>
+                    {% endfor %}
+                {% else %}
+                    <tr>
+                        <td colspan="8" class="text-center">Aucune maison trouvée.</td>
+                    </tr>
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,15 @@
+{% extends "accuiel/Base.html" %}
+{% block content %}
+  <h2>Liste des Chambres</h2>
+  <a href="{% url 'chambre_ajouter' %}" class="btn btn-primary mb-3">Ajouter une Chambre</a>
+  <ul class="list-group">
+    {% for chambre in chambres %}
+      <li class="list-group-item">
+        {{ chambre }}
+        <a href="{% url 'chambre_detail' chambre.pk %}" class="btn btn-info btn-sm">Détails</a>
+        <a href="{% url 'chambre_modifier' chambre.pk %}" class="btn btn-warning btn-sm">Modifier</a>
+        <a href="{% url 'chambre_delete' chambre.pk %}" class="btn btn-danger btn-sm">Supprimer</a>
+      </li>
+    {% endfor %}
+  </ul>
+{% endblock %}

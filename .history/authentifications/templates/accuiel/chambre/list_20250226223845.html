@@ -1,0 +1,37 @@
+{% extends "accuiel/Base.html" %}
+
+{% block title %}
+    Liste des Villes
+{% endblock %}
+
+{% block header %}
+    Liste des Villes
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2 class="mb-4">Liste des Villes</h2>
+    <!-- Formulaire de Recherche -->
+    <form method="get" class="form-inline mb-4">
+        <div class="form-group mx-sm-3 mb-2">
+            {{ form.recherche.label_tag }}
+            {% comment %} {{ form.recherche|add_class:"form-control mx-sm-3" }} {% endcomment %}
+        </div>
+        <button type="submit" class="btn btn-primary mb-2">Rechercher</button>
+    </form>
+
+    <!-- Tableau des Villes -->
+    <div class="table-responsive">
+        <h2>Liste des Chambres</h2>
+        <ul>
+          {% for chambre in chambres %}
+            <li>
+              <a href="{% url 'chambre_detail' chambre.pk %}">{{ chambre.nom }}</a>
+              <span>{{ chambre.loyer_mensuel }} €</span>
+            </li>
+          {% endfor %}
+        </ul>
+        <a href="{% url 'chambre_ajouter' %}">Ajouter une Chambre</a>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,31 @@
+{% extends "accuiel/Base.html" %}
+
+{% block title %}
+    Liste des Propriétaires
+{% endblock %}
+
+
+{% block content %}
+  <h1>Liste des Propriétaires</h1>
+
+  <ul>
+    {% for proprietaire in proprietaires %}
+      <li>
+        <a href="{% url 'proprietaire_detail' pk=proprietaire.pk %}">
+          {{ proprietaire.prenom }} {{ proprietaire.nom }}
+        </a>
+        <ul>
+           <li>Nombre de maisons: {{ proprietaire.maisons_count }}</li>
+           <li>Nombre total de chambres: {{ proprietairemaison.chambres_count }}</li>
+           <li>Taux d'occupation: {{ proprietaire.taux_occupation }}%</li>
+           <li>Revenus Totaux Estimés: {{ proprietaire.revenus_totaux }}</li>
+        </ul>
+      </li>
+    {% empty %}
+      <li>Aucun propriétaire enregistré.</li>
+    {% endfor %}
+  </ul>
+
+  <a href="{% url 'creer_proprietaire' %}">Ajouter un nouveau propriétaire</a> {# Si vous avez une URL pour créer un propriétaire #}
+
+{% endblock %}

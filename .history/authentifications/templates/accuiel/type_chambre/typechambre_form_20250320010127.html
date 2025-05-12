@@ -1,0 +1,30 @@
+{% extends 'accuiel/base.html' %}
+
+
+{% block content %}
+<div class="container mt-5">
+    <h2>Liste des Types de Chambre</h2>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Nom</th>
+                <th>Description</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for type in types %}
+            <tr>
+                <td>{{ type.nom }}</td>
+                <td>{{ type.description }}</td>
+                <td>
+                    <a href="{% url 'typechambre_update' type.id %}" class="btn btn-secondary btn-sm">Modifier</a>
+                    <a href="{% url 'typechambre_delete' type.id %}" class="btn btn-danger btn-sm">Supprimer</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <a href="{% url 'typechambre_create' %}" class="btn btn-primary">Ajouter un Type de Chambre</a>
+</div>
+{% endblock %}

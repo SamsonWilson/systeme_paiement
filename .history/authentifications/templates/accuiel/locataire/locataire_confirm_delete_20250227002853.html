@@ -1,0 +1,10 @@
+{% extends "abase.html" %}
+{% block content %}
+<h2 class="mt-4">Confirmez la Suppression du Locataire</h2>
+<p>Êtes-vous sûr de vouloir supprimer le locataire {{ locataire }} ?</p>
+<form method="post">
+    {% csrf_token %}
+    <button type="submit" class="btn btn-danger">Confirmer</button>
+    <a href="{% url 'locataire_list' %}" class="btn btn-secondary">Annuler</a>
+</form>
+{% endblock %}

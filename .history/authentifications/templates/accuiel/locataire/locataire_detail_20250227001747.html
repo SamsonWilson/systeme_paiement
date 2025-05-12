@@ -1,0 +1,14 @@
+{% extends "accuiel/base.html" %}
+{% block content %}
+<h2>Détails du Locataire</h2>
+<p><strong>Nom :</strong> {{ locataire.nom }}</p>
+<p><strong>Prénom :</strong> {{ locataire.prenom }}</p>
+<p><strong>Adresse :</strong> {{ locataire.adresse }}</p>
+<p><strong>Email :</strong> {{ locataire.email }}</p>
+<p><strong>Téléphone :</strong> {{ locataire.telephone }}</p>
+{% if locataire.image %}
+<p><img src="{{ locataire.image.url }}" alt="Image de {{ locataire }}"></p>
+{% endif %}
+<a href="{% url 'locataire_modifier' locataire.pk %}">Modifier</a>
+<a href="{% url 'locataire_list' %}">Retour à la liste</a>
+{% endblock %}

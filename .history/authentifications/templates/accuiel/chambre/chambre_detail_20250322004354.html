@@ -1,0 +1,65 @@
+{% extends "accuiel/Base.html" %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="shadow-lg card">
+        <div class="text-center text-white card-header bg-primary">
+            <h2>Détails de la Chambre : <strong>{{ chambre.nom }}</strong></h2>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <!-- Image de la chambre -->
+                <div class="text-center col-md-6">
+                    {% if chambre.image %}
+                        <img src="{{ chambre.image.url }}" alt="Image de {{ chambre.nom }}" class="mb-3 rounded shadow img-fluid">
+                    {% else %}
+                        <p class="text-muted">Aucune image disponible.</p>
+                    {% endif %}
+                </div>
+                <!-- Informations sur la chambre -->
+                <div class="col-md-6">
+                    <h4 class="text-primary">Informations sur la Chambre</h4>
+                    <ul class="list-group">
+                        <li class="list-group-item"><strong>Description :</strong> {{ chambre.description|default:"Aucune description disponible." }}</li>
+                        <li class="list-group-item"><strong>Surface :</strong> {{ chambre.surface }} m²</li>
+                        <li class="list-group-item"><strong>Prix :</strong> <span class="text-success">{{ chambre.prix }} FCFA</span></li>
+                        <li class="list-group-item"><strong>État :</strong> 
+                            {% if chambre.etat == 'libre' %}
+                                <span class="badge bg-success">Libre</span>
+                            {% else %}
+                                <span class="badge bg-danger">Occupée</span>
+                            {% endif %}
+                        </li>
+                        <li class="list-group-item"><strong>Type de Chambre :</strong> {{ chambre.type_chambre.nom|default:"Non spécifié" }}</li>
+                    </ul>
+                </div>
+            </div>
+            <hr>
+            <!-- Informations sur la maison -->
+            <h4 class="text-center text-primary">Informations sur la Maison</h4>
+            <ul class="mb-3 list-group">
+                <li class="list-group-item"><strong>Nom :</strong> {{ chambre.maison.nom }}</li>
+                <li class="list-group-item"><strong>Adresse :</strong> {{ chambre.maison.adresse }}</li>
+                <li class="list-group-item"><strong>Nombre de pièces :</strong> {{ chambre.maison.nombre_piece }}</li>
+                <li class="list-group-item"><strong>Quartier :</strong> {{ chambre.maison.quartier.nom }}</li>
+                <li class="list-group-item"><strong>Ville :</strong> {{ chambre.maison.quartier.ville.nom }}</li>
+            </ul>
+            <hr>
+            <!-- Informations sur le propriétaire -->
+            <h4 class="text-center text-primary">Informations sur le Propriétaire</h4>
+            <ul class="mb-3 list-group">
+                <li class="list-group-item"><strong>Nom :</strong> {{ chambre.maison.proprietaire.nom }}</li>
+                <li class="list-group-item"><strong>Email :</strong> {{ chambre.maison.proprietaire.email }}</li>
+                <li class="list-group-item"><strong>Téléphone :</strong> {{ chambre.maison.proprietaire.telephone }}</li>
+            </ul>
+            <hr>
+            <!-- Bouton Retour -->
+            <div class="text-center">
+                <a href="{% url 'liste_chambres' %}" class="btn btn-secondary btn-lg">
+                    <i class="fas fa-arrow-left"></i> Retour
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

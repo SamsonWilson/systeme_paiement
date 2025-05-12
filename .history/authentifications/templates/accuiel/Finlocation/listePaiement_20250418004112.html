@@ -1,0 +1,324 @@
+{% extends "accuiel/base.html" %}
+{% load humanize %}
+
+{% block content %}
+<style>
+    /* --- Variables et Styles Globaux (COPIEZ VOS STYLES :root, body, .page-container...) --- */
+     :root {
+        --primary-color: #007bff; 
+        --secondary-color: #6c757d;
+        --light-gray: #f8f9fa;
+        --medium-gray: #e9ecef;
+        --dark-gray: #495057;
+        --text-color: #343a40;
+        --white: #ffffff;
+        --success-color: #28a745;
+        --danger-color: #dc3545;
+        --info-color: #17a2b8;
+        --warning-color: #ffc107;
+        --border-radius: 0.3rem;
+    }
+    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: var(--light-gray); color: var(--text-color); line-height: 1.6; }
+    .page-container { margin: 30px auto; padding: 25px 30px; background-color: var(--white); border-radius: var(--border-radius); box-shadow: 0 5px 15px rgba(0, 0, 0, 0.07); max-width: 1300px; overflow: hidden; }
+
+    /* --- Grille pour les cartes d'information --- */
+    .info-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); /* Flexible */
+        gap: 25px;
+        margin-bottom: 35px;
+    }
+
+    /* --- Style des Cartes d'Information --- */
+    .info-card {
+        background-color: var(--white);
+        padding: 20px 25px; /* Plus de padding */
+        border-radius: var(--border-radius);
+        border: 1px solid var(--medium-gray);
+        box-shadow: 0 3px 8px rgba(0,0,0,0.06); /* Ombre légère */
+    }
+
+    .info-card h2.card-title {
+        font-size: 1.15em; /* Un peu plus grand */
+        font-weight: 600;
+        color: var(--primary-color);
+        margin-top: 0;
+        margin-bottom: 18px; /* Plus d'espace */
+        padding-bottom: 10px;
+        border-bottom: 1px solid var(--medium-gray);
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    .info-card h2.card-title .icon { font-size: 1.3em; }
+
+    /* --- Liste de détails dans la carte location --- */
+    .info-card .detail-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+        font-size: 0.9em;
+    }
+    .info-card .detail-list li {
+        padding: 8px 0; /* Plus d'espace vertical */
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline; /* Aligner sur la ligne de base */
+        border-bottom: 1px dotted #eee; /* Pointillés très légers */
+    }
+    .info-card .detail-list li:last-child { border-bottom: none; }
+    .info-card .detail-list .label {
+        color: var(--secondary-color);
+        margin-right: 15px; /* Plus d'espace */
+        flex-shrink: 0; /* Empêche le label de rétrécir */
+    }
+    .info-card .detail-list .value {
+        font-weight: 500;
+        text-align: right;
+        color: var(--text-color);
+    }
+    .info-card .detail-list .value.price { color: var(--success-color); font-weight: 600; }
+    .info-card .detail-list .value.date { color: var(--info-color); }
+
+    /* --- Carte de Statistiques (Total Payé) --- */
+    .summary-card .summary-value {
+        font-size: 2.5em; /* Encore plus grand */
+        font-weight: 700;
+        color: var(--success-color);
+        text-align: center;
+        display: block;
+        margin: 10px 0 0 0;
+        line-height: 1.1;
+    }
+    .summary-card .summary-unit {
+         font-size: 0.6em;
+         font-weight: 500;
+         color: var(--secondary-color);
+         margin-left: 5px;
+         text-transform: uppercase;
+    }
+     .summary-card .summary-label {
+         text-align: center;
+         display: block;
+         color: var(--secondary-color);
+         font-size: 0.9em;
+         margin-top: 8px;
+     }
+
+    /* --- En-tête Section Tableau --- */
+    .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-bottom: 10px; border-bottom: 1px solid var(--medium-gray); }
+    h1.section-title { /* Pour le titre "Historique des Paiements" */
+        color: var(--dark-gray); margin: 0; padding: 0; border: none; font-weight: 600; font-size: 1.3em; flex-grow: 1; /* Taille ajustée */
+    }
+    /* -- Bouton Ajouter (si besoin) -- */
+    .btn { display: inline-block; font-weight: 500; color: var(--white); /* ... autres styles ... */ padding: 0.5rem 1rem; font-size: 0.9rem; border-radius: var(--border-radius); /* ... */  }
+    .btn-primary { color: var(--white); background-color: var(--primary-color); border-color: var(--primary-color); }
+    .btn-primary:hover { /* ... */ }
+    .btn .icon { margin-right: 0.4em; }
+
+    /* --- Styles Tableau (elegant-table), Badges, Pagination, etc. --- */
+     /* --- ASSUREZ-VOUS QUE VOS STYLES PRECEDENTS POUR LE TABLEAU SONT ICI --- */
+    .table-wrapper { overflow-x: auto; }
+    table.elegant-table { width: 100%; border-collapse: collapse; margin-bottom: 1rem; }
+    table.elegant-table thead th { background-color: var(--white); color: var(--secondary-color); border-bottom: 2px solid var(--primary-color); padding: 12px 15px; text-align: left; font-weight: 600; text-transform: uppercase; font-size: 0.75em; letter-spacing: 0.05em; position: sticky; top: 0; z-index: 1; }
+    table.elegant-table tbody td { padding: 12px 15px; border-bottom: 1px solid var(--medium-gray); vertical-align: middle; color: var(--text-color); font-size: 0.88em; transition: background-color 0.15s ease-in-out; }
+    table.elegant-table tbody tr:nth-of-type(even) td { background-color: var(--light-gray); }
+    table.elegant-table tbody tr:nth-of-type(odd) td { background-color: var(--white); }
+    table.elegant-table tbody tr:hover td { background-color: color-mix(in srgb, var(--primary-color) 10%, white); }
+    .status-badge { font-weight: 500; padding: 4px 8px; border-radius: var(--border-radius); display: inline-flex; align-items: center; font-size: 0.8em; gap: 4px; text-transform: capitalize; }
+    .status-badge.confirmé { color: var(--success-color); background-color: color-mix(in srgb, var(--success-color) 15%, transparent); }
+    .status-badge.en-attente { color: var(--warning-color); background-color: color-mix(in srgb, var(--warning-color) 15%, transparent); }
+    .status-badge .icon { font-size: 1em; }
+    td .icon { vertical-align: middle; margin-right: 4px; font-size: 1.1em; } /* Icônes dans le tableau */
+    .receipt-link { color: var(--primary-color); text-decoration: none; font-weight: 500; display: inline-flex; align-items: center; gap: 4px; }
+    .receipt-link:hover { color: color-mix(in srgb, var(--primary-color) 80%, black); text-decoration: underline;}
+    .no-receipt { color: var(--secondary-color); font-style: italic; font-size: 0.9em; }
+    .price { font-weight: 600; color: var(--success-color); } /* Pour les montants dans le tableau */
+    .no-data { text-align: center; padding: 40px 20px; color: var(--secondary-color); font-style: italic; background-color: var(--light-gray); border-radius: var(--border-radius); }
+    .pagination { margin-top: 20px; text-align: center; }
+    .step-links { display: inline-block; }
+    .step-links a, .step-links .current { color: var(--primary-color); float: left; padding: 8px 16px; text-decoration: none; transition: background-color .3s; border: 1px solid var(--medium-gray); margin: 0 4px; border-radius: var(--border-radius); }
+    .step-links a:hover { background-color: var(--light-gray); }
+    .step-links .current { background-color: var(--primary-color); color: white; border: 1px solid var(--primary-color); }
+    .step-links .disabled { color: var(--secondary-color); pointer-events: none; border-color: var(--light-gray); }
+
+</style>
+
+<div class="page-container">
+
+    {# --- Section d'Information (Grille de Cartes) --- #}
+    {% if location %}
+    <div class="info-grid">
+
+        {# --- Carte Détails Location --- #}
+        <div class="info-card location-details-card">
+            <h2 class="card-title"><span class="icon">📝</span>Détails Location #{{ location.id }}</h2>
+            <ul class="detail-list">
+                <li>
+                  <span class="label">Locataire :</span>
+                  <span class="value">{{ location.utilisateur.get_full_name|default:'(Indéfini)' }}</span>
+                </li>
+                <li>
+                  <span class="label">Maison :</span>
+                  <span class="value">{{ location.chambre.maison.nom|default:'N/A' }}</span>
+                </li>
+                 <li>
+                  <span class="label">Adresse :</span>
+                  <span class="value">{{ location.chambre.maison.adresse|default:'N/A' }}</span>
+                </li>
+                <li>
+                  <span class="label">Chambre :</span>
+                  <span class="value">
+                    {{ location.chambre.type_chambre.nom|default:'N/A' }} (#{{ location.chambre.id }})
+                    {% if location.chambre.surface %}({{ location.chambre.surface|floatformat:"0" }} m²){% endif %}
+                  </span>
+                </li>
+                <li>
+                  <span class="label">Loyer / Mois :</span>
+                  <span class="value price">{{ location.chambre.prix|floatformat:"0"|intcomma }} FCFA</span>
+                </li>
+                 <li>
+                  <span class="label">Début Location :</span>
+                  <span class="value date">{{ location.date_debut_location|date:"d M Y"|default:"-" }}</span>
+                </li>
+                 <li>
+                  <span class="label">Fin Avance :</span>
+                  <span class="value date">{{ location.date_fin_avance|date:"d M Y"|default:"-" }}</span>
+                </li>
+                {# Afficher les infos initiales de la location si elles existent et sont utiles #}
+                {% if location.montant_total %}
+                 <li>
+                   <span class="label">Paiement Initial :</span>
+                   <span class="value price">{{ location.montant_total|floatformat:"0"|intcomma }} FCFA ({{location.nombre_mois_paye}} mois)</span>
+                 </li>
+                {% endif %}
+                 {% if location.commission %}
+                 <li>
+                   <span class="label">Commission Initiale :</span>
+                   <span class="value">{{ location.commission|floatformat:"0"|intcomma }} FCFA</span>
+                 </li>
+                 {% endif %}
+
+            </ul>
+        </div>
+
+        {# --- Carte Statistiques Paiements (Total) --- #}
+        <div class="info-card summary-card">
+             <h2 class="card-title"><span class="icon">💰</span>Total des Paiements Reçus</h2>
+             <span class="summary-value">
+                 {{ total_paid_amount|floatformat:"0"|intcomma }}
+                 <span class="summary-unit">FCFA</span>
+             </span>
+             <span class="summary-label">Cumul de tous les paiements enregistrés pour cette location</span>
+        </div>
+
+    </div> {# Fin .info-grid #}
+    {% endif %}
+    {# --- Fin Section d'Information --- #}
+
+    {# --- Section Tableau Historique des Paiements --- #}
+    <div class="section-header">
+        <h1 class="section-title">Historique des Paiements Enregistrés</h1>
+        {% comment %} {# --- Bouton optionnel pour ajouter un paiement --- #}
+        {# <a href="{% url 'VOTRE_URL_AJOUT_PAIEMENT' location.id %}" class="btn btn-primary">
+              <span class="icon">+</span> Ajouter Paiement
+           </a>
+        #} {% endcomment %}
+    </div>
+
+    {% if paiements %}
+        <div class="table-wrapper">
+            <table class="elegant-table">
+                <thead>
+                    <tr>
+                        <th>Date Paiement</th>
+                        <th>Montant Payé</th>
+                        <th>Mois</th>
+                        <th>Fin Couverte</th>
+                        <th>Mode</th>
+                        <th>Statut</th>
+                        <th>Commission</th>
+                        <th>Commentaire</th>
+                        <th>Reçu PDF</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for paiement in paiements %}
+                        <tr>
+                            <td>{{ paiement.date_paiement|date:"d/m/y H:i" }}</td> {# Format date plus court #}
+                            <td class="price">{{ paiement.montant_paye|floatformat:"0"|intcomma }} FCFA</td>
+                            <td>{{ paiement.nombre_mois_paye }}</td>
+                            <td>{{ paiement.date_fin_paiement|date:"d/m/y"|default:"-" }}</td> {# Format date plus court #}
+                            <td>
+                                {% if paiement.mode_paiement == 'espèce' %}<span class="icon">💶</span>
+                                {% elif paiement.mode_paiement == 'mobile' %}<span class="icon">📱</span>
+                                {% endif %}
+                                {{ paiement.get_mode_paiement_display }}
+                            </td>
+                            <td>
+                                <span class="status-badge {{ paiement.statut_paiement|lower }}">
+                                    {% if paiement.statut_paiement == 'confirmé' %} <span class="icon">✅</span>
+                                    {% elif paiement.statut_paiement == 'en attente' %} <span class="icon">⏳</span>
+                                    {% endif %}
+                                    {{ paiement.get_statut_paiement_display }}
+                                </span>
+                            </td>
+                            <td>{{ paiement.commission|floatformat:"0"|intcomma }} FCFA</td>
+                            <td>{{ paiement.commentaire|default:""|truncatewords:8 }}</td>
+                            <td>
+                                {% if paiement.Recu_pdf %}
+                                    <a href="{{ paiement.Recu_pdf.url }}" target="_blank" class="receipt-link" title="Voir le reçu {{ paiement.Recu_pdf.name|slice:"15:" }}">
+                                        <span class="icon">📄</span> Voir
+                                    </a>
+                                {% else %}
+                                    <span class="no-receipt">-</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        {# --- Section Pagination --- #}
+        {% if is_paginated %}
+            <div class="pagination">
+                <span class="step-links">
+                     {% if page_obj.has_previous %}
+                        <a href="?page=1" title="Première page">&laquo;</a>
+                        <a href="?page={{ page_obj.previous_page_number }}" title="Page précédente">Préc.</a>
+                    {% else %}
+                         <span class="disabled">&laquo;</span>
+                         <span class="disabled">Préc.</span>
+                    {% endif %}
+
+                    <span class="current">
+                        Page {{ page_obj.number }}/{{ page_obj.paginator.num_pages }}
+                    </span>
+
+                    {% if page_obj.has_next %}
+                        <a href="?page={{ page_obj.next_page_number }}" title="Page suivante">Suiv.</a>
+                        <a href="?page={{ page_obj.paginator.num_pages }}" title="Dernière page">&raquo;</a>
+                    {% else %}
+                        <span class="disabled">Suiv.</span>
+                        <span class="disabled">&raquo;</span>
+                    {% endif %}
+                </span>
+            </div>
+        {% endif %}
+        {# --- Fin Section Pagination --- #}
+
+    {% else %}
+         <div class="no-data">
+             <p>Aucun paiement n'a encore été enregistré pour cette location.</p>
+              {# --- Bouton optionnel pour ajouter un paiement --- #}
+             {# <a href="{% url 'VOTRE_URL_AJOUT_PAIEMENT' location.id %}" class="btn btn-primary" style="margin-top: 15px;">
+                 <span class="icon">+</span> Enregistrer un Paiement
+               </a>
+             #}
+         </div>
+    {% endif %}
+    {# --- Fin Section Tableau des Paiements --- #}
+
+</div> {# Fin .page-container #}
+{% endblock %}

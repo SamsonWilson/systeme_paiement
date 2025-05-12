@@ -1,0 +1,45 @@
+{% extends "accuiel/Base.html" %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="shadow-lg card">
+        <div class="text-center text-white card-header bg-primary">
+            <h2>Liste des Chambres</h2>
+        </div>
+        <div class="card-body">
+            <!-- Bouton Ajouter -->
+            <div class="mb-3 text-center">
+                <a href="{% url 'creer_chambre' %}" class="btn btn-success">
+                    <i class="fas fa-plus"></i> Ajouter une Chambre
+                </a>
+            </div>
+
+            <!-- Liste des Chambres -->
+            <ul class="list-group">
+                {% if chambres %}
+                    {% for chambre in chambres %}
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <span><strong>Prix :</strong> {{ chambre.prix }}</span>
+                            <div>
+                                <a href="{% url 'chambre_detail' chambre.pk %}" class="btn btn-info btn-sm">
+                                    <i class="fas fa-eye"></i> Détails
+                                </a>
+                                <a href="{% url 'modifier_chambremodifier_chambre' chambre.pk %}" class="btn btn-warning btn-sm">
+                                    <i class="fas fa-edit"></i> Modifier
+                                </a>
+                                <a href="{% url 'supprimer_chambre' chambre.pk %}" class="btn btn-danger btn-sm">
+                                    <i class="fas fa-trash"></i> Supprimer
+                                </a>
+                            </div>
+                        </li>
+                    {% endfor %}
+                {% else %}
+                    <li class="text-center list-group-item">
+                        <p class="text-muted">Aucune chambre disponible.</p>
+                    </li>
+                {% endif %}
+            </ul>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,311 @@
+{% extends 'accuiel/base.html' %}
+
+{% block content %}
+<style>
+    /* Conteneur principal */
+    .chat-container {
+        display: flex;
+        height: 100vh;
+        max-width: 1200px;
+        margin: 0 auto;
+        border: 1px solid #ddd;
+        border-radius: 10px;
+        overflow: hidden;
+        background-color: #fff;
+    }
+
+    /* Liste des utilisateurs */
+    .sidebar {
+        width: 300px;
+        background: #f7f7f7;
+        border-right: 1px solid #ddd;
+        padding: 20px;
+        overflow-y: auto;
+    }
+
+    .sidebar h3 {
+        margin: 0 0 20px;
+        font-size: 1.5em;
+        color: #333;
+    }
+
+    .sidebar ul {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    .sidebar li {
+        margin-bottom: 10px;
+    }
+
+    .sidebar a {
+        text-decoration: none;
+        color: #007bff;
+        padding: 10px;
+        display: block;
+        border-radius: 5px;
+        transition: background-color 0.3s;
+    }
+
+    .sidebar a:hover {
+        background-color: #e9ecef;
+    }
+
+    /* Zone de chat */
+    .chat-box {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        background: #f1f1f1;
+    }
+
+    .chat-header {
+        background-color: #007bff;
+        color: white;
+        padding: 15px;
+        text-align: center;
+        font-size: 1.5em;
+    }
+
+    .messages {
+        flex: 1;
+        padding: 20px;
+        overflow-y: auto;
+        background: #e5ddd5;
+    }
+
+    .message {
+        margin-bottom: 15px;
+        max-width: 70%;
+        padding: 10px;
+        border-radius: 10px;
+        word-wrap: break-word;
+    }
+
+    .message.sent {
+        margin-left: auto;
+        background: #dcf8c6;
+        text-align: right;
+    }
+
+    .message.received {
+        margin-right: auto;
+        background: white;
+        text-align: left;
+    }
+
+    .timestamp {
+        font-size: 0.8em;
+        color: #666;
+        margin-top: 5px;
+        display: block;
+    }
+
+    /* Formulaire d'envoi */
+    .message-form {
+        display: flex;
+        padding: 15px;
+        background: #f7f7f7;
+        border-top: 1px solid #ddd;
+    }
+
+    .message-form input[type="text"] {
+        flex: 1;
+        padding: 10px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        margin-right: 10px;
+    }
+
+    .message-form button {
+        padding: 10px 20px;
+        background-color: #007bff;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        transition: background-color 0.3s;
+    }
+
+    .message-form button:hover {
+        background-color: #0056b3;
+    }
+</style>
+
+<div class="chat-container">
+    <!-- Liste des utilisateurs -->
+    <div class="sidebar">
+        <h3>Conversations</h3>
+        <ul>
+            {% for user in all_users %}
+                <li>
+                    <a href="{% url 'chat_page' receiver_id=user.id %}">
+                        {{ user.username }}
+                    </a>
+                </li>
+            {% endfor %}
+        </ul>
+    </div>
+
+    <!-- Zone de chat -->
+    <div class="chat-box">
+        <div class="chat-header">
+            {% if chat_user %}
+                Conversation avec {{ chat_user.username }}
+            {% else %}
+                Sélectionnez un utilisateur pour commencer une conversation
+            {% endif %}
+        </div>
+
+        <div class="messages" id="chat-box">
+            {% for msg in messages %}
+                <div class="message {% if msg.sender == user %}sent{% else %}received{% endif %}">
+                    <p>{{ msg.message }}</p>
+                    <span class="timestamp">{{ msg.timestamp|date:"H:i" }}</span>
+                </div>
+            {% endfor %}
+        </div>
+
+        {% if chat_user %}
+            <form id="message-form" class="message-form" method="post">
+                {% csrf_token %}
+                <input type="hidden" name="receiver_id" value="{{ chat_user.id }}">
+                <input type="text" id="message" name="message" placeholder="Écrivez un message..." required>
+                <button type="submit">Envoyer</button>
+            </form>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+    // Gestion de l'envoi de messages via AJAX
+    document.getElementById('message-form').addEventListener('submit', function(e) {
+        e.preventDefault();
+
+        const messageInput = document.getElementById('message');
+        const message = messageInput.value.trim();
+        if (!message) return;
+
+        const formData = new FormData(this);
+
+        fetch("{% url 'send_message' %}", {
+            method: "POST",
+            headers: {
+                "X-CSRFToken": "{{ csrf_token }}",
+            },
+            body: formData,
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'success') {
+                const chatBox = document.getElementById('chat-box');
+                const newMessage = document.createElement('div');
+                newMessage.className = 'message sent';
+                newMessage.innerHTML = `
+                    <p>${data.message}</p>
+                    <span class="timestamp">${data.timestamp}</span>
+                `;
+                chatBox.appendChild(newMessage);
+                chatBox.scrollTop = chatBox.scrollHeight; // Scroll vers le bas
+                messageInput.value = ''; // Réinitialiser le champ
+            }
+        })
+        .catch(error => console.error('Erreur:', error));
+    });
+</script>
+{% endblock %}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+{% comment %} 
+<style>
+    #chat-box {
+        border: 1px solid #ccc;
+        padding: 10px;
+        height: 400px;
+        overflow-y: scroll;
+        margin-bottom: 20px;
+        background-color: #f9f9f9;
+    }
+    
+    .message {
+        margin-bottom: 10px;
+        padding: 5px;
+        border-radius: 5px;
+    }
+    
+    .message.sent {
+        text-align: right;
+        background-color: #d1ffd6;
+    }
+    
+    .message.received {
+        text-align: left;
+        background-color: #ffe6e6;
+    }
+    
+    .timestamp {
+        font-size: 0.8em;
+        color: gray;
+    }
+</style>
+<h1>Chat avec {{ chat_user.username }}</h1>
+
+<!-- Boîte de discussion -->
+<div id="chat-box">
+    {% for message in messages %}
+        <div class="message {% if message.sender == user %}sent{% else %}received{% endif %}">
+            <p><strong>{{ message.sender.username }}</strong>: {{ message.message }}</p>
+            <p class="timestamp">{{ message.timestamp }}</p>
+        </div>
+    {% endfor %}
+</div>
+
+<!-- Formulaire d'envoi de message -->
+<form id="message-form" method="POST" action="{% url 'send_message' %}">
+    {% csrf_token %}
+    <input type="hidden" name="receiver_id" value="{{ chat_user.id }}">
+    <textarea name="message" placeholder="Écrivez votre message ici..." required></textarea>
+    <button type="submit">Envoyer</button>
+</form>
+
+<script>
+    // Gestion de l'envoi du formulaire sans recharger la page
+    const form = document.getElementById('message-form');
+    form.onsubmit = async (e) => {
+        e.preventDefault(); // Empêcher le rechargement de la page
+        const formData = new FormData(form);
+
+        const response = await fetch(form.action, {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-CSRFToken': form.querySelector('[name=csrfmiddlewaretoken]').value,
+            }
+        });
+
+        const result = await response.json();
+        if (result.status === 'Message envoyé avec succès') {
+            location.reload(); // Recharge les messages après envoi
+        } else {
+            alert('Erreur lors de l\'envoi du message : ' + result.error);
+        }
+    };
+</scrip> 
+{% endblock %} {% endcomment %}

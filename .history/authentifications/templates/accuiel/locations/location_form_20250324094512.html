@@ -1,0 +1,169 @@
+{% extends "accuiel/base.html" %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <h2 class="mb-4 text-center text-primary">Créer une Location</h2>
+            <!-- Informations de l'utilisateur -->
+            <div class="mb-4 shadow-lg card border-info">
+                <div class="text-white card-header bg-info">
+                    <strong><i class="fas fa-user"></i> Informations de l'utilisateur</strong>
+                </div>
+                <div class="card-body">
+                    <p><i class="fas fa-user-circle text-primary"></i> <strong>Nom :</strong> <span class="badge bg-primary">{{ utilisateur.nom }} {{ utilisateur.prenom }}</span></p>
+                    <p><i class="fas fa-envelope text-success"></i> <strong>Email :</strong> <span class="badge bg-success">{{ utilisateur.email }}</span></p>
+                </div>
+            </div>
+            <!-- Informations de la chambre -->
+            <div class="mb-4 shadow-lg card border-warning">
+                <div class="card-header bg-warning text-dark">
+                    <strong><i class="fas fa-bed"></i> Informations de la chambre</strong>
+                </div>
+                <div class="card-body">
+                    <p><i class="fas fa-door-open text-warning"></i> <strong>Type de chambre :</strong> <span class="badge bg-warning text-dark">{{ chambre.type_chambre.nom }}</span></p>
+                    <p><i class="fas fa-money-bill-wave text-danger"></i> <strong>Prix :</strong> <span class="badge bg-danger">{{ chambre.prix }} CFA</span></p>
+                    <p><i class="fas fa-ruler-combined text-info"></i> <strong>Surface :</strong> <span class="badge bg-info">{{ chambre.surface }} m²</span></p>
+                    <p><i class="fas fa-percentage text-primary"></i> <strong>Taux de commission :</strong> <span class="badge bg-primary">{{ chambre.taux_commission }}%</span></p>
+                </div>
+            </div>
+
+            <!-- Formulaire de création de location -->
+            <div class="shadow-lg card border-primary">
+                <div class="text-white card-header bg-primary">
+                    <strong><i class="fas fa-file-alt"></i> Formulaire de location</strong>
+                </div>
+                <div class="card-body">
+                    <form method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        <div class="row">
+                            <div class="mb-3 col-md-6">
+                                {{ form.date_debut_location.label_tag }}
+                                {{ form.date_debut_location }}
+                            </div>
+                            <div class="mb-3 col-md-6">
+                                {{ form.date_fin_avance.label_tag }}
+                                {{ form.date_fin_avance }}
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="mb-3 col-md-6">
+                                {{ form.nombre_mois_paye.label_tag }}
+                                {{ form.nombre_mois_paye }}
+                            </div>
+                            <div class="mb-3 col-md-6">
+                                {{ form.montant_avance.label_tag }}
+                                {{ form.montant_avance }}
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="mb-3 col-md-6">
+                                {{ form.montant_caution.label_tag }}
+                                {{ form.montant_caution }}
+                            </div>
+                            <div class="mb-3 col-md-6">
+                                {{ form.commission.label_tag }}
+                                {{ form.commission }}
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="mb-3 col-md-6">
+                                {{ form.mode_paiement.label_tag }}
+                                {{ form.mode_paiement }}
+                            </div>
+                            <div class="mb-3 col-md-6">
+                                {{ form.image_contrat.label_tag }}
+                                {{ form.image_contrat }}
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="mb-3 col-md-6">
+                                {{ form.statut_paiement.label_tag }}
+                                {{ form.statut_paiement }}
+                            </div>
+                            <div class="mb-3 col-md-6">
+                                {{ form.montant_total.label_tag }}
+                                {{ form.montant_total }}
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            {{ form.date_paiement.label_tag }}
+                            {{ form.date_paiement }}
+                        </div>
+                        <button type="submit" class="btn btn-success w-100"><i class="fas fa-save"></i> Enregistrer</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+
+{% comment %} <div class="shadow-sm card">
+    <div class="text-white card-header bg-primary">
+        <strong><i class="fas fa-file-alt"></i> Formulaire de location</strong>
+    </div>
+    <div class="card-body">
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            <div class="row">
+                <div class="mb-3 col-md-6">
+                    {{ form.date_debut_location.label_tag }}
+                    {{ form.date_debut_location }}
+                </div>
+                <div class="mb-3 col-md-6">
+                    {{ form.date_fin_avance.label_tag }}
+                    {{ form.date_fin_avance }}
+                </div>
+            </div>
+            <div class="row">
+                <div class="mb-3 col-md-6">
+                    {{ form.nombre_mois_paye.label_tag }}
+                    {{ form.nombre_mois_paye }}
+                </div>
+               
+                <div class="mb-3 col-md-6">
+                    {{ form.montant_avance.label_tag }}
+                    {{ form.montant_avance }}
+                </div>
+            </div>
+            <div class="row">
+                <div class="mb-3 col-md-6">
+                    {{ form.montant_caution.label_tag }}
+                    {{ form.montant_caution }}
+                </div>
+                <div class="mb-3 col-md-6">
+                    {{ form.commission.label_tag }}
+                    {{ form.commission }}
+                </div>
+            </div>
+            <div class="row">
+                <div class="mb-3 col-md-6">
+                    {{ form.mode_paiement.label_tag }}
+                    {{ form.mode_paiement }}
+                </div>
+                <div class="mb-3 col-md-6">
+                    {{ form.image_contrat.label_tag }}
+                    {{ form.image_contrat }}
+                </div>
+            </div>
+            <div class="row">
+                <div class="mb-3 col-md-6">
+                    {{ form.statut_paiement.label_tag }}
+                    {{ form.statut_paiement }}
+                </div>
+                <div class="mb-3 col-md-6">
+                    {{ form.montant_total.label_tag }}
+                    {{ form.montant_total }}
+                </div>
+               
+            </div>
+            <div class="mb-3">
+                {{ form.date_paiement.label_tag }}
+                {{ form.date_paiement }}
+            </div>
+            <button type="submit" class="btn btn-success w-100"><i class="fas fa-save"></i> Enregistrer</button>
+        </form>
+    </div>
+</div> {% endcomment %}

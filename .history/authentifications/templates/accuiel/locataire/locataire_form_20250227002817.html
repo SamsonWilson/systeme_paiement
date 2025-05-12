@@ -1,0 +1,10 @@
+{% extends "accubase.html" %}
+{% block content %}
+<h2 class="mt-4">{% if form.instance.pk %}Modifier{% else %}Ajouter{% endif %} un Locataire</h2>
+<form method="post" enctype="multipart/form-data" class="mt-3">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit" class="btn btn-success">{% if form.instance.pk %}Enregistrer les Modifications{% else %}Ajouter{% endif %}</button>
+    <a href="{% url 'locataire_list' %}" class="btn btn-secondary">Annuler</a>
+</form>
+{% endblock %}

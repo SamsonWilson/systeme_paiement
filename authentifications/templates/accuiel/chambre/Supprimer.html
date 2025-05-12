@@ -1,0 +1,24 @@
+{% extends "accuiel/Base.html" %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="shadow-lg card">
+        <div class="text-center text-white card-header bg-danger">
+            <h2>Supprimer la Chambre</h2>
+        </div>
+        <div class="text-center card-body">
+            <p class="fs-5">Êtes-vous sûr de vouloir supprimer la chambre <strong>{{ chambre.nom }}</strong> ?</p>
+            <p class="text-muted">Cette action est irréversible.</p>
+            <form method="post" class="d-inline">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-danger btn-lg">
+                    <i class="fas fa-trash"></i> Confirmer
+                </button>
+            </form>
+            <a href="{% url 'liste_chambres' %}" class="btn btn-secondary btn-lg ms-3">
+                <i class="fas fa-arrow-left"></i> Annuler
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

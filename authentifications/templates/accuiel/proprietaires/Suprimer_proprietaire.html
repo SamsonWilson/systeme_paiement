@@ -1,0 +1,25 @@
+{% extends "accuiel/base.html" %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="shadow-lg card">
+        <div class="text-center text-white card-header bg-danger">
+            <h2>Supprimer un Propriétaire</h2>
+        </div>
+        <div class="text-center card-body">
+            <p class="mb-4">
+                Êtes-vous sûr de vouloir supprimer <strong>"{{ object }}"</strong> ?
+            </p>
+            <form method="post">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-danger">
+                    <i class="fas fa-trash"></i> Supprimer
+                </button>
+                <a href="{% url 'liste_proprietaire' %}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left"></i> Annuler
+                </a>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

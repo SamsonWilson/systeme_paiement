@@ -1,0 +1,482 @@
+{% extends "accuiel/base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <!-- En-tête -->
+            <div class="mb-4 d-flex justify-content-between align-items-center">
+                <h2 class="mb-0 text-primary">
+                    {% if location %}
+                        <i class="fas fa-edit me-2"></i>Modifier la Location
+                    {% else %}
+                        <i class="fas fa-plus-circle me-2"></i>Nouvelle Location
+                    {% endif %}
+                </h2>
+                <a href="{% url 'liste_locations' %}" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left me-2"></i>Retour à la liste
+                </a>
+            </div>
+
+            <!-- Formulaire principal -->
+            <form method="post" enctype="multipart/form-data" id="locationForm" class="needs-validation" novalidate>
+                {% csrf_token %}
+                
+                <div class="row g-4">
+                    <!-- Informations Client -->
+                    <div class="col-md-6">
+                        <div class="border-0 shadow-sm card h-100">
+                            <div class="py-3 text-white card-header bg-primary">
+                                <h5 class="mb-0 card-title">
+                                    <i class="fas fa-user me-2"></i>Informations Client
+                                </h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="mb-3">
+                                    <label class="form-label text-muted">Nom complet</label>
+                                    <div class="fs-5 fw-bold">{{ utilisateur.nom }} {{ utilisateur.prenom }}</div>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label text-muted">Email</label>
+                                    <div class="fs-5">{{ utilisateur.email }}</div>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label text-muted">Téléphone</label>
+                                    <div class="fs-5">{{ utilisateur.tel }}</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Informations Chambre -->
+                    <div class="col-md-6">
+                        <div class="border-0 shadow-sm card h-100">
+                            <div class="py-3 text-white card-header bg-info">
+                                <h5 class="mb-0 card-title">
+                                    <i class="fas fa-home me-2"></i>Détails Chambre
+                                </h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="mb-3">
+                                    <label class="form-label text-muted">Type de chambre</label>
+                                    <div class="fs-5 fw-bold">{{ chambre.type_chambre.nom }}</div>
+                                </div>
+                                <div class="mb-3 d-flex justify-content-between">
+                                    <div>
+                                        <label class="form-label text-muted">Prix mensuel</label>
+                                        <div class="fs-5">{{ chambre.prix }} CFA</div>
+                                    </div>
+                                    <div>
+                                        <label class="form-label text-muted">Surface</label>
+                                        <div class="fs-5">{{ chambre.surface }} m²</div>
+                                    </div>
+                                </div>
+                                <div class="mb-0 alert alert-info">
+                                    <i class="fas fa-info-circle me-2"></i>Commission: {{ chambre.taux_commission }}%
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Détails Location -->
+                    <div class="col-12">
+                        <div class="border-0 shadow-sm card">
+                            <div class="py-3 text-white card-header bg-success">
+                                <h5 class="mb-0 card-title">
+                                    <i class="fas fa-file-contract me-2"></i>Détails de la Location
+                                </h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="row g-3">
+                                    <!-- Période -->
+                                    <div class="col-md-4">
+                                        <label class="form-label required">Date de début</label>
+                                        {{ form.date_debut_location }}
+                                        <div class="invalid-feedback">Ce champ est requis</div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label class="form-label required">Nombre de mois</label>
+                                        {{ form.nombre_mois_paye }}
+                                        <div class="invalid-feedback">Ce champ est requis</div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label class="form-label">Date de fin</label>
+                                        {{ form.date_fin_avance }}
+                                    </div>
+
+                                    <!-- Montants -->
+                                    <div class="col-md-4">
+                                        <label class="form-label required">Montant caution</label>
+                                        {{ form.montant_caution }}
+                                        <div class="invalid-feedback">Ce champ est requis</div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label class="form-label">Montant avance</label>
+                                        {{ form.montant_avance }}
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label class="form-label">Commission</label>
+                                        {{ form.commission }}
+                                    </div>
+
+                                    <!-- Paiement -->
+                                    <div class="col-md-6">
+                                        <label class="form-label required">Mode de paiement</label>
+                                        {{ form.mode_paiement }}
+                                        <div class="invalid-feedback">Ce champ est requis</div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label required">Statut du paiement</label>
+                                        {{ form.statut_paiement }}
+                                        <div class="invalid-feedback">Ce champ est requis</div>
+                                    </div>
+
+                                    <!-- Contrat -->
+                                    <div class="col-12">
+                                        <label class="form-label">Contrat de location</label>
+                                        {{ form.image_contrat }}
+                                    </div>
+
+                                    <!-- Total -->
+                                    <div class="col-12">
+                                        <div class="alert alert-primary">
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <span class="mb-0 h5">Montant Total:</span>
+                                                <span class="mb-0 h4">{{ form.montant_total }}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Boutons d'action -->
+                <div class="mt-4 d-flex justify-content-between">
+                    <button type="button" class="btn btn-outline-secondary" onclick="history.back()">
+                        <i class="fas fa-times me-2"></i>Annuler
+                    </button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save me-2"></i>Enregistrer
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.form-control:focus, .form-select:focus {
+    border-color: #0d6efd;
+    box-shadow: 0 0 0 0.2rem rgba(13,110,253,.25);
+}
+
+.card {
+    transition: all 0.3s ease;
+}
+
+.card:hover {
+    transform: translateY(-2px);
+}
+
+.required:after {
+    content: ' *';
+    color: red;
+}
+
+.form-label {
+    font-weight: 500;
+    color: #495057;
+}
+
+.invalid-feedback {
+    font-size: 80%;
+}
+</style>
+
+<script>
+// ... Votre code JavaScript existant ...
+ // Récupérer les champs du formulaire
+ const dateDebutInput = document.getElementById("id_date_debut_location");
+ const nombreMoisInput = document.getElementById("id_nombre_mois_paye");
+ const dateFinInput = document.getElementById("id_date_fin_avance");
+ const montantAvanceInput = document.getElementById("id_montant_avance");
+ const montantCautionInput = document.getElementById("id_montant_caution");
+ const montantTotalInput = document.getElementById("id_montant_total");
+ const commissionInput = document.getElementById("id_commission");
+
+ // Vérifier si les champs existent
+ if (!dateDebutInput || !nombreMoisInput || !dateFinInput || !montantAvanceInput || !montantCautionInput || !montantTotalInput || !commissionInput) {
+     console.error("Un ou plusieurs champs du formulaire sont introuvables.");
+ }
+
+ // Variables pour les informations de la chambre
+ const prixChambre = parseFloat({{ chambre.prix }});
+ const tauxCommission = parseFloat({{ chambre.taux_commission }});
+
+ // Fonction pour calculer la date de fin
+ function calculerDateFin() {
+     const dateDebut = new Date(dateDebutInput.value);
+     const nombreMois = parseInt(nombreMoisInput.value);
+
+     if (!isNaN(dateDebut.getTime()) && !isNaN(nombreMois)) {
+         // Ajouter le nombre de mois à la date de début
+         dateDebut.setMonth(dateDebut.getMonth() + nombreMois);
+         // Mettre à jour le champ "date_fin_avance"
+         dateFinInput.value = dateDebut.toISOString().split("T")[0];
+     } else {
+         dateFinInput.value = ""; // Réinitialiser si les valeurs sont invalides
+     }
+ }
+
+ // Fonction pour calculer le montant total, le montant d'avance et la commission
+ function calculerMontants() {
+     const nombreMois = parseInt(nombreMoisInput.value);
+     const montantCaution = parseFloat(montantCautionInput.value) || 0;
+
+     if (!isNaN(nombreMois) && nombreMois > 0) {
+         // Calculer le montant d'avance
+         const montantAvance = prixChambre * nombreMois;
+         montantAvanceInput.value = montantAvance.toFixed(2);
+
+         // Calculer la commission
+         const commission = (montantAvance * tauxCommission) / 100;
+         commissionInput.value = commission.toFixed(2);
+
+         // Calculer le montant total (avance + caution)
+         const montantTotal = montantAvance + montantCaution;
+         montantTotalInput.value = montantTotal.toFixed(2);
+     } else {
+         montantAvanceInput.value = ""; // Réinitialiser si les valeurs sont invalides
+         commissionInput.value = "";
+         montantTotalInput.value = "";
+     }
+ }
+
+ // Ajouter des écouteurs d'événements pour recalculer les champs
+ if (dateDebutInput && nombreMoisInput) {
+     dateDebutInput.addEventListener("change", calculerDateFin);
+     nombreMoisInput.addEventListener("input", () => {
+         calculerDateFin();
+         calculerMontants();
+     });
+     montantCautionInput.addEventListener("input", calculerMontants);
+
+
+     // Fonction pour mettre à jour le statut de paiement
+function updateStatutPaiement() {
+    const montantCaution = parseFloat(montantCautionInput.value) || 0;
+    const montantAvance = parseFloat(montantAvanceInput.value) || 0;
+
+    if (montantCaution > 1 && montantAvance > 1) {
+        statutPaiementSelect.value = 'payé';
+    } else if (montantCaution > 1 && montantAvance === 0) {
+        statutPaiementSelect.value = 'caution payée, pas avance';
+    } else if (montantCaution === 0 && montantAvance > 1) {
+        statutPaiementSelect.value = 'avance payée, pas caution';
+    }
+}
+
+// Modifier la fonction calculerMontants pour inclure la mise à jour du statut
+function calculerMontants() {
+    const nombreMois = parseInt(nombreMoisInput.value);
+    const montantCaution = parseFloat(montantCautionInput.value) || 0;
+
+    if (!isNaN(nombreMois) && nombreMois > 0) {
+        // Calculer le montant d'avance
+        const montantAvance = prixChambre * nombreMois;
+        montantAvanceInput.value = montantAvance.toFixed(2);
+
+        // Calculer la commission
+        const commission = (montantAvance * tauxCommission) / 100;
+        commissionInput.value = commission.toFixed(2);
+
+        // Calculer le montant total (avance + caution)
+        const montantTotal = montantAvance + montantCaution;
+        montantTotalInput.value = montantTotal.toFixed(2);
+
+        // Mettre à jour le statut de paiement
+        updateStatutPaiement();
+    } else {
+        montantAvanceInput.value = "";
+        commissionInput.value = "";
+        montantTotalInput.value = "";
+    }
+}
+
+// Modifier les écouteurs d'événements
+if (dateDebutInput && nombreMoisInput && montantCautionInput && montantAvanceInput) {
+    dateDebutInput.addEventListener("change", calculerDateFin);
+    nombreMoisInput.addEventListener("input", () => {
+        calculerDateFin();
+        calculerMontants();
+    });
+    montantCautionInput.addEventListener("input", () => {
+        calculerMontants();
+        updateStatutPaiement();
+    });
+    montantAvanceInput.addEventListener("input", () => {
+        updateStatutPaiement();
+    });
+}
+ }
+// Validation du formulaire
+(function () {
+    'use strict'
+    const form = document.getElementById('locationForm')
+    
+    form.addEventListener('submit', function (event) {
+        if (!form.checkValidity()) {
+            event.preventDefault()
+            event.stopPropagation()
+        }
+        form.classList.add('was-validated')
+    }, false)
+})()
+
+// Formatage des montants en CFA
+function formatMontant(input) {
+    const value = input.value.replace(/[^\d]/g, '')
+    input.value = new Intl.NumberFormat('fr-FR').format(value) + ' CFA'
+}
+
+// Initialisation des tooltips Bootstrap
+var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+    return new bootstrap.Tooltip(tooltipTriggerEl)
+})
+</script>
+{% endblock %}
+
+{% comment %} 
+
+<script>
+    // Récupérer les champs du formulaire
+    const dateDebutInput = document.getElementById("id_date_debut_location");
+    const nombreMoisInput = document.getElementById("id_nombre_mois_paye");
+    const dateFinInput = document.getElementById("id_date_fin_avance");
+    const montantAvanceInput = document.getElementById("id_montant_avance");
+    const montantCautionInput = document.getElementById("id_montant_caution");
+    const montantTotalInput = document.getElementById("id_montant_total");
+    const commissionInput = document.getElementById("id_commission");
+   
+    // Vérifier si les champs existent
+    if (!dateDebutInput || !nombreMoisInput || !dateFinInput || !montantAvanceInput || !montantCautionInput || !montantTotalInput || !commissionInput) {
+        console.error("Un ou plusieurs champs du formulaire sont introuvables.");
+    }
+   
+    // Variables pour les informations de la chambre
+    const prixChambre = parseFloat({{ chambre.prix }});
+    const tauxCommission = parseFloat({{ chambre.taux_commission }});
+   
+    // Fonction pour calculer la date de fin
+    function calculerDateFin() {
+        const dateDebut = new Date(dateDebutInput.value);
+        const nombreMois = parseInt(nombreMoisInput.value);
+   
+        if (!isNaN(dateDebut.getTime()) && !isNaN(nombreMois)) {
+            // Ajouter le nombre de mois à la date de début
+            dateDebut.setMonth(dateDebut.getMonth() + nombreMois);
+            // Mettre à jour le champ "date_fin_avance"
+            dateFinInput.value = dateDebut.toISOString().split("T")[0];
+        } else {
+            dateFinInput.value = ""; // Réinitialiser si les valeurs sont invalides
+        }
+    }
+   
+    // Fonction pour calculer le montant total, le montant d'avance et la commission
+    function calculerMontants() {
+        const nombreMois = parseInt(nombreMoisInput.value);
+        const montantCaution = parseFloat(montantCautionInput.value) || 0;
+   
+        if (!isNaN(nombreMois) && nombreMois > 0) {
+            // Calculer le montant d'avance
+            const montantAvance = prixChambre * nombreMois;
+            montantAvanceInput.value = montantAvance.toFixed(2);
+   
+            // Calculer la commission
+            const commission = (montantAvance * tauxCommission) / 100;
+            commissionInput.value = commission.toFixed(2);
+   
+            // Calculer le montant total (avance + caution)
+            const montantTotal = montantAvance + montantCaution;
+            montantTotalInput.value = montantTotal.toFixed(2);
+        } else {
+            montantAvanceInput.value = ""; // Réinitialiser si les valeurs sont invalides
+            commissionInput.value = "";
+            montantTotalInput.value = "";
+        }
+    }
+   
+    // Ajouter des écouteurs d'événements pour recalculer les champs
+    if (dateDebutInput && nombreMoisInput) {
+        dateDebutInput.addEventListener("change", calculerDateFin);
+        nombreMoisInput.addEventListener("input", () => {
+            calculerDateFin();
+            calculerMontants();
+        });
+        montantCautionInput.addEventListener("input", calculerMontants);
+   
+   
+        // Fonction pour mettre à jour le statut de paiement
+   function updateStatutPaiement() {
+       const montantCaution = parseFloat(montantCautionInput.value) || 0;
+       const montantAvance = parseFloat(montantAvanceInput.value) || 0;
+   
+       if (montantCaution > 1 && montantAvance > 1) {
+           statutPaiementSelect.value = 'payé';
+       } else if (montantCaution > 1 && montantAvance === 0) {
+           statutPaiementSelect.value = 'caution payée, pas avance';
+       } else if (montantCaution === 0 && montantAvance > 1) {
+           statutPaiementSelect.value = 'avance payée, pas caution';
+       }
+   }
+   
+   // Modifier la fonction calculerMontants pour inclure la mise à jour du statut
+   function calculerMontants() {
+       const nombreMois = parseInt(nombreMoisInput.value);
+       const montantCaution = parseFloat(montantCautionInput.value) || 0;
+   
+       if (!isNaN(nombreMois) && nombreMois > 0) {
+           // Calculer le montant d'avance
+           const montantAvance = prixChambre * nombreMois;
+           montantAvanceInput.value = montantAvance.toFixed(2);
+   
+           // Calculer la commission
+           const commission = (montantAvance * tauxCommission) / 100;
+           commissionInput.value = commission.toFixed(2);
+   
+           // Calculer le montant total (avance + caution)
+           const montantTotal = montantAvance + montantCaution;
+           montantTotalInput.value = montantTotal.toFixed(2);
+   
+           // Mettre à jour le statut de paiement
+           updateStatutPaiement();
+       } else {
+           montantAvanceInput.value = "";
+           commissionInput.value = "";
+           montantTotalInput.value = "";
+       }
+   }
+   
+   // Modifier les écouteurs d'événements
+   if (dateDebutInput && nombreMoisInput && montantCautionInput && montantAvanceInput) {
+       dateDebutInput.addEventListener("change", calculerDateFin);
+       nombreMoisInput.addEventListener("input", () => {
+           calculerDateFin();
+           calculerMontants();
+       });
+       montantCautionInput.addEventListener("input", () => {
+           calculerMontants();
+           updateStatutPaiement();
+       });
+       montantAvanceInput.addEventListener("input", () => {
+           updateStatutPaiement();
+       });
+   }
+    }
+   </script> {% endcomment %}

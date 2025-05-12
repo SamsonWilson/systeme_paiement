@@ -1,0 +1,15 @@
+
+
+{% extends "accuiel/Base.html" %}
+{% block content %}
+<div class="container mt-4">
+    <h2>Chambre {{ chambre.nom }}</h2>
+<p>{{ chambre.description }}</p>
+<p>Loyer Mensuel: {{ chambre.loyer_mensuel }} €</p>
+<img src="{{ chambre.image.url }}" alt="Image de {{ chambre.nom }}">
+<br>
+<a href="{% url 'chambre_modifier' chambre.pk %}">Modifier</a>
+<a href="{% url 'chambre_supprimer' chambre.pk %}">Supprimer</a>
+<a href="{% url 'chambre_list' %}">Retour à la liste</a>
+</div>
+{% endblock %}

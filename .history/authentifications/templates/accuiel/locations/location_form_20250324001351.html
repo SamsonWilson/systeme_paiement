@@ -1,0 +1,70 @@
+{% extends "accuiel/base.html" %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2 class="mb-4 text-center">Créer une Location</h2>
+
+    <!-- Afficher les informations de l'utilisateur -->
+    <div class="alert alert-info">
+        <p><strong>Utilisateur :</strong> {{ utilisateur.first_name }} {{ utilisateur.last_name }}</p>
+        <p><strong>Email :</strong> {{ utilisateur.email }}</p>
+    </div>
+
+    <!-- Afficher les informations de la chambre -->
+    <div class="alert alert-info">
+        <p><strong>Chambre :</strong> {{ chambre.type_chambre.nom }}</p>
+        <p><strong>Prix :</strong> {{ chambre.prix }} CFA</p>
+        <p><strong>Surface :</strong> {{ chambre.surface }} m²</p>
+        <p><strong>Description :</strong> {{ chambre.description }}</p>
+    </div>
+
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        <div class="mb-3">
+            {{ form.date_debut_location.label_tag }}
+            {{ form.date_debut_location }}
+        </div>
+        <div class="mb-3">
+            {{ form.nombre_mois_paye.label_tag }}
+            {{ form.nombre_mois_paye }}
+        </div>
+        <div class="mb-3">
+            {{ form.date_fin_avance.label_tag }}
+            {{ form.date_fin_avance }}
+        </div>
+        <div class="mb-3">
+            {{ form.montant_avance.label_tag }}
+            {{ form.montant_avance }}
+        </div>
+        <div class="mb-3">
+            {{ form.montant_caution.label_tag }}
+            {{ form.montant_caution }}
+        </div>
+        <div class="mb-3">
+            {{ form.commission.label_tag }}
+            {{ form.commission }}
+        </div>
+        <div class="mb-3">
+            {{ form.montant_total.label_tag }}
+            {{ form.montant_total }}
+        </div>
+        <div class="mb-3">
+            {{ form.image_contrat.label_tag }}
+            {{ form.image_contrat }}
+        </div>
+        <div class="mb-3">
+            {{ form.statut_paiement.label_tag }}
+            {{ form.statut_paiement }}
+        </div>
+        <div class="mb-3">
+            {{ form.mode_paiement.label_tag }}
+            {{ form.mode_paiement }}
+        </div>
+        <div class="mb-3">
+            {{ form.date_paiement.label_tag }}
+            {{ form.date_paiement }}
+        </div>
+        <button type="submit" class="btn btn-primary">Enregistrer</button>
+    </form>
+</div>
+{% endblock %}

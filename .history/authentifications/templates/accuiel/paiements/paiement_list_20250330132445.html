@@ -1,0 +1,422 @@
+{% extends "accuiel/base.html" %}
+
+{% block title %}Gestion des Paiements{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <!-- En-tête avec recherche et bouton d'ajout -->
+    <div class="mb-4 d-flex justify-content-between align-items-center">
+        <h2 class="mb-0">
+            <i class="fas fa-money-bill-wave text-primary me-2"></i>Gestion des Paiements
+        </h2>
+        <div class="d-flex gap-3">
+            <div class="input-group">
+                <input type="text" class="form-control" placeholder="Rechercher un paiement..." id="searchInput">
+                <button class="btn btn-outline-primary" type="button">
+                    <i class="fas fa-search"></i>
+                </button>
+            </div>
+            <a href="{% url 'creecreer_paiementr_location' %}" class="btn btn-primary">
+                <i class="fas fa-plus-circle me-2"></i>Nouveau Paiement
+            </a> 
+        </div>
+    </div>
+
+    <!-- Cartes statistiques avec animations -->
+    <div class="row g-4 mb-4">
+        <!-- Total des Paiements -->
+        <div class="col-xl-3 col-md-6">
+            <div class="card stat-card bg-gradient-primary border-0 h-100">
+                <div class="card-body p-4">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="text-white-50 text-uppercase mb-2">Total Paiements</h6>
+                            <h3 class="text-white mb-0">
+                                <span class="counter display-6">{{ total_paiements }}</span>
+                            </h3>
+                        </div>
+                        <div class="icon-circle bg-white bg-opacity-25">
+                            <i class="fas fa-money-bill-wave fa-2x text-white"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Montant Total -->
+        <div class="col-xl-3 col-md-6">
+            <div class="card stat-card bg-gradient-success border-0 h-100">
+                <div class="card-body p-4">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="text-white-50 text-uppercase mb-2">Montant Total</h6>
+                            <h3 class="text-white mb-0">
+                                <span class="counter display-6">{{ total_montant|floatformat:0 }}</span>
+                                <small>CFA</small>
+                            </h3>
+                        </div>
+                        <div class="icon-circle bg-white bg-opacity-25">
+                            <i class="fas fa-chart-line fa-2x text-white"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Paiements Confirmés -->
+        <div class="col-xl-3 col-md-6">
+            <div class="card stat-card bg-gradient-info border-0 h-100">
+                <div class="card-body p-4">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="text-white-50 text-uppercase mb-2">Confirmés</h6>
+                            <h3 class="text-white mb-0">
+                                <span class="counter display-6">{{ paiements_confirmes }}</span>
+                            </h3>
+                            <small class="text-white-50">
+                                {{ taux_confirmation|floatformat:1 }}% du total
+                            </small>
+                        </div>
+                        <div class="icon-circle bg-white bg-opacity-25">
+                            <i class="fas fa-check-circle fa-2x text-white"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Paiements en Attente -->
+        <div class="col-xl-3 col-md-6">
+            <div class="card stat-card bg-gradient-warning border-0 h-100">
+                <div class="card-body p-4">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="text-white-50 text-uppercase mb-2">En Attente</h6>
+                            <h3 class="text-white mb-0">
+                                <span class="counter display-6">{{ paiements_en_attente }}</span>
+                            </h3>
+                        </div>
+                        <div class="icon-circle bg-white bg-opacity-25">
+                            <i class="fas fa-clock fa-2x text-white"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Liste des paiements -->
+    {% if paiements_par_chambre %}
+    <div class="card shadow-sm border-0">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0" id="paiementsTable">
+                    <thead>
+                        <tr>
+                            <th class="bg-light px-4">#</th>
+                            <th class="bg-light sortable" data-sort="date">
+                                <i class="fas fa-sort me-1"></i>Date
+                            </th>
+                            <th class="bg-light sortable" data-sort="chambre">
+                                <i class="fas fa-sort me-1"></i>Chambre
+                            </th>
+                            <th class="bg-light sortable" data-sort="locataire">
+                                <i class="fas fa-sort me-1"></i>Locataire
+                            </th>
+                            <th class="bg-light sortable" data-sort="montant">
+                                <i class="fas fa-sort me-1"></i>Montant
+                            </th>
+                            <th class="bg-light">Période</th>
+                            <th class="bg-light sortable" data-sort="statut">
+                                <i class="fas fa-sort me-1"></i>Statut
+                            </th>
+                            <th class="bg-light text-end px-4">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in paiements_par_chambre %}
+                        <tr class="bg-light">
+                            <td colspan="8" class="fw-bold px-4">
+                                <i class="fas fa-building text-primary me-2"></i>
+                                {{ item.chambre.type_chambre.nom }} - {{ item.chambre.numero }}
+                            </td>
+                        </tr>
+                        
+                        {% for paiement in item.paiements %}
+                        <tr class="paiement-row">
+                            <td class="px-4">{{ forloop.counter }}</td>
+                            <td data-sort="{{ paiement.date_paiement|date:'Y-m-d' }}">
+                                {{ paiement.date_paiement|date:"d/m/Y" }}
+                            </td>
+                            <td>{{ item.chambre.numero }}</td>
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    <div class="avatar-sm bg-primary bg-opacity-10 rounded-circle me-2">
+                                        {% if paiement.location.utilisateur.photo %}
+                                            <img src="{{ paiement.location.utilisateur.photo.url }}" 
+                                                 alt="Photo" class="rounded-circle">
+                                        {% else %}
+                                            <i class="fas fa-user text-primary"></i>
+                                        {% endif %}
+                                    </div>
+                                    <div>
+                                        <div class="fw-bold">{{ paiement.location.utilisateur.nom }}</div>
+                                        <small class="text-muted">{{ paiement.location.utilisateur.email }}</small>
+                                    </div>
+                                </div>
+                            </td>
+                            <td data-sort="{{ paiement.montant_paye }}">
+                                <span class="fw-bold">{{ paiement.montant_paye|floatformat:0 }}</span>
+                                <small class="text-muted">CFA</small>
+                            </td>
+                            <td>
+                                <div>{{ paiement.nombre_mois_paye }} mois</div>
+                                <small class="text-muted">
+                                    Du {{ paiement.date_paiement|date:"d/m/Y" }} 
+                                    au {{ paiement.date_fin_paiement|date:"d/m/Y" }}
+                                </small>
+                            </td>
+                            <td>
+                                {% if paiement.statut_paiement == "confirmé" %}
+                                    <span class="badge bg-success-subtle text-success">
+                                        <i class="fas fa-check-circle me-1"></i>Confirmé
+                                    </span>
+                                {% elif paiement.statut_paiement == "en attente" %}
+                                    <span class="badge bg-warning-subtle text-warning">
+                                        <i class="fas fa-clock me-1"></i>En attente
+                                    </span>
+                                {% else %}
+                                    <span class="badge bg-danger-subtle text-danger">
+                                        <i class="fas fa-times-circle me-1"></i>{{ paiement.statut_paiement }}
+                                    </span>
+                                {% endif %}
+                            </td>
+                            <td class="text-end px-4">
+                                <div class="btn-group">
+                                    <a href="{% url 'modifier_paiement' paiement.pk %}" 
+                                       class="btn btn-sm btn-primary">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    <button type="button" 
+                                            class="btn btn-sm btn-danger"
+                                            data-bs-toggle="modal"
+                                            data-bs-target="#deleteModal{{ paiement.pk }}">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+
+                                <!-- Modal de confirmation -->
+                                <div class="modal fade" id="deleteModal{{ paiement.pk }}" tabindex="-1">
+                                    <div class="modal-dialog">
+                                        <div class="modal-content">
+                                            <div class="modal-header">
+                                                <h5 class="modal-title">
+                                                    <i class="fas fa-exclamation-triangle text-danger me-2"></i>
+                                                    Confirmer la suppression
+                                                </h5>
+                                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                            </div>
+                                            <div class="modal-body">
+                                                <p>Êtes-vous sûr de vouloir supprimer ce paiement ?</p>
+                                                <div class="alert alert-warning">
+                                                    <i class="fas fa-exclamation-triangle me-2"></i>
+                                                    Cette action est irréversible.
+                                                </div>
+                                            </div>
+                                            <div class="modal-footer">
+                                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                                                    <i class="fas fa-times me-2"></i>Annuler
+                                                </button>
+                                                <a href="{% url 'supprimer_paiement' paiement.pk %}" 
+                                                   class="btn btn-danger">
+                                                    <i class="fas fa-trash me-2"></i>Supprimer
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="8" class="text-center py-4">
+                                <div class="text-muted">
+                                    <i class="fas fa-info-circle fa-2x mb-3"></i>
+                                    <p>Aucun paiement pour cette chambre</p>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <div class="alert alert-info d-flex align-items-center">
+        <i class="fas fa-info-circle fa-2x me-3"></i>
+        <div>
+            <h5 class="alert-heading">Aucun paiement enregistré</h5>
+            <p class="mb-0">Commencez par ajouter votre premier paiement.</p>
+            <a href="{% url 'ajouter_paiement' %}" class="btn btn-info mt-2">
+                <i class="fas fa-plus-circle me-2"></i>Ajouter un paiement
+            </a>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Styles -->
+<style>
+:root {
+    --primary-gradient: linear-gradient(135deg, #0d6efd, #0a58ca);
+    --success-gradient: linear-gradient(135deg, #198754, #146c43);
+    --info-gradient: linear-gradient(135deg, #0dcaf0, #0997b3);
+    --warning-gradient: linear-gradient(135deg, #ffc107, #cc9a06);
+}
+
+.stat-card {
+    transition: all 0.3s ease;
+    border-radius: 15px;
+    overflow: hidden;
+}
+
+.stat-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 30px rgba(0,0,0,0.1);
+}
+
+.icon-circle {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+}
+
+.stat-card:hover .icon-circle {
+    transform: scale(1.1) rotate(10deg);
+}
+
+.table {
+    font-size: 0.95rem;
+}
+
+.table th.sortable {
+    cursor: pointer;
+    user-select: none;
+}
+
+.table th.sortable:hover {
+    background-color: #f8f9fa;
+}
+
+.avatar-sm {
+    width: 35px;
+    height: 35px;
+    overflow: hidden;
+}
+
+.avatar-sm img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.paiement-row {
+    transition: background-color 0.2s ease;
+}
+
+.paiement-row:hover {
+    background-color: rgba(0,0,0,0.01);
+}
+
+.bg-gradient-primary { background: var(--primary-gradient); }
+.bg-gradient-success { background: var(--success-gradient); }
+.bg-gradient-info { background: var(--info-gradient); }
+.bg-gradient-warning { background: var(--warning-gradient); }
+
+/* Animations pour les compteurs */
+@keyframes countUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.counter {
+    opacity: 0;
+    animation: countUp 0.5s ease forwards;
+}
+</style>
+
+<!-- Scripts -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Animation des compteurs
+    function animateCounter(element, target) {
+        let current = 0;
+        const increment = target / 50;
+        const duration = 1000;
+        const stepTime = duration / 50;
+
+        function update() {
+            current += increment;
+            if (current >= target) {
+                element.textContent = Math.round(target);
+                return;
+            }
+            element.textContent = Math.round(current);
+            setTimeout(update, stepTime);
+        }
+
+        update();
+    }
+
+    document.querySelectorAll('.counter').forEach(counter => {
+        const target = parseFloat(counter.textContent);
+        animateCounter(counter, target);
+    });
+
+    // Recherche dans le tableau
+    const searchInput = document.getElementById('searchInput');
+    if (searchInput) {
+        searchInput.addEventListener('input', function(e) {
+            const searchTerm = e.target.value.toLowerCase();
+            document.querySelectorAll('.paiement-row').forEach(row => {
+                const text = row.textContent.toLowerCase();
+                row.style.display = text.includes(searchTerm) ? '' : 'none';
+            });
+        });
+    }
+
+    // Tri des colonnes
+    document.querySelectorAll('th.sortable').forEach(header => {
+        header.addEventListener('click', function() {
+            const column = this.dataset.sort;
+            const tbody = document.querySelector('tbody');
+            const rows = Array.from(tbody.querySelectorAll('tr.paiement-row'));
+            let ascending = !this.classList.contains('asc');
+
+            // Tri des lignes
+            rows.sort((a, b) => {
+                const aValue = a.querySelector(`td[data-sort]`)?.dataset.sort || '';
+                const bValue = b.querySelector(`td[data-sort]`)?.dataset.sort || '';
+                return ascending ? 
+                    aValue.localeCompare(bValue) : 
+                    bValue.localeCompare(aValue);
+            });
+
+            // Mise à jour de l'indicateur de tri
+            document.querySelectorAll('th.sortable').forEach(th => {
+                th.classList.remove('asc', 'desc');
+            });
+            this.classList.add(ascending ? 'asc' : 'desc');
+
+            // Réinsertion des lignes triées
+            rows.forEach(row => tbody.appendChild(row));
+        });
+    });
+});
+</script>
+{% endblock %}

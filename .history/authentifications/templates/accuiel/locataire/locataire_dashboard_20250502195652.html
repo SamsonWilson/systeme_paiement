@@ -1,0 +1,667 @@
+{% extends "accuiel/base.html" %}
+{% load widget_tweaks %}
+{% block content %}
+<div class="dashboard-container">
+
+    <!-- ==================== CARTES STATISTIQUES ==================== -->
+    <!-- ... (Your stats cards remain the same) ... -->
+     <div class="mb-4 row g-4">
+        <!-- Paiements à jour -->
+        <div class="col-xl-3 col-md-6">
+            <div class="border-0 card bg-success-subtle h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h6 class="mb-2 text-success text-uppercase fw-bold">À jour</h6>
+                            <h3 class="mb-0">{{ paiements_confirmes }} <small class="text-muted fs-6">paiements</small></h3>
+                        </div>
+                        <div class="p-3 bg-opacity-25 bg-success rounded-circle">
+                            <i class="fas fa-check-circle text-success fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Paiements en attente -->
+        <div class="col-xl-3 col-md-6">
+            <div class="border-0 card bg-warning-subtle h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h6 class="mb-2 text-warning text-uppercase fw-bold">En attente</h6>
+                            <h3 class="mb-0">{{ paiements_en_attente }} <small class="text-muted fs-6">paiements</small></h3>
+                        </div>
+                        <div class="p-3 bg-opacity-25 bg-warning rounded-circle">
+                            <i class="fas fa-clock text-warning fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Paiements expirés -->
+        <div class="col-xl-3 col-md-6">
+            <div class="border-0 card bg-danger-subtle h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h6 class="mb-2 text-danger text-uppercase fw-bold">Expirés</h6>
+                            <h3 class="mb-0">{{ paiements_expires }} <small class="text-muted fs-6">paiements</small></h3>
+                        </div>
+                        <div class="p-3 bg-opacity-25 bg-danger rounded-circle">
+                            <i class="fas fa-exclamation-circle text-danger fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- ==================== INFORMATIONS LOCATAIRE ==================== -->
+    <div class="locataire-info">
+        <h3 class="section-title">Informations Personnelles</h3>
+        <!-- ... (Tenant personal info remains the same) ... -->
+         <div class="info-card">
+            <div class="info-item">
+                <span class="info-label"><i class="fas fa-user"></i> Nom :</span>
+                <span class="info-value">{{ locataire.nom }} {{ locataire.prenom }}</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label"><i class="fas fa-envelope"></i> Email :</span>
+                <span class="info-value">{{ locataire.email }}</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label"><i class="fas fa-phone"></i> Téléphone :</span>
+                <span class="info-value">{{ locataire.telephone }}</span>
+            </div>
+        </div>
+
+        <h3 class="section-title">Résumé</h3>
+        <ul class="summary-list">
+            <li><strong>Montant total dû :</strong> {{ montant_total }} FCFA</li>
+            <!-- MODIFICATION: Added id="montant-paye-calcul" to the span -->
+            <li><strong>Montant payé :</strong> <span id="montant-paye-calcul">{{ montant_paye }}</span> FCFA</li>
+            <li><strong>Montant restant :</strong> {{ montant_restant }} FCFA</li>
+        </ul>
+        <!-- Optional: Add a placeholder for the JS calculation if you want to keep the server-rendered one separate -->
+        <!-- <ul class="summary-list">
+             <li><strong>Montant payé (Calculé JS) :</strong> <span id="montant-paye-calcul-js">0</span> FCFA</li>
+        </ul> -->
+    </div>
+
+    <!-- ==================== LOCATIONS ACTUELLES ==================== -->
+    <h3 class="section-title">Locations Actuelles</h3>
+    {% if locations %}
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Chambre</th>
+                    <th>Début</th>
+                    <th>Mois</th>
+                    <th>Fin</th>
+                    <th>Avance</th>
+                    <th>Caution</th>
+                    <th>Montant Total</th>
+                    <th>Statut</th>
+                    <th>Paiements</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for location in locations %}
+                <tr>
+                    <td>{{ location.chambre }}</td>
+                    <td>{{ location.date_debut_location }}</td>
+                    <td>{{ location.nombre_mois_paye }}</td>
+                    <td class="{% if location.date_fin_avance and location.date_fin_avance|date:"Y-m-d" < today %}date-expired{% endif %}">
+                        {{ location.date_fin_avance }}
+                    </td>
+                    <td>{{ location.montant_avance }}</td>
+                    <td>{{ location.montant_caution }}</td>
+                    <td>{{ location.montant_total }}</td>
+                    <td>{{ location.get_statut_paiement_display }}</td>
+                    <td>
+                        {% if location.paiements.all %}
+                            <table class="table table-bordered">
+                                <thead>
+                                    <tr>
+                                        <th>Date</th>
+                                        <th>Mois</th>
+                                        <th>Fin</th>
+                                        <th>Montant</th>
+                                        <th>Mode</th>
+                                        <th>Statut</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                {% for paiement in location.paiements.all %}
+                                    <tr>
+                                        <td>{{ paiement.date_paiement }}</td>
+                                        <td>{{ paiement.nombre_mois_paye }}</td>
+                                        <td class="{% if paiement.date_fin_paiement and paiement.date_fin_paiement|date:"Y-m-d" < today %}date-expired{% endif %}">
+                                            {{ paiement.date_fin_paiement }}
+                                        </td>
+                                        <!-- MODIFICATION: Added class="montant-paiement-valeur" -->
+                                        <td class="montant-paiement-valeur">{{ paiement.montant_paye }}</td>
+                                        <td>{{ paiement.get_mode_paiement_display }}</td>
+                                        <td>{{ paiement.get_statut_paiement_display }}</td>
+                                    </tr>
+                                {% endfor %}
+                                </tbody>
+                            </table>
+                        {% else %}
+                            <p class="no-data">Aucun paiement enregistré pour cette location.</p>
+                        {% endif %}
+                    </td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p class="no-data">Aucune location en cours.</p>
+    {% endif %}
+
+    <!-- ==================== LOCATIONS TERMINÉES ==================== -->
+    <!-- ... (Your terminated locations table remains the same) ... -->
+     <h3 class="section-title">Locations Terminées</h3>
+    {% if fins_locations %}
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Date de fin</th>
+                    <th>Montant Restant</th>
+                    <th>Raison</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for fin in fins_locations %}
+                <tr>
+                    <td>{{ fin.date_fin_location }}</td>
+                    <td>{{ fin.montant_restant }}</td>
+                    <td>{{ fin.raison_fin }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p class="no-data">Aucune location terminée.</p>
+    {% endif %}
+
+
+</div>
+
+<!-- ==================== STYLES ==================== -->
+<style>
+    /* ... (Your existing styles remain the same) ... */
+    .date-expired {
+        background-color: #f8d7da;
+        color: #721c24;
+        font-weight: bold;
+    }
+    .dashboard-container {
+        margin: 20px auto;
+        padding: 20px;
+        background-color: #f9f9f9;
+        border-radius: 10px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        font-family: Arial, sans-serif;
+    }
+    .locataire-info {
+        margin: 20px 0;
+        padding: 20px;
+        background-color: #f4f4f4;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+    .info-card {
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+    }
+    .info-item {
+        display: flex;
+        align-items: center;
+        font-size: 16px;
+        color: #555;
+    }
+    .info-label {
+        font-weight: bold;
+        color: #2c3e50;
+        margin-right: 10px;
+        display: flex;
+        align-items: center;
+    }
+    .info-label i {
+        margin-right: 8px;
+        color: #3498db;
+    }
+    .info-value {
+        color: #34495e;
+    }
+    .section-title {
+        font-size: 22px;
+        color: #34495e;
+        margin-top: 30px;
+        margin-bottom: 15px;
+    }
+    .summary-list {
+        list-style: none;
+        padding: 0;
+        margin: 0 0 20px 0;
+    }
+    .summary-list li {
+        font-size: 16px;
+        margin-bottom: 10px;
+    }
+    .summary-list li strong {
+        color: #2c3e50;
+    }
+    .table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-bottom: 20px;
+    }
+    .table th, .table td {
+        padding: 12px;
+        text-align: left;
+        border: 1px solid #ddd;
+    }
+    .table th {
+        background-color: #34495e;
+        color: #fff;
+    }
+    .table-striped tbody tr:nth-child(odd) {
+        background-color: #f9f9f9;
+    }
+    .table-striped tbody tr:nth-child(even) {
+        background-color: #f1f1f1;
+    }
+    .table-bordered {
+        margin-top: 10px;
+        border: 1px solid #ccc;
+    }
+    .no-data {
+        font-size: 14px;
+        color: #e74c3c;
+        font-style: italic;
+    }
+</style>
+
+<!-- ==================== JAVASCRIPT FOR CALCULATION ==================== -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // 1. Select all the cells containing payment amounts
+    const paiementMontantCells = document.querySelectorAll('.montant-paiement-valeur');
+
+    // 2. Initialize the total paid amount
+    let totalPayeCalcule = 0;
+
+    // 3. Loop through each cell, parse the value, and add to the total
+    paiementMontantCells.forEach(cell => {
+        // Get the text content (the amount) and remove potential whitespace
+        const montantText = cell.textContent.trim();
+        // Convert the text to a floating-point number
+        const montant = parseFloat(montantText);
+
+        // Check if the conversion was successful (is a valid number)
+        if (!isNaN(montant)) {
+            totalPayeCalcule += montant;
+        } else {
+            console.warn("Could not parse payment amount:", cell.textContent); // Optional: log errors
+        }
+    });
+
+    // 4. Find the element where the total should be displayed
+    const totalPayeDisplayElement = document.getElementById('montant-paye-calcul');
+
+    // 5. Update the element's content with the calculated total
+    if (totalPayeDisplayElement) {
+        // Format the number to 2 decimal places, suitable for currency
+        totalPayeDisplayElement.textContent = totalPayeCalcule.toFixed(2);
+    } else {
+        console.error("Display element with ID 'montant-paye-calcul' not found.");
+    }
+
+    // Optional: If you also want to recalculate the remaining amount based on the JS total
+    // const montantTotalElement = document.querySelector('.summary-list li:first-child'); // Find total due li
+    // const montantRestantElement = document.querySelector('#montant-restant-js'); // Add an ID to the remaining amount span if needed
+    // if (montantTotalElement && montantRestantElement) {
+    //    const montantTotalText = montantTotalElement.textContent.split(':')[1].trim().split(' ')[0];
+    //    const montantTotal = parseFloat(montantTotalText);
+    //    if (!isNaN(montantTotal)) {
+    //       const montantRestant = montantTotal - totalPayeCalcule;
+    //       montantRestantElement.textContent = montantRestant.toFixed(2);
+    //    }
+    // }
+
+});
+</script>
+
+{% endblock %}
+
+
+{% comment %} {% extends "accuiel/base.html" %}
+{% load widget_tweaks %}
+{% block content %}
+<div class="dashboard-container">
+
+
+
+
+    <!-- ==================== CARTES STATISTIQUES ==================== -->
+    <!-- Cartes statistiques -->
+    <div class="mb-4 row g-4">
+        <!-- Paiements en cours -->
+        <div class="col-xl-3 col-md-6">
+            <div class="border-0 card bg-success-subtle h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h6 class="mb-2 text-success text-uppercase fw-bold">À jour</h6>
+                            <h3 class="mb-0">
+                                {{ paiements_confirmes }}
+                                <small class="text-muted fs-6">paiements</small>
+                            </h3>
+                        </div>
+                        <div class="p-3 bg-opacity-25 bg-success rounded-circle">
+                            <i class="fas fa-check-circle text-success fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Paiements en attente -->
+        <div class="col-xl-3 col-md-6">
+            <div class="border-0 card bg-warning-subtle h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h6 class="mb-2 text-warning text-uppercase fw-bold">En attente</h6>
+                            <h3 class="mb-0">
+                                {{ paiements_en_attente }}
+                                <small class="text-muted fs-6">paiements</small>
+                            </h3>
+                        </div>
+                        <div class="p-3 bg-opacity-25 bg-warning rounded-circle">
+                            <i class="fas fa-clock text-warning fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Paiements expirés -->
+        <div class="col-xl-3 col-md-6">
+            <div class="border-0 card bg-danger-subtle h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h6 class="mb-2 text-danger text-uppercase fw-bold">Expirés</h6>
+                            <h3 class="mb-0">
+                                {{ paiements_expires }}
+                                <small class="text-muted fs-6">paiements</small>
+                            </h3>
+                        </div>
+                        <div class="p-3 bg-opacity-25 bg-danger rounded-circle">
+                            <i class="fas fa-exclamation-circle text-danger fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+        
+    <div class="locataire-info">
+        <h3 class="section-title">Informations Personnelles</h3>
+        <div class="info-card">
+            <div class="info-item">
+                <span class="info-label"><i class="fas fa-user"></i> Nom :</span>
+                <span class="info-value">{{ locataire.nom }} {{ locataire.prenom }}</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label"><i class="fas fa-envelope"></i> Email :</span>
+                <span class="info-value">{{ locataire.email }}</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label"><i class="fas fa-phone"></i> Téléphone :</span>
+                <span class="info-value">{{ locataire.telephone }}</span>
+            </div>
+        </div>
+        
+    <h3 class="section-title">Résumé</h3>
+    <ul class="summary-list">
+        <li><strong>Montant total dû :</strong> {{ montant_total }} FCFA</li>
+        <li><strong>Montant payé :</strong> {{ montant_paye }} FCFA</li>
+        <li><strong>Montant restant :</strong> {{ montant_restant }} FCFA</li>
+    </ul>
+
+    </div>
+
+    <h3 class="section-title">Locations Actuelles</h3>
+    {% if locations %}
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Chambre</th>
+                <th>Début</th>
+                <th>Mois </th>
+                <th>fin</th>
+                <th>Avance</th>
+                <th>Caution</th>
+                <th>Montant Total</th>
+                <th>Statut</th>
+                <th>Paiements</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for location in locations %}
+            <tr>
+                <td>{{ location.chambre }}</td>
+                <td>{{ location.date_debut_location }}</td>
+                <td>{{ location.nombre_mois_paye }}</td>
+                <td class="{% if location.date_fin_avance and location.date_fin_avance|date:"Y-m-d" < today %}date-expired{% endif %}">
+                    {{ location.date_fin_avance }}
+                </td>
+                <td>{{ location.montant_avance }}</td>
+                <td>{{ location.montant_caution }}</td>
+
+                <td>{{ location.montant_total }}</td>
+                <td>{{ location.get_statut_paiement_display }}</td>
+                <td>
+                    {% if location.paiements.all %}
+                        <table class="table table-bordered">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Mois</th>
+                                    <th class="date-header">Fin</th>
+                                    <th>Montant</th>
+                                    <th>Mode</th>
+                                    <th>Statut</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for paiement in location.paiements.all %}
+                                <tr>
+                                    <td>{{ paiement.date_paiement }}</td>
+                                    <td>{{ paiement.nombre_mois_paye }}</td>
+                                    <td class="{% if paiement.date_fin_paiement and paiement.date_fin_paiement|date:"Y-m-d" < today %}date-expired{% endif %}">
+                                        {{ paiement.date_fin_paiement }}
+                                    </td>                                    <td>{{ paiement.montant_paye }}</td>
+                                    <td>{{ paiement.get_mode_paiement_display }}</td>
+                                    <td>{{ paiement.get_statut_paiement_display }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    {% else %}
+                        <p class="no-data">Aucun paiement enregistré pour cette location.</p>
+                    {% endif %}
+                </td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+        <p class="no-data">Aucune location en cours.</p>
+    {% endif %}
+
+    <h3 class="section-title">Locations Terminées</h3>
+    {% if fins_locations %}
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Date de fin</th>
+                <th>Montant Restant</th>
+                <th>Raison</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for fin in fins_locations %}
+            <tr>
+                <td>{{ fin.date_fin_location }}</td>
+                <td>{{ fin.montant_restant }}</td>
+                <td>{{ fin.raison_fin }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+        <p class="no-data">Aucune location terminée.</p>
+    {% endif %}
+</div>
+
+<style>
+    /* Conteneur des informations personnelles */
+    .date-expired {
+        background-color: #f8d7da;
+        color: #721c24;
+        font-weight: bold;
+    }
+    .locataire-info {
+        margin: 20px 0;
+        padding: 20px;
+        background-color: #f4f4f4;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .info-card {
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+    }
+
+    .info-item {
+        display: flex;
+        align-items: center;
+        font-size: 16px;
+        color: #555;
+    }
+
+    .info-label {
+        font-weight: bold;
+        color: #2c3e50;
+        margin-right: 10px;
+        display: flex;
+        align-items: center;
+    }
+
+    .info-label i {
+        margin-right: 8px;
+        color: #3498db;
+    }
+
+    .info-value {
+        color: #34495e;
+    }
+    /* Conteneur principal */
+    .dashboard-container {
+        margin: 20px auto;
+        padding: 20px;
+        background-color: #f9f9f9;
+        border-radius: 10px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        font-family: Arial, sans-serif;
+    }
+
+    /* Titres */
+    .dashboard-title {
+        text-align: center;
+        font-size: 28px;
+        color: #2c3e50;
+        margin-bottom: 20px;
+    }
+
+    .section-title {
+        font-size: 22px;
+        color: #34495e;
+        margin-top: 30px;
+        margin-bottom: 15px;
+    }
+
+    /* Informations locataire */
+    .locataire-info p {
+        font-size: 16px;
+        color: #555;
+        margin: 5px 0;
+    }
+
+    /* Liste de résumé */
+    .summary-list {
+        list-style: none;
+        padding: 0;
+        margin: 0 0 20px 0;
+    }
+
+    .summary-list li {
+        font-size: 16px;
+        margin-bottom: 10px;
+    }
+
+    .summary-list li strong {
+        color: #2c3e50;
+    }
+
+    /* Tableaux */
+    .table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-bottom: 20px;
+    }
+
+    .table th, .table td {
+        padding: 12px;
+        text-align: left;
+        border: 1px solid #ddd;
+    }
+
+    .table th {
+        background-color: #34495e;
+        color: #fff;
+    }
+
+    .table-striped tbody tr:nth-child(odd) {
+        background-color: #f9f9f9;
+    }
+
+    .table-striped tbody tr:nth-child(even) {
+        background-color: #f1f1f1;
+    }
+
+    .table-bordered {
+        margin-top: 10px;
+        border: 1px solid #ccc;
+    }
+
+    /* Texte pour les données manquantes */
+    .no-data {
+        font-size: 14px;
+        color: #e74c3c;
+        font-style: italic;
+    }
+</style>
+{% endblock %} {% endcomment %}

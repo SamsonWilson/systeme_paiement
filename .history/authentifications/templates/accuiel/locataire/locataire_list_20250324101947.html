@@ -1,0 +1,60 @@
+{% extends "accuiel/Base.html" %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2 class="mb-4 text-center">Liste des Locataires</h2>
+
+    <!-- Formulaire de recherche -->
+    <form method="get" class="mb-4">
+        <div class="input-group">
+            <input type="text" name="q" class="form-control" placeholder="Rechercher par nom ou prénom..." value="{{ request.GET.q }}">
+            <button type="submit" class="btn btn-primary">
+                <i class="fas fa-search"></i> Rechercher
+            </button>
+        </div>
+    </form>
+
+    <div class="shadow-lg card">
+        <div class="card-body">
+            {% if utilisateurs %}
+                <table class="table text-center table-hover table-bordered">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>Nom d'utilisateur</th>
+                            <th>Email</th>
+                            <th>Téléphone</th>
+                            <th>Type d'utilisateur</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for utilisateur in utilisateurs %}
+                            <tr>
+                                <td>
+                                    <span class="fw-bold">{{ utilisateur.username }}</span>
+                                </td>
+                                <td>{{ utilisateur.email }}</td>
+                                <td>{{ utilisateur.tel|default:"Non renseigné" }}</td>
+                                <td>
+                                    <span class="badge bg-primary">
+                                        {{ utilisateur.type_utilisateur.nom|default:"Non spécifié" }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <a href="{% url 'creer_location' chambre.id utilisateur.id %}" class="btn btn-success btn-sm">
+                                        <i class="fas fa-plus-circle"></i> Créer une Location
+                                    </a>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            {% else %}
+                <div class="text-center alert alert-warning" role="alert">
+                    Aucun locataire trouvé.
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

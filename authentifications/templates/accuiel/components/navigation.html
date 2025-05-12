@@ -1,0 +1,247 @@
+<nav class="sidebar-nav">
+    <!-- Gestion des Biens -->
+    <div class="nav-group">
+        <h6 class="nav-group-title">Gestion des Biens</h6>
+        <ul class="nav-list">
+            <li class="nav-item">
+                <a href="{% url 'ville_list' %}" class="nav-link {% if request.resolver_match.url_name == 'ville_list' %}active{% endif %}">
+                    <div class="nav-link-icon">
+                        <i class="fas fa-city"></i>
+                    </div>
+                    <div class="nav-link-content">
+                        <span>Villes</span>
+                        <small class="nav-link-desc">Gérer les villes</small>
+                    </div>
+                </a>
+            </li>
+
+            <li class="nav-item">
+                <a href="{% url 'maison_liste' %}" class="nav-link {% if request.resolver_match.url_name == 'maison_liste' %}active{% endif %}">
+                    <div class="nav-link-icon">
+                        <i class="fas fa-home"></i>
+                    </div>
+                    <div class="nav-link-content">
+                        <span>Maisons</span>
+                        <small class="nav-link-desc">Gérer les maisons</small>
+                    </div>
+                </a>
+            </li>
+
+            <li class="nav-item">
+                <a href="{% url 'Quatiers_list' %}" class="nav-link {% if request.resolver_match.url_name == 'Quatiers_list' %}active{% endif %}">
+                    <div class="nav-link-icon">
+                        <i class="fas fa-map-marker-alt"></i>
+                    </div>
+                    <div class="nav-link-content">
+                        <span>Quartiers</span>
+                        <small class="nav-link-desc">Gérer les quartiers</small>
+                    </div>
+                </a>
+            </li>
+        </ul>
+    </div>
+
+    <!-- Gestion des Chambres -->
+    <div class="nav-group">
+        <h6 class="nav-group-title">Gestion des Chambres</h6>
+        <ul class="nav-list">
+            <li class="nav-item">
+                <a href="{% url 'liste_typechambres' %}" class="nav-link {% if request.resolver_match.url_name == 'liste_typechambres' %}active{% endif %}">
+                    <div class="nav-link-icon">
+                        <i class="fas fa-bed"></i>
+                    </div>
+                    <div class="nav-link-content">
+                        <span>Types de chambre</span>
+                        <small class="nav-link-desc">Configurer les types</small>
+                    </div>
+                </a>
+            </li>
+
+            <li class="nav-item">
+                <a href="{% url 'liste_chambres' %}" class="nav-link {% if request.resolver_match.url_name == 'liste_chambres' %}active{% endif %}">
+                    <div class="nav-link-icon">
+                        <i class="fas fa-door-open"></i>
+                    </div>
+                    <div class="nav-link-content">
+                        <span>Chambres</span>
+                        <small class="nav-link-desc">Gérer les chambres</small>
+                    </div>
+                </a>
+            </li>
+        </ul>
+    </div>
+
+    <!-- Gestion Locative -->
+    <div class="nav-group">
+        <h6 class="nav-group-title">Gestion Locative</h6>
+        <ul class="nav-list">
+            <li class="nav-item">
+                <a href="{% url 'liste_proprietaire' %}" class="nav-link {% if request.resolver_match.url_name == 'liste_proprietaire' %}active{% endif %}">
+                    <div class="nav-link-icon">
+                        <i class="fas fa-user-tie"></i>
+                    </div>
+                    <div class="nav-link-content">
+                        <span>Propriétaires</span>
+                        <small class="nav-link-desc">Gérer les propriétaires</small>
+                    </div>
+                </a>
+            </li>
+
+            <li class="nav-item">
+                <a href="{% url 'liste_locations' %}" class="nav-link {% if request.resolver_match.url_name == 'liste_locations' %}active{% endif %}">
+                    <div class="nav-link-icon">
+                        <i class="fas fa-key"></i>
+                    </div>
+                    <div class="nav-link-content">
+                        <span>Locations</span>
+                        <small class="nav-link-desc">Gérer les locations</small>
+                    </div>
+                </a>
+            </li>
+
+            <li class="nav-item">
+                <a href="{% url 'liste_paiements' %}" class="nav-link {% if request.resolver_match.url_name == 'liste_paiements' %}active{% endif %}">
+                    <div class="nav-link-icon">
+                        <i class="fas fa-money-bill-wave"></i>
+                    </div>
+                    <div class="nav-link-content">
+                        <span>Paiements</span>
+                        <small class="nav-link-desc">Gérer les paiements</small>
+                    </div>
+                </a>
+            </li>
+        </ul>
+    </div>
+
+    <!-- Paramètres et Déconnexion -->
+    <div class="nav-group mt-auto">
+        <ul class="nav-list">
+            <li class="nav-item">
+                <a href="#" class="nav-link">
+                    <div class="nav-link-icon">
+                        <i class="fas fa-cog"></i>
+                    </div>
+                    <div class="nav-link-content">
+                        <span>Paramètres</span>
+                        <small class="nav-link-desc">Configuration système</small>
+                    </div>
+                </a>
+            </li>
+
+            <li class="nav-item">
+                <a href="#" class="nav-link nav-link-danger">
+                    <div class="nav-link-icon">
+                        <i class="fas fa-sign-out-alt"></i>
+                    </div>
+                    <div class="nav-link-content">
+                        <span>Déconnexion</span>
+                        <small class="nav-link-desc">Quitter l'application</small>
+                    </div>
+                </a>
+            </li>
+        </ul>
+    </div>
+</nav>
+
+<style>
+/* Navigation Styles */
+.sidebar-nav {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    gap: 1.5rem;
+}
+
+.nav-group {
+    margin-bottom: 1rem;
+}
+
+.nav-group-title {
+    color: rgba(255,255,255,0.5);
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 0.75rem;
+    padding-left: 1rem;
+}
+
+.nav-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.nav-item {
+    margin-bottom: 0.5rem;
+}
+
+.nav-link {
+    display: flex;
+    align-items: center;
+    padding: 0.75rem 1rem;
+    color: rgba(255,255,255,0.8);
+    text-decoration: none;
+    border-radius: 12px;
+    transition: all 0.3s ease;
+}
+
+.nav-link:hover, .nav-link.active {
+    background: rgba(255,255,255,0.1);
+    color: white;
+    transform: translateX(5px);
+}
+
+.nav-link-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    margin-right: 12px;
+    border-radius: 8px;
+    background: rgba(255,255,255,0.1);
+    transition: all 0.3s ease;
+}
+
+.nav-link:hover .nav-link-icon {
+    background: rgba(255,255,255,0.2);
+    transform: rotate(5deg);
+}
+
+.nav-link-content {
+    flex: 1;
+}
+
+.nav-link-content span {
+    display: block;
+    font-weight: 500;
+}
+
+.nav-link-desc {
+    display: block;
+    font-size: 0.75rem;
+    color: rgba(255,255,255,0.5);
+}
+
+.nav-link-danger {
+    color: #ff6b6b;
+}
+
+.nav-link-danger:hover {
+    background: rgba(255,107,107,0.1);
+}
+
+/* Animation */
+@keyframes slideIn {
+    from { opacity: 0; transform: translateX(-10px); }
+    to { opacity: 1; transform: translateX(0); }
+}
+
+.nav-item {
+    animation: slideIn 0.3s ease forwards;
+}
+
+.nav-item:nth-child(2) { animation-delay: 0.1s; }
+.nav-item:nth-child(3) { animation-delay: 0.2s; }
+.nav-item:nth-child(4) { animation-delay: 0.3s; }
+</style>

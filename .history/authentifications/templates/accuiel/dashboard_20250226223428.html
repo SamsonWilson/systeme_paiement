@@ -1,0 +1,10 @@
+<h2>Liste des Chambres</h2>
+<ul>
+  {% for chambre in chambres %}
+    <li>
+      <a href="{% url 'chambre_detail' chambre.pk %}">{{ chambre.nom }}</a>
+      <span>{{ chambre.loyer_mensuel }} €</span>
+    </li>
+  {% endfor %}
+</ul>
+<a href="{% url 'chambre_ajouter' %}">Ajouter une Chambre</a>

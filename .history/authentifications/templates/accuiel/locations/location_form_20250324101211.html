@@ -1,0 +1,240 @@
+{% extends "accuiel/base.html" %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <h2 class="mb-4 text-center text-primary">Créer une Location</h2>
+            <!-- Informations de l'utilisateur -->
+            <div class="mb-4 shadow-lg card border-info">
+                <div class="text-white card-header bg-info">
+                    <strong class="fs-3"><i class="fas fa-user"></i> Informations de l'utilisateur</strong>
+                </div>
+                <div class="card-body">
+                    <p class="fs-4"><i class="fas fa-user-circle text-primary"></i> <strong>Nom :</strong> <span class="badge bg-primary fs-5">{{ utilisateur.nom }} {{ utilisateur.prenom }}</span></p>
+                    <p class="fs-4"><i class="fas fa-envelope text-success"></i> <strong>Email :</strong> <span class="badge bg-success fs-5">{{ utilisateur.email }}</span></p>
+                </div>
+            </div>
+            
+            <!-- Informations de la chambre -->
+            <div class="mb-4 shadow-lg card border-warning">
+                <div class="card-header bg-warning text-dark">
+                    <strong class="fs-3"><i class="fas fa-bed"></i> Informations de la chambre</strong>
+                </div>
+                <div class="card-body">
+                    <p class="fs-4"><i class="fas fa-door-open text-warning"></i> <strong>Type de chambre :</strong> <span class="badge bg-warning text-dark fs-5">{{ chambre.type_chambre.nom }}</span></p>
+                    <p class="fs-4"><i class="fas fa-money-bill-wave text-danger"></i> <strong>Prix :</strong> <span class="badge bg-danger fs-5">{{ chambre.prix }} CFA</span></p>
+                    <p class="fs-4"><i class="fas fa-ruler-combined text-info"></i> <strong>Surface :</strong> <span class="badge bg-info fs-5">{{ chambre.surface }} m²</span></p>
+                    <p class="fs-4"><i class="fas fa-percentage text-primary"></i> <strong>Taux de commission :</strong> <span class="badge bg-primary fs-5">{{ chambre.taux_commission }}%</span></p>
+                </div>
+            </div>
+
+            <!-- Formulaire de création de location -->
+            <div class="shadow-lg card border-primary">
+                <div class="text-white card-header bg-primary">
+                    <strong><i class="fas fa-file-alt"></i> Formulaire de location</strong>
+                </div>
+                <div class="card-body">
+                    <form method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        <div class="row">
+                            <div class="mb-3 col-md-6">
+                                {{ form.date_debut_location.label_tag }}
+                                {{ form.date_debut_location }}
+                            </div>
+                            <div class="mb-3 col-md-6">
+                                {{ form.date_fin_avance.label_tag }}
+                                {{ form.date_fin_avance }}
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="mb-3 col-md-6">
+                                {{ form.nombre_mois_paye.label_tag }}
+                                {{ form.nombre_mois_paye }}
+                            </div>
+                            <div class="mb-3 col-md-6">
+                                {{ form.montant_avance.label_tag }}
+                                {{ form.montant_avance }}
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="mb-3 col-md-6">
+                                {{ form.montant_caution.label_tag }}
+                                {{ form.montant_caution }}
+                            </div>
+                            <div class="mb-3 col-md-6">
+                                {{ form.commission.label_tag }}
+                                {{ form.commission }}
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="mb-3 col-md-6">
+                                {{ form.mode_paiement.label_tag }}
+                                {{ form.mode_paiement }}
+                            </div>
+                            <div class="mb-3 col-md-6">
+                                {{ form.image_contrat.label_tag }}
+                                {{ form.image_contrat }}
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="mb-3 col-md-6">
+                                {{ form.statut_paiement.label_tag }}
+                                {{ form.statut_paiement }}
+                            </div>
+                            <div class="mb-3 col-md-6">
+                                {{ form.montant_total.label_tag }}
+                                {{ form.montant_total }}
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            {{ form.date_paiement.label_tag }}
+                            {{ form.date_paiement }}
+                        </div>
+                        <button type="submit" class="btn btn-success w-100"><i class="fas fa-save"></i> Enregistrer</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<script>
+    // Récupérer les champs du formulaire
+    const dateDebutInput = document.getElementById("id_date_debut_location");
+    const nombreMoisInput = document.getElementById("id_nombre_mois_paye");
+    const dateFinInput = document.getElementById("id_date_fin_avance");
+    const montantAvanceInput = document.getElementById("id_montant_avance");
+    const montantCautionInput = document.getElementById("id_montant_caution");
+    const montantTotalInput = document.getElementById("id_montant_total");
+    const commissionInput = document.getElementById("id_commission");
+
+    // Vérifier si les champs existent
+    if (!dateDebutInput || !nombreMoisInput || !dateFinInput || !montantAvanceInput || !montantCautionInput || !montantTotalInput || !commissionInput) {
+        console.error("Un ou plusieurs champs du formulaire sont introuvables.");
+    }
+
+    // Variables pour les informations de la chambre
+    const prixChambre = parseFloat({{ chambre.prix }});
+    const tauxCommission = parseFloat({{ chambre.taux_commission }});
+
+    // Fonction pour calculer la date de fin
+    function calculerDateFin() {
+        const dateDebut = new Date(dateDebutInput.value);
+        const nombreMois = parseInt(nombreMoisInput.value);
+
+        if (!isNaN(dateDebut.getTime()) && !isNaN(nombreMois)) {
+            // Ajouter le nombre de mois à la date de début
+            dateDebut.setMonth(dateDebut.getMonth() + nombreMois);
+            // Mettre à jour le champ "date_fin_avance"
+            dateFinInput.value = dateDebut.toISOString().split("T")[0];
+        } else {
+            dateFinInput.value = ""; // Réinitialiser si les valeurs sont invalides
+        }
+    }
+
+    // Fonction pour calculer le montant total, le montant d'avance et la commission
+    function calculerMontants() {
+        const nombreMois = parseInt(nombreMoisInput.value);
+        const montantCaution = parseFloat(montantCautionInput.value) || 0;
+
+        if (!isNaN(nombreMois) && nombreMois > 0) {
+            // Calculer le montant d'avance
+            const montantAvance = prixChambre * nombreMois;
+            montantAvanceInput.value = montantAvance.toFixed(2);
+
+            // Calculer la commission
+            const commission = (montantAvance * tauxCommission) / 100;
+            commissionInput.value = commission.toFixed(2);
+
+            // Calculer le montant total (avance + caution)
+            const montantTotal = montantAvance + montantCaution;
+            montantTotalInput.value = montantTotal.toFixed(2);
+        } else {
+            montantAvanceInput.value = ""; // Réinitialiser si les valeurs sont invalides
+            commissionInput.value = "";
+            montantTotalInput.value = "";
+        }
+    }
+
+    // Ajouter des écouteurs d'événements pour recalculer les champs
+    if (dateDebutInput && nombreMoisInput) {
+        dateDebutInput.addEventListener("change", calculerDateFin);
+        nombreMoisInput.addEventListener("input", () => {
+            calculerDateFin();
+            calculerMontants();
+        });
+        montantCautionInput.addEventListener("input", calculerMontants);
+    }
+</script>
+{% endblock %}
+
+
+{% comment %} <div class="shadow-sm card">
+    <div class="text-white card-header bg-primary">
+        <strong><i class="fas fa-file-alt"></i> Formulaire de location</strong>
+    </div>
+    <div class="card-body">
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            <div class="row">
+                <div class="mb-3 col-md-6">
+                    {{ form.date_debut_location.label_tag }}
+                    {{ form.date_debut_location }}
+                </div>
+                <div class="mb-3 col-md-6">
+                    {{ form.date_fin_avance.label_tag }}
+                    {{ form.date_fin_avance }}
+                </div>
+            </div>
+            <div class="row">
+                <div class="mb-3 col-md-6">
+                    {{ form.nombre_mois_paye.label_tag }}
+                    {{ form.nombre_mois_paye }}
+                </div>
+               
+                <div class="mb-3 col-md-6">
+                    {{ form.montant_avance.label_tag }}
+                    {{ form.montant_avance }}
+                </div>
+            </div>
+            <div class="row">
+                <div class="mb-3 col-md-6">
+                    {{ form.montant_caution.label_tag }}
+                    {{ form.montant_caution }}
+                </div>
+                <div class="mb-3 col-md-6">
+                    {{ form.commission.label_tag }}
+                    {{ form.commission }}
+                </div>
+            </div>
+            <div class="row">
+                <div class="mb-3 col-md-6">
+                    {{ form.mode_paiement.label_tag }}
+                    {{ form.mode_paiement }}
+                </div>
+                <div class="mb-3 col-md-6">
+                    {{ form.image_contrat.label_tag }}
+                    {{ form.image_contrat }}
+                </div>
+            </div>
+            <div class="row">
+                <div class="mb-3 col-md-6">
+                    {{ form.statut_paiement.label_tag }}
+                    {{ form.statut_paiement }}
+                </div>
+                <div class="mb-3 col-md-6">
+                    {{ form.montant_total.label_tag }}
+                    {{ form.montant_total }}
+                </div>
+               
+            </div>
+            <div class="mb-3">
+                {{ form.date_paiement.label_tag }}
+                {{ form.date_paiement }}
+            </div>
+            <button type="submit" class="btn btn-success w-100"><i class="fas fa-save"></i> Enregistrer</button>
+        </form>
+    </div>
+</div> {% endcomment %}

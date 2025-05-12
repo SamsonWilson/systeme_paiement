@@ -1,0 +1,17 @@
+{% extends "accuiel/Base.html" %}
+{% block title %}Liste des Paiements{% endblock %}
+{% block header %}Liste des Paiements{% endblock %}
+{% block content %}
+  <h2>Liste des Paiements</h2>
+  <a href="{% url 'creer_paiement' %}" class="mb-3 btn btn-primary">Ajouter un Paiement</a>
+  <ul class="list-group">
+    {% for paiement in paiements %}
+      <li class="list-group-item">
+        {{ paiement }}
+        {% comment %} <a href="{% url 'paiement_detail' paiement.pk %}" class="btn btn-info btn-sm">Détails</a>
+        <a href="{% url 'paiement_edit' paiement.pk %}" class="btn btn-warning btn-sm">Modifier</a>
+        <a href="{% url 'paiement_delete' paiement.pk %}" class="btn btn-danger btn-sm">Supprimer</a> {% endcomment %}
+      </li>
+    {% endfor %}
+  </ul>
+{% endblock %}

@@ -1,0 +1,1062 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    {# Vous pouvez rendre le titre dynamique si besoin #}
+    <title>{% block title %}Tableau de Bord{% endblock %}</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <style>
+        /* Styles généraux */
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f8f9fa;
+            margin: 0;
+            padding: 0;
+            color: #333;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            background: linear-gradient(135deg, #2c3e50, #4ca1af); /* Exemple de dégradé */
+            color: white;
+            padding: 20px;
+            min-height: 100vh;
+            transition: all 0.3s ease;
+            position: fixed;
+            width: 250px;
+            box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+            top: 0; /* Ajouté pour fixer en haut */
+            left: 0; /* Ajouté pour fixer à gauche */
+            overflow-x: hidden; /* Empêche le débordement horizontal */
+            z-index: 1000; /* Assure qu'elle est au-dessus du contenu */
+        }
+
+        .sidebar h2 {
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 1.5rem;
+            font-weight: 600;
+            padding-bottom: 10px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .sidebar ul {
+            list-style: none;
+            padding: 0;
+            margin: 0; /* Ajouté */
+        }
+
+        .sidebar li {
+            margin-bottom: 15px;
+            transition: transform 0.3s ease;
+        }
+
+        .sidebar li:hover {
+            transform: translateX(5px);
+        }
+
+        .sidebar a {
+            color: white;
+            text-decoration: none;
+            font-size: 1.1rem;
+            display: block;
+            padding: 10px 15px;
+            border-radius: 5px;
+            transition: all 0.3s ease;
+            background-color: rgba(255, 255, 255, 0.05);
+            white-space: nowrap; /* Empêche le texte de passer à la ligne */
+            overflow: hidden; /* Masque le texte qui dépasse */
+            text-overflow: ellipsis; /* Ajoute des points de suspension si le texte est tronqué */
+        }
+
+        .sidebar a:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+            transform: scale(1.02);
+        }
+
+        /* Main Content */
+        .main-content {
+            margin-left: 250px; /* Doit correspondre à la largeur de la sidebar */
+            padding: 20px;
+            transition: margin-left 0.3s ease;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea, #764ba2); /* Exemple de dégradé */
+            color: white;
+            padding: 20px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            margin-bottom: 30px;
+            border-radius: 10px;
+            transition: all 0.3s ease;
+        }
+
+        .header:hover {
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+        }
+
+        .header h1 {
+            margin: 0;
+            font-size: 2.2rem;
+            font-weight: 700;
+            text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Cartes */
+        .card {
+            border: none;
+            border-radius: 12px;
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+            margin-bottom: 25px;
+            overflow: hidden;
+        }
+
+        .card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 12px 25px rgba(0, 0, 0, 0.15);
+        }
+
+        .card-body {
+            padding: 25px;
+        }
+
+        .card-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: #333;
+        }
+
+        /* Cartes statistiques */
+        .stat-card {
+            transition: all 0.4s ease;
+            border: none;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        .bg-gradient-primary { /* Bleu */
+            background: linear-gradient(45deg, #0d6efd, #0a58ca);
+        }
+
+        .bg-gradient-success { /* Vert */
+            background: linear-gradient(45deg, #198754, #146c43);
+        }
+
+        .bg-gradient-info { /* Cyan */
+            background: linear-gradient(45deg, #0dcaf0, #0997b3);
+        }
+
+        .bg-gradient-warning { /* Jaune */
+            background: linear-gradient(45deg, #ffc107, #e0a800);
+        }
+         .bg-gradient-danger { /* Rouge - Exemple ajouté */
+            background: linear-gradient(45deg, #dc3545, #a71d2a);
+        }
+         .bg-gradient-secondary { /* Gris - Exemple ajouté */
+            background: linear-gradient(45deg, #6c757d, #565e64);
+        }
+
+        .icon-circle {
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+
+        .stat-card:hover .icon-circle {
+            transform: rotate(20deg) scale(1.1);
+        }
+
+        .display-6 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            /* Animation removed from CSS, handled by JS */
+            margin: 0;
+        }
+
+        /* Graphiques */
+        .chart-container {
+            position: relative;
+            height: 350px;
+            width: 100%;
+            margin-top: 20px;
+        }
+
+        /* Boutons et interactions */
+        .btn-custom {
+            border-radius: 8px;
+            padding: 10px 20px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .btn-custom:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 100%;
+                min-height: auto;
+                position: relative; /* Position relative sur petits écrans */
+                margin-bottom: 20px;
+                box-shadow: none;
+            }
+            .main-content {
+                margin-left: 0;
+            }
+            .header h1 {
+                font-size: 1.8rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="sidebar">
+        <h2>{{ user.username }}</h2>
+    
+        {# Afficher différents menus selon le type d'utilisateur #}
+        {% if user_type == 'Admin' %}
+            <ul>
+                <li><a href="{% url 'Quatiers_list' %}"><i class="fas fa-map-marker-alt me-2"></i>Listes des Quartiers</a></li>
+                <li><a href="{% url 'ville_list' %}"><i class="fas fa-city me-2"></i>Listes des villes</a></li>
+                <li><a href="{% url 'liste_typechambres' %}"><i class="fas fa-bed me-2"></i>Type de chambre</a></li>
+                <li><a href="{% url 'liste_chambres' %}"><i class="fas fa-door-open me-2"></i>Chambre</a></li>
+                <li><a href="{% url 'liste_proprietaire' %}"><i class="fas fa-user-tie me-2"></i>Listes des Propriétaires</a></li>
+                <li><a href="{% url 'liste_paiements' %}"><i class="fas fa-money-bill-wave me-2"></i>Paiement</a></li>
+                <li><a href="{% url 'liste_locations' %}"><i class="fas fa-key me-2"></i>Liste de location</a></li>
+                <li><a href="{% url 'utilisateurs_parchambre' %}">Voir les utilisateurs</a></li>
+                <li><a href="{% url 'proprietaire_list_maison' %}"><i class="fas fa-building me-2"></i>Maisons par Propriétaire</a></li>
+                <li><a href="{% url 'signup' %}"><i class="fas fa-user-plus me-2"></i>Création de compte</a></li>
+                <li><a href="{% url 'password_change' %}"><i class="fas fa-lock me-2"></i>Changer le mot de passe</a></li>
+                <li><a href="#"><i class="fas fa-cog me-2"></i>Paramètres Admin</a></li>
+                <li><a href="{% url 'logout' %}"><i class="fas fa-sign-out-alt me-2"></i>Déconnexion</a></li>
+            </ul>
+    
+        {% elif user_type == 'Propriétaire' %}
+            <ul>
+                <li><a href="{% url 'url_mes_proprietes' %}"><i class="fas fa-building me-2"></i>Mes Propriétés</a></li>
+                <li><a href="{% url 'url_mes_locataires' %}"><i class="fas fa-user-friends me-2"></i>Mes Locataires</a></li>
+                <li><a href="{% url 'url_ajouter_propriete' %}"><i class="fas fa-plus-circle me-2"></i>Ajouter une Propriété</a></li>
+                <li><a href="{% url 'password_change' %}"><i class="fas fa-lock me-2"></i>Changer le mot de passe</a></li>
+                <li><a href="#"><i class="fas fa-cog me-2"></i>Paramètres Propriétaire</a></li>
+                <li><a href="{% url 'logout' %}"><i class="fas fa-sign-out-alt me-2"></i>Déconnexion</a></li>
+            </ul>
+    
+        {% elif user_type == 'locataire' %}
+            <ul>
+                <li><a href="{% url 'maison_liste' %}"><i class="fas fa-home me-2"></i>Listes des Maisons</a></li>
+                <li><a href="{% url 'Quatiers_list' %}"><i class="fas fa-map-marker-alt me-2"></i>Listes des Quartiers</a></li>
+                <li><a href="{% url 'ville_list' %}"><i class="fas fa-city me-2"></i>Listes des villes</a></li>
+                <li><a href="{% url 'liste_typechambres' %}"><i class="fas fa-bed me-2"></i>Type de chambre</a></li>
+                <li><a href="{% url 'liste_chambres' %}"><i class="fas fa-door-open me-2"></i>Chambre</a></li>
+                <li><a href="{% url 'liste_proprietaire' %}"><i class="fas fa-user-tie me-2"></i>Listes des Propriétaires</a></li>
+                <li><a href="{% url 'liste_paiements' %}"><i class="fas fa-money-bill-wave me-2"></i>Paiement</a></li>
+                <li><a href="{% url 'liste_locations' %}"><i class="fas fa-key me-2"></i>Liste de location</a></li>
+                <li><a href="{% url 'utilisateurs_parchambre' %}">Voir les utilisateurs</a></li>
+                <li><a href="{% url 'proprietaire_list_maison' %}"><i class="fas fa-building me-2"></i>Maisons par Propriétaire</a></li>
+                <li><a href="{% url 'signup' %}"><i class="fas fa-user-plus me-2"></i>Création de compte</a></li>
+                <li><a href="#"><i class="fas fa-cog me-2"></i>Paramètres Locataire</a></li>
+                {% comment %} <li><a href="{% url 'logout' %}"><i class="fas fa-sign-out-alt me-2"></i>Déconnexion</a></li> {% endcomment %}
+            </ul>
+        {% endif %}
+    </div>
+    
+
+    <div class="main-content">
+        <div class="header">
+            {# Le titre du header peut aussi être conditionnel #}
+            <h1>{% block header_title %}Tableau de Bord{% endblock %}</h1>
+        </div>
+        <div class="content">
+            {# Ici, le CONTENU principal change selon le type d'utilisateur #}
+            {% block content %}
+
+                {% if user_type == 'Admin' %}
+                    <!-- Contenu spécifique Administrateur -->
+                    <div class="mb-4 row">
+                        <div class="col-md-12">
+                            <div class="card">
+                                <div class="text-center card-body">
+                                    <h2 class="mb-3">Bienvenue, Administrateur !</h2>
+                                    <p class="lead">Cette section affiche les statistiques globales et permet l'accès rapide aux fonctions d'administration.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Cartes statistiques (Admin) -->
+                    <div class="row">
+                        <div class="col-md-3">
+                            <div class="text-white card stat-card bg-gradient-primary">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <h5 class="card-title">Maisons</h5>
+                                            {# Assurez-vous que 'maison_count' est passé depuis la vue #}
+                                            <h2 class="display-6" id="maison-count">{{ maison_count|default:0 }}</h2>
+                                        </div>
+                                        <div class="icon-circle">
+                                            <i class="fas fa-home fa-2x"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="text-white card stat-card bg-gradient-success">
+                                    <div class="card-body">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <div>
+                                                <h5 class="card-title">Quartiers</h5>
+                                                 {# Assurez-vous que 'quartier_count' est passé depuis la vue #}
+                                                <h2 class="display-6" id="quartier-count">{{ quartier_count|default:0 }}</h2>
+                                            </div>
+                                            <div class="icon-circle">
+                                                <i class="fas fa-map-marker-alt fa-2x"></i>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="text-white card stat-card bg-gradient-info">
+                                    <div class="card-body">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <div>
+                                                <h5 class="card-title">Locataires</h5>
+                                                 {# Assurez-vous que 'locataire_count' est passé depuis la vue #}
+                                                <h2 class="display-6" id="locataire-count">{{ locataire_count|default:0 }}</h2>
+                                            </div>
+                                            <div class="icon-circle">
+                                                <i class="fas fa-users fa-2x"></i>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="text-white card stat-card bg-gradient-warning">
+                                    <div class="card-body">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <div>
+                                                <h5 class="card-title">Paiements</h5>
+                                                 {# Assurez-vous que 'paiement_count' est passé depuis la vue #}
+                                                <h2 class="display-6" id="paiement-count">{{ paiement_count|default:0 }}</h2>
+                                            </div>
+                                            <div class="icon-circle">
+                                                <i class="fas fa-money-bill-wave fa-2x"></i>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Graphique (Admin) -->
+                        <div class="mt-4 row">
+                            <div class="col-md-12">
+                                <div class="card">
+                                    <div class="card-body">
+                                        <h5 class="card-title">Statistiques des Locations</h5>
+                                        <div class="chart-container">
+                                            <canvas id="locationChart"></canvas> {# L'ID est nécessaire pour Chart.js #}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {# Vous pouvez ajouter ici d'autres sections, tableaux, etc. spécifiques à l'Admin #}
+
+                    {% elif user_type == 'Propriétaire' %}
+                        <!-- Contenu spécifique Propriétaire -->
+                        <div class="mb-4 row">
+                             <div class="col-md-12">
+                                <div class="card">
+                                    <div class="text-center card-body">
+                                        <h2 class="mb-3">Bienvenue, Propriétaire !</h2>
+                                        <p class="lead">Consultez vos propriétés et gérez vos locataires.</p>
+                                        {# Utiliser ici les données spécifiques passées du contexte #}
+                                        <p>Vous gérez actuellement **X** propriétés et **Y** locataires.</p>
+                                    </div>
+                                </div>
+                             </div>
+                        </div>
+                        {# Ajoutez ici des sections spécifiques, par exemple une liste de propriétés, un résumé des revenus, etc. #}
+                         <div class="row">
+                             <div class="col-md-6">
+                                 <div class="card">
+                                     <div class="card-body">
+                                         <h5 class="card-title"><i class="fas fa-building me-2"></i>Vos Propriétés</h5>
+                                         {# Exemple de contenu, remplacer par une boucle sur vos proprietes_du_proprietaire #}
+                                         <ul>
+                                             <li>Propriété 1 - Adresse... <span class="badge bg-primary">Occupée</span></li>
+                                             <li>Propriété 2 - Adresse... <span class="badge bg-success">Disponible</span></li>
+                                             {% comment %}
+                                             {% for propriete in proprietes_du_proprietaire %}
+                                                 <li>{{ propriete.adresse }} - {{ propriete.ville }}
+                                                     {% if propriete.est_occupée %}
+                                                        <span class="badge bg-primary">Occupée</span>
+                                                     {% else %}
+                                                        <span class="badge bg-success">Disponible</span>
+                                                     {% endif %}
+                                                 </li>
+                                             {% endfor %}
+                                             {% endcomment %}
+                                         </ul>
+                                         <a href="{% url 'url_mes_proprietes' %}" class="mt-3 btn btn-primary btn-sm"><i class="fas fa-eye me-1"></i> Voir toutes mes propriétés</a>
+                                     </div>
+                                 </div>
+                             </div>
+                              <div class="col-md-6">
+                                 <div class="card">
+                                     <div class="card-body">
+                                         <h5 class="card-title"><i class="fas fa-user-friends me-2"></i>Locataires Rattachés</h5>
+                                         {# Exemple de contenu, remplacer par une boucle sur vos locataires_lies #}
+                                         <ul>
+                                             <li>Locataire A - Propriété X</li>
+                                             <li>Locataire B - Propriété Y</li>
+                                             {% comment %}
+                                             {% for locataire in locataires_lies %}
+                                                 <li>{{ locataire.prenom }} {{ locataire.nom }} - {{ locataire.propriete_louee.adresse }}</li>
+                                             {% endfor %}
+                                             {% endcomment %}
+                                         </ul>
+                                          <a href="{% url 'url_mes_locataires' %}" class="mt-3 btn btn-success btn-sm"><i class="fas fa-eye me-1"></i> Voir tous mes locataires</a>
+                                     </div>
+                                 </div>
+                             </div>
+                         </div>
+                        {# Vous pouvez ajouter d'autres sections ici (paiements reçus, demandes, etc.) #}
+
+                    {% elif user_type == 'locataire' %}
+                         <!-- Contenu spécifique Locataire -->
+                         <div class="mb-4 row">
+                              <div class="col-md-12">
+                                 <div class="card">
+                                     <div class="text-center card-body">
+                                         <h2 class="mb-3">Bienvenue, Locataire !</h2>
+                                         <p class="lead">Accédez aux informations de votre bail et suivez vos paiements.</p>
+                                     </div>
+                                 </div>
+                              </div>
+                         </div>
+
+                         {# Ajoutez ici des sections spécifiques, par exemple les détails du bail, l'historique des paiements, un formulaire de contact #}
+                         <div class="row">
+                             <div class="col-md-6">
+                                <div class="card">
+                                    <div class="card-body">
+                                        <h5 class="card-title"><i class="fas fa-file-contract me-2"></i>Votre Bail</h5>
+                                        {# Exemple de contenu, remplacer par les données de votre_bail #}
+                                        {% comment %}
+                                        {% if votre_bail %}
+                                            <p><strong>Adresse :</strong> {{ votre_bail.chambre.maison.adresse }}, {{ votre_bail.chambre.maison.ville }}</p>
+                                            <p><strong>Date de début :</strong> {{ votre_bail.date_debut|date:"d/m/Y" }}</p>
+                                            <p><strong>Date de fin (prévue) :</strong> {{ votre_bail.date_fin_prevue|date:"d/m/Y"|default:"N/A" }}</p>
+                                            <p><strong>Loyer mensuel :</strong> {{ votre_bail.montant_loyer }} €</p>
+                                             <p><strong>Statut :</strong> <span class="badge bg-success">Actif</span></p> {# Adapter selon statut #}
+                                            <a href="{% url 'url_mon_bail' %}" class="mt-3 btn btn-info btn-sm"><i class="fas fa-eye me-1"></i> Voir mon bail complet</a>
+                                        {% else %}
+                                            <p>Aucun bail actif trouvé pour votre compte.</p>
+                                        {% endif %}
+                                        {% endcomment %}
+                                         <p>Exemple : Détails du bail...</p>
+                                         {% comment %} <a href="{% url 'url_mon_bail' %}" class="mt-3 btn btn-info btn-sm"><i class="fas fa-eye me-1"></i> Voir mon bail complet</a> {% endcomment %}
+                                    </div>
+                                </div>
+                             </div>
+                             <div class="col-md-6">
+                                  <div class="card">
+                                     <div class="card-body">
+                                        <h5 class="card-title"><i class="fas fa-receipt me-2"></i>Historique des Paiements</h5>
+                                        {# Exemple de contenu, remplacer par une boucle sur vos_paiements #}
+                                        <ul>
+                                            <li>Paiement Mars 2024 - Payé le JJ/MM/AAAA</li>
+                                            <li>Paiement Février 2024 - Payé le JJ/MM/AAAA</li>
+                                             {% comment %}
+                                             {% for paiement in vos_paiements %}
+                                                 <li>Paiement de {{ paiement.mois_année }} - {{ paiement.date_paiement|date:"d/m/Y" }} - <span class="badge bg-{% if paiement.est_payé %}success{% else %}danger{% endif %}">{% if paiement.est_payé %}Payé{% else %}Imp unpaid{% endif %}</span></li>
+                                             {% endfor %}
+                                             {% endcomment %}
+                                        </ul>
+                                         {% comment %} <a href="{% url 'url_mes_paiements' %}" class="mt-3 btn btn-warning btn-sm"><i class="fas fa-eye me-1"></i> Voir tous mes paiements</a> {% endcomment %}
+                                     </div>
+                                  </div>
+                              </div>
+                         </div>
+                         {# Vous pouvez ajouter d'autres sections ici (demandes de réparation, informations sur l'immeuble, etc.) #}
+                    {% else %}
+                        <!-- Contenu par défaut si le type d'utilisateur n'est pas défini ou reconnu -->
+                        <div class="mb-4 row">
+                             <div class="col-md-12">
+                                <div class="card">
+                                    <div class="text-center card-body">
+                                        <h2 class="mb-3">Bienvenue !</h2>
+                                        <p class="lead">Votre type d'utilisateur n'est pas défini. Veuillez contacter l'administrateur pour configurer votre compte ou si vous pensez qu'il s'agit d'une erreur.</p>
+                                    </div>
+                                </div>
+                             </div>
+                        </div>
+                    {% endif %}
+                {# Fin du bloc de contenu dynamique #}
+                {% endblock %}
+            </div> {# End of .content #}
+        </div> {# End of .main-content #}
+
+        <!-- Scripts -->
+        <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
+        <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+        <script>
+            // Attendre que le DOM soit complètement chargé
+            document.addEventListener('DOMContentLoaded', () => {
+
+                // Exécuter le script d'animation de compteur et le script de graphique UNIQUEMENT si l'utilisateur est un "Admin"
+                // Cela évite les erreurs JavaScript si les éléments avec les IDs 'maison-count', 'locationChart', etc. n'existent pas
+                {% if user_type == 'Admin' %}
+
+                    // Animation des compteurs
+                    function animateCount(element, target) {
+                        // Assurez-vous que l'élément existe avant d'essayer d'animer
+                        if (element) {
+                            let current = 0;
+                            // Augmenter le nombre d'étapes pour une animation plus fluide sur des nombres élevés
+                            const steps = 100;
+                            const increment = target / steps;
+                            const duration = 800; // Durée totale de l'animation en ms
+                            const interval = duration / steps; // Intervalle entre chaque étape
+
+                            const timer = setInterval(() => {
+                                current += increment;
+                                if (current >= target) {
+                                    clearInterval(timer);
+                                    current = target; // S'assurer que le nombre final est exact
+                                }
+                                // Mettre à jour le contenu texte avec la valeur courante arrondie
+                                element.textContent = Math.floor(current);
+                            }, interval);
+                        }
+                    }
+                    
+                    animateCount(document.getElementById('maison-count'), {{ maison_count|default:0 }});
+                    animateCount(document.getElementById('quartier-count'), {{ quartier_count|default:0 }});
+                    animateCount(document.getElementById('locataire-count'), {{ locataire_count|default:0 }});
+                    animateCount(document.getElementById('paiement-count'), {{ paiement_count|default:0 }});
+
+                    // Graphique (pour Administrateur)
+                    const ctx = document.getElementById('locationChart');
+                    // Vérifier si le canvas existe (il n'existe que si user_type == 'Admin')
+                    if (ctx) {
+                         const locationChart = new Chart(ctx.getContext('2d'), {
+                            type: 'bar',
+                            data: {
+                                // Les labels et les données doivent idéalement être passés depuis la vue Django pour être dynamiques
+                                labels: ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Juin'], // Exemple statique
+                                datasets: [{
+                                    label: 'Locations par mois',
+                                    data: [12, 19, 3, 5, 2, 3], // Exemple statique - REMPLACEZ PAR VOS DONNÉES DYNAMIQUES
+                                    backgroundColor: 'rgba(54, 162, 235, 0.7)',
+                                    borderColor: 'rgba(54, 162, 235, 1)',
+                                    borderWidth: 1
+                                }]
+                            },
+                            options: {
+                                responsive: true,
+                                scales: {
+                                    y: {
+                                        beginAtZero: true,
+                                        grid: {
+                                            color: 'rgba(0, 0, 0, 0.05)'
+                                        }
+                                    },
+                                    x: {
+                                        grid: {
+                                            display: false
+                                        }
+                                    }
+                                },
+                                plugins: {
+                                    legend: {
+                                        position: 'top',
+                                    }
+                                }
+                            }
+                        });
+                    } // Fin de la vérification ctx
+
+                {% elif user_type == 'Propriétaire' %}
+                    // Scripts spécifiques aux Propriétaires (s'il y en a)
+                    console.log("Scripts for Propriétaire loaded.");
+                    // Exemples : animation de cartes spécifiques, graphiques de revenus, etc.
+
+                {% elif user_type == 'locataire' %}
+                    // Scripts spécifiques aux Locataires (s'il y en a)
+                    console.log("Scripts for locataire loaded.");
+                    // Exemples : graphiques de paiement, compte à rebours avant échéance, etc.
+
+                {% else %}
+                     // Scripts pour le cas par défaut
+                     console.log("Default user type scripts loaded.");
+                {% endif %}
+
+            }); // Fin de DOMContentLoaded
+        </script>
+
+    </body>
+    </html>
+
+    {% comment %} {% load static %}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tableau de Bord</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <style>
+        /* Styles généraux */
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f8f9fa;
+            margin: 0;
+            padding: 0;
+            color: #333;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            background: linear-gradient(135deg, #2c3e50, #4ca1af);
+            color: white;
+            padding: 20px;
+            min-height: 100vh;
+            transition: all 0.3s ease;
+            position: fixed;
+            width: 250px;
+            box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .sidebar h2 {
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 1.5rem;
+            font-weight: 600;
+            padding-bottom: 10px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .sidebar ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .sidebar li {
+            margin-bottom: 15px;
+            transition: transform 0.3s ease;
+        }
+
+        .sidebar li:hover {
+            transform: translateX(5px);
+        }
+
+        .sidebar a {
+            color: white;
+            text-decoration: none;
+            font-size: 1.1rem;
+            display: block;
+            padding: 10px 15px;
+            border-radius: 5px;
+            transition: all 0.3s ease;
+            background-color: rgba(255, 255, 255, 0.05);
+        }
+
+        .sidebar a:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+            transform: scale(1.02);
+        }
+
+        /* Main Content */
+        .main-content {
+            margin-left: 250px;
+            padding: 20px;
+            transition: margin-left 0.3s ease;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 20px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            margin-bottom: 30px;
+            border-radius: 10px;
+            transition: all 0.3s ease;
+        }
+
+        .header:hover {
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+        }
+
+        .header h1 {
+            margin: 0;
+            font-size: 2.2rem;
+            font-weight: 700;
+            text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Cartes */
+        .card {
+            border: none;
+            border-radius: 12px;
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+            margin-bottom: 25px;
+            overflow: hidden;
+        }
+
+        .card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 12px 25px rgba(0, 0, 0, 0.15);
+        }
+
+        .card-body {
+            padding: 25px;
+        }
+
+        .card-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: #333;
+        }
+
+        /* Cartes statistiques */
+        .stat-card {
+            transition: all 0.4s ease;
+            border: none;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        .bg-gradient-primary {
+            background: linear-gradient(45deg, #0d6efd, #0a58ca);
+        }
+
+        .bg-gradient-success {
+            background: linear-gradient(45deg, #198754, #146c43);
+        }
+
+        .bg-gradient-info {
+            background: linear-gradient(45deg, #0dcaf0, #0997b3);
+        }
+
+        .bg-gradient-warning {
+            background: linear-gradient(45deg, #ffc107, #e0a800);
+        }
+
+        .icon-circle {
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+
+        .stat-card:hover .icon-circle {
+            transform: rotate(20deg) scale(1.1);
+        }
+
+        .display-6 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            animation: countUp 0.8s ease-out forwards;
+            margin: 0;
+        }
+
+        /* Animation pour les nombres */
+        @keyframes countUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Graphiques */
+        .chart-container {
+            position: relative;
+            height: 350px;
+            width: 100%;
+            margin-top: 20px;
+        }
+
+        /* Boutons et interactions */
+        .btn-custom {
+            border-radius: 8px;
+            padding: 10px 20px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .btn-custom:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 100%;
+                min-height: auto;
+                position: relative;
+                margin-bottom: 20px;
+            }
+            .main-content {
+                margin-left: 0;
+            }
+            .header h1 {
+                font-size: 1.8rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="sidebar">
+        <h2>{{ user.username }}</h2>
+        <ul>
+            <li><a href="{% url 'maison_liste' %}"><i class="fas fa-home me-2"></i>Listes des Maisons</a></li>
+            <li><a href="{% url 'Quatiers_list' %}"><i class="fas fa-map-marker-alt me-2"></i>Listes des Quartiers</a></li>
+            <li><a href="{% url 'ville_list' %}"><i class="fas fa-city me-2"></i>Listes des villes</a></li>
+            <li><a href="{% url 'liste_typechambres' %}"><i class="fas fa-bed me-2"></i>Type de chambre</a></li>
+            <li><a href="{% url 'liste_chambres' %}"><i class="fas fa-door-open me-2"></i>Chambre</a></li>
+            <li><a href="{% url 'liste_proprietaire' %}"><i class="fas fa-user-tie me-2"></i>Listes des Propriétaires</a></li>
+            <li><a href="{% url 'liste_paiements' %}"><i class="fas fa-money-bill-wave me-2"></i>Paiement</a></li>
+            <li><a href="{% url 'liste_locations' %}"><i class="fas fa-key me-2"></i>Liste de location</a></li>
+            <li><a href="{% url 'utilisateurs_parchambre'%}">Voir les utilisateurs</a></li>
+            <li><a href="{% url 'proprietaire_list_maison'%}">Proprietaireddddddddddddddddd</a></li>
+            <li><a href="{% url 'signup'%}">creation de compte </a></li>
+            
+
+
+
+            <li><a href="#"><i class="fas fa-cog me-2"></i>Paramètres</a></li>
+            <li><a href="#"><i class="fas fa-sign-out-alt me-2"></i>Déconnexion</a></li>
+            
+        </ul>
+    </div>
+    <div class="main-content">
+        <div class="header">
+            <h1>{% block header %}Tableau de Bord{% endblock %}</h1>
+        </div>
+        <div class="content">
+            {% block content %}
+            <!-- Contenu par défaut -->
+            <div class="mb-4 row">
+                <div class="col-md-12">
+                    <div class="card">
+                        <div class="text-center card-body">
+                            <h2 class="mb-3">Bienvenue, Administrateur !</h2>
+                            <p class="lead">Cette section peut être utilisée pour afficher des statistiques, graphiques, rapports et autres informations pertinentes pour l'administration.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Cartes statistiques -->
+            <div class="row">
+                <div class="col-md-3">
+                    <div class="text-white card stat-card bg-gradient-primary">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h5 class="card-title">Maisons</h5>
+                                    <h2 class="display-6" id="maison-count">0</h2>
+                                </div>
+                                <div class="icon-circle">
+                                    <i class="fas fa-home fa-2x"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="text-white card stat-card bg-gradient-success">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h5 class="card-title">Quartiers</h5>
+                                    <h2 class="display-6" id="quartier-count">0</h2>
+                                </div>
+                                <div class="icon-circle">
+                                    <i class="fas fa-map-marker-alt fa-2x"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="text-white card stat-card bg-gradient-info">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h5 class="card-title">Locataires</h5>
+                                    <h2 class="display-6" id="locataire-count">0</h2>
+                                </div>
+                                <div class="icon-circle">
+                                    <i class="fas fa-users fa-2x"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="text-white card stat-card bg-gradient-warning">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h5 class="card-title">Paiements</h5>
+                                    <h2 class="display-6" id="paiement-count">0</h2>
+                                </div>
+                                <div class="icon-circle">
+                                    <i class="fas fa-money-bill-wave fa-2x"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Graphique -->
+            <div class="mt-4 row">
+                <div class="col-md-12">
+                    <div class="card">
+                        <div class="card-body">
+                            <h5 class="card-title">Statistiques des Locations</h5>
+                            <div class="chart-container">
+                                <canvas id="locationChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endblock %}
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        // Animation des compteurs
+        function animateCount(element, target) {
+            let current = 0;
+            const increment = target / 100;
+            const timer = setInterval(() => {
+                current += increment;
+                if (current >= target) {
+                    clearInterval(timer);
+                    current = target;
+                }
+                element.textContent = Math.floor(current);
+            }, 10);
+        }
+
+        // Initialiser les compteurs
+        document.addEventListener('DOMContentLoaded', () => {
+            animateCount(document.getElementById('maison-count'), 42);
+            animateCount(document.getElementById('quartier-count'), 15);
+            animateCount(document.getElementById('locataire-count'), 78);
+            animateCount(document.getElementById('paiement-count'), 56);
+
+            // Graphique
+            const ctx = document.getElementById('locationChart').getContext('2d');
+            const locationChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Juin'],
+                    datasets: [{
+                        label: 'Locations par mois',
+                        data: [12, 19, 3, 5, 2, 3],
+                        backgroundColor: 'rgba(54, 162, 235, 0.7)',
+                        borderColor: 'rgba(54, 162, 235, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                color: 'rgba(0, 0, 0, 0.05)'
+                            }
+                        },
+                        x: {
+                            grid: {
+                                display: false
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                        }
+                    }
+                }
+            });
+        });
+    </script>
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ {% endcomment %}

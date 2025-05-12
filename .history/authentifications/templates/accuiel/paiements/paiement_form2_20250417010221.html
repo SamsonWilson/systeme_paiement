@@ -1,0 +1,469 @@
+{% extends "accuiel/Base.html" %}
+{% load static %}
+{% load crispy_forms_tags %} <!-- Assurez-vous d'avoir crispy_forms installé et configuré si vous l'utilisez, sinon retirez cette ligne et {{ form|crispy }} -->
+
+{% block content %}
+<div class="container mt-4 mb-5"> {# Ajout de marge en bas #}
+    <div class="shadow card">
+        <!-- Header -->
+        <div class="text-white card-header bg-primary d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">
+                <i class="fas fa-money-bill-wave me-2"></i>
+                {% if form.instance.pk %}Modifier{% else %}Nouveau{% endif %} Paiement
+            </h5>
+            {% if location and location.chambre %}
+            <span class="badge bg-light text-primary">
+                <i class="fas fa-building me-1"></i> <!-- Changé l'icône pour bâtiment/chambre -->
+                Chambre {{ location.chambre.numero }}
+            </span>
+            {% endif %}
+        </div>
+
+        <div class="card-body p-lg-4"> {# Ajout de padding plus grand sur les grands écrans #}
+            {% if location %}
+            <!-- Messages Django (si vous utilisez le framework de messages) -->
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+
+            <!-- Informations Locataire & Location -->
+            <div class="mb-4 row g-3"> {# Espacement g-3 #}
+                <div class="col-md-6">
+                    <div class="border-0 card h-100 bg-light">
+                        <div class="p-3 card-body"> {# Uniformisation padding #}
+                            <h6 class="mb-3 card-title text-primary fw-semibold"> {# Police semi-bold #}
+                                <i class="fas fa-user me-2"></i>Informations Locataire
+                            </h6>
+                            <div class="mb-2 info-group"> {# Marge réduite #}
+                                <label class="text-muted small">Nom complet</label>
+                                <p class="mb-0 fw-bold">{{ location.utilisateur.get_full_name|default:location.utilisateur.username }}</p> {# Utilise get_full_name si disponible #}
+                            </div>
+                            <div class="info-group">
+                                <label class="text-muted small">Email</label>
+                                <p class="mb-0">{{ location.utilisateur.email|default:"N/A" }}</p>
+                            </div>
+                            {# Ajoutez d'autres infos si nécessaire: Téléphone, etc. #}
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="border-0 card h-100 bg-light">
+                        <div class="p-3 card-body"> {# Uniformisation padding #}
+                            <h6 class="mb-3 card-title text-primary fw-semibold"> {# Police semi-bold #}
+                                <i class="fas fa-file-contract me-2"></i>Détails Location Actuelle
+                            </h6>
+                            <div class="mb-2 info-group">
+                                <label class="text-muted small">Fin de paiement</label>
+                                {% if dernier_paiement and dernier_paiement.date_fin_paiement %}
+                                    <p class="mb-0 fw-bold text-success">
+                                        {{ dernier_paiement.date_fin_paiement|date:"d M Y" }}
+                                    </p>
+                                {% else %}
+                                    <p class="mb-0 fw-bold text-warning">Non définie</p>
+                                {% endif %}
+                            </div>
+                            <div class="info-group">
+                                <label class="text-muted small">Loyer mensuel</label>
+                                <p class="mb-0 fw-bold">{{ location.chambre.prix|floatformat:"0" }} CFA</p>
+                            </div>
+                        </div>
+                    </div>
+                </div> 
+            </div>
+
+            <!-- Résumé du paiement calculé -->
+            <div class="mb-4 border-0 card bg-primary bg-opacity-10">
+                <div class="p-3 card-body"> {# Uniformisation padding #}
+                    <h6 class="mb-3 card-title text-primary fw-semibold"> {# Police semi-bold #}
+                        <i class="fas fa-calculator me-2"></i>Résumé du Paiement
+                    </h6>
+                    <div class="row g-3"> {# Espacement g-3 #}
+                        <div class="col-md-4">
+                            <div class="p-3 bg-white rounded shadow-sm h-100"> {# Ajout shadow-sm léger #}
+                                <small class="mb-1 text-muted d-block">Période Couverte</small> {# Label plus court #}
+                                <p id="periode-paiement" class="mb-0 small">-</p> {# Taille small pour la période #}
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="p-3 bg-white rounded shadow-sm h-100"> {# Ajout shadow-sm léger #}
+                                <small class="mb-1 text-muted d-block">Montant Total Calculé</small> {# Label plus précis #}
+                                <p id="montant-total" class="mb-0 fw-bold text-primary fs-5">-</p> {# Taille fs-5 ajuste #}
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="p-3 bg-white rounded shadow-sm h-100"> {# Ajout shadow-sm léger #}
+                                <small class="mb-1 text-muted d-block">Nouvelle Échéance</small>
+                                <p id="date-fin-display" class="mb-1 fw-bold">-</p> {# Marge mb-1 #}
+                                <small id="jours-restants" class="text-muted d-block fst-italic">-</small> {# Style italique #}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Formulaire de Paiement -->
+            <h6 class="mb-3 fw-semibold"><i class="fas fa-keyboard me-2"></i> Saisir les détails du Paiement</h6>
+             <form method="post" id="paiementForm" class="needs-validation" novalidate>
+                {% csrf_token %}
+
+                {# Champ caché crucial pour envoyer la date de fin calculée au serveur #}
+                {{ form.date_fin_paiement.as_hidden }}
+                {% if form.date_fin_paiement.errors %}
+                    <div class="mb-3 alert alert-danger small">
+                        <i class="fas fa-exclamation-triangle me-1"></i> Erreur technique (date fin): {{ form.date_fin_paiement.errors|striptags }}
+                    </div>
+                {% endif %}
+
+                <div class="mb-3 row g-3"> {# Ajout mb-3 pour espacement avant commentaire #}
+                    <!-- Nombre de mois payé -->
+                    <div class="col-md-6 col-lg-3"> {# Ajustement colonnes pour alignement montant #}
+                        <div class="form-floating">
+                            {{ form.nombre_mois_paye }} {# Devrait avoir 'form-control' via widget #}
+                            <label for="{{ form.nombre_mois_paye.id_for_label }}">
+                                <i class="fas fa-calendar-alt me-1"></i>Nombre de mois
+                            </label>
+                        </div>
+                        {% if form.nombre_mois_paye.errors %}
+                            <div class="invalid-feedback d-block small">{{ form.nombre_mois_paye.errors|striptags }}</div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Montant payé (readonly, calculé) -->
+                    <div class="col-md-6 col-lg-3"> {# Ajustement colonnes #}
+                        <div class="form-floating">
+                             {{ form.montant_paye }} {# Doit avoir 'form-control' et 'readonly' via widget #}
+                            <label for="{{ form.montant_paye.id_for_label }}">
+                                <i class="fas fa-coins me-1"></i>Montant (CFA)
+                            </label>
+                        </div>
+                         {% if form.montant_paye.errors %}
+                             <div class="invalid-feedback d-block small">{{ form.montant_paye.errors|striptags }}</div>
+                         {% endif %}
+                    </div>
+
+                    <!-- Mode de paiement -->
+                    <div class="col-md-6 col-lg-3"> {# Ajustement colonnes #}
+                        <div class="form-floating">
+                             {{ form.mode_paiement }} {# Doit avoir 'form-select' via widget #}
+                            <label for="{{ form.mode_paiement.id_for_label }}">
+                                <i class="fas fa-credit-card me-1"></i>Mode de paiement
+                            </label>
+                        </div>
+                         {% if form.mode_paiement.errors %}
+                             <div class="invalid-feedback d-block small">{{ form.mode_paiement.errors|striptags }}</div>
+                         {% endif %}
+                    </div>
+
+                    <!-- Statut paiement -->
+                    <div class="col-md-6 col-lg-3"> {# Ajustement colonnes #}
+                        <div class="form-floating">
+                             {{ form.statut_paiement }} {# Doit avoir 'form-select' via widget #}
+                            <label for="{{ form.statut_paiement.id_for_label }}">
+                                <i class="fas fa-check-circle me-1"></i>Statut
+                            </label>
+                        </div>
+                         {% if form.statut_paiement.errors %}
+                             <div class="invalid-feedback d-block small">{{ form.statut_paiement.errors|striptags }}</div>
+                         {% endif %}
+                    </div>
+                </div> {# Fin row g-3 #}
+
+                 <!-- Commentaire -->
+                <div class="mb-4 col-12"> {# Ajout mb-4 avant boutons #}
+                    <div class="form-floating">
+                         {{ form.commentaire }} {# Doit avoir 'form-control' via widget Textarea #}
+                        <label for="{{ form.commentaire.id_for_label }}">
+                            <i class="fas fa-comment me-1"></i>Commentaire (optionnel)
+                        </label>
+                    </div>
+                     {% if form.commentaire.errors %}
+                         <div class="invalid-feedback d-block small">{{ form.commentaire.errors|striptags }}</div>
+                     {% endif %}
+                </div>
+
+                <!-- Boutons d'action -->
+                <div class="pt-3 border-top d-flex justify-content-between"> {# Ligne séparation + padding + flex #}
+                    <button type="submit" class="btn btn-primary btn-lg" id="submitBtn"> {# Bouton plus grand #}
+                        <i class="fas fa-save me-2"></i>Enregistrer le Paiement
+                    {% comment %} </button>
+                    <a href="{% url 'liste_paiements' location.pk %}" class="btn btn-outline-secondary"> {# Assurez-vous que 'liste_paiements' prend bien location.pk ou l'ID nécessaire #}
+                        <i class="fas fa-times me-2"></i>Annuler
+                    </a> {% endcomment %}
+                </div>
+            </form>
+
+            {% else %}
+            {# Message si location n'est pas trouvée #}
+            <div class="alert alert-warning">
+                <i class="fas fa-exclamation-triangle me-2"></i>
+                Informations de location non trouvées. Impossible d'enregistrer un paiement.
+            </div>
+            <a href="{% url 'accueil' %}" class="btn btn-secondary"> {# Adaptez l'URL de retour #}
+                <i class="fas fa-arrow-left me-2"></i> Retour à l'accueil
+            </a>
+            {% endif %} {# Fin if location #}
+
+        </div> {# Fin card-body #}
+    </div> {# Fin shadow card #}
+
+     <!-- Success Modal -->
+    <div class="modal fade" id="successModal" tabindex="-1" aria-labelledby="successModalLabel" aria-hidden="true"> {# Labels aria #}
+        <div class="modal-dialog modal-dialog-centered"> {# Centré verticalement #}
+            <div class="modal-content">
+                <div class="text-white modal-header bg-success">
+                    <h5 class="modal-title" id="successModalLabel"> {# id pour aria #}
+                        <i class="fas fa-check-circle me-2"></i>Paiement Enregistré!
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Fermer"></button>
+                </div>
+                <div class="py-4 text-center modal-body">
+                    <i class="mb-3 fas fa-receipt text-danger fa-3x"></i> {# Icône reçu #}
+                    <h5>Voulez-vous imprimer le reçu maintenant ?</h5>
+                </div>
+                <div class="border-0 modal-footer justify-content-center"> {# Centré #}
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="fas fa-times me-2"></i>Non, plus tard
+                    </button>
+                    <button type="button" class="btn btn-primary" id="printBtn">
+                        <i class="fas fa-print me-2"></i>Oui, Imprimer
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div> {# Fin container #}
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // --- Vérification de la présence de la variable location (essentiel) ---
+        {% if location and location.chambre and dernier_paiement and dernier_paiement.date_fin_paiement %}
+            const locationData = {
+                // Convertir le prix en nombre, gérer la virgule si besoin
+                montantMensuel: parseFloat('{{ location.chambre.prix|default:0 }}'.replace(',', '.')) || 0,
+                // S'assurer que la date est au format YYYY-MM-DD pour JS Date()
+                dateFinPaiementStr: '{{ dernier_paiement.date_fin_paiement|date:"Y-m-d" }}',
+            };
+            const dateFinPaiement = new Date(locationData.dateFinPaiementStr);
+            
+            // Vérifier que la date est valide
+            if (isNaN(dateFinPaiement.getTime())) {
+                console.error("Date de fin de paiement fournie par Django est invalide:", locationData.dateFinPaiementStr);
+                // Afficher une erreur à l'utilisateur peut-être ?
+                document.getElementById('paiementForm').innerHTML = '<p class="text-danger">Erreur: Date de paiement invalide. Impossible de calculer le paiement.</p>';
+                return; // Arrêter ici si date invalide
+            }
+        {% else %}
+            // Si location n'existe pas ou manque des infos cruciales, on ne fait rien en JS
+            console.warn("Données de location incomplètes ou absentes. Le calcul automatique est désactivé.");
+            // Vous pourriez vouloir désactiver le formulaire ici aussi
+            const formElement = document.getElementById('paiementForm');
+            if(formElement) {
+                const inputs = formElement.querySelectorAll('input, select, button');
+                inputs.forEach(input => input.disabled = true);
+            }
+            return; // Ne pas exécuter le reste du script si pas de location valide
+        {% endif %}
+    
+        // --- Récupération des éléments du DOM ---
+        const elements = {
+            nombreMoisInput: document.getElementById('{{ form.nombre_mois_paye.id_for_label }}'),
+            montantPayeInput: document.getElementById('{{ form.montant_paye.id_for_label }}'),
+            dateFinHiddenInput: document.getElementById('{{ form.date_fin_paiement.id_for_label }}'), // L'input caché
+    
+            // Éléments d'affichage dans le résumé
+            periodeDisplay: document.getElementById('periode-paiement'),
+            montantTotalDisplay: document.getElementById('montant-total'),
+            dateFinDisplay: document.getElementById('date-fin-display'),
+            joursRestantsDisplay: document.getElementById('jours-restants'),
+    
+            submitBtn: document.getElementById('submitBtn'), // Potentiellement pour désactiver
+        };
+    
+        // --- Vérification que tous les éléments nécessaires sont trouvés ---
+        let missingElement = false;
+        for (const key in elements) {
+            if (!elements[key]) {
+                console.error(`Erreur critique: Élément DOM introuvable: ${key} (Vérifiez l'ID dans le HTML/template)`);
+                missingElement = true;
+            }
+        }
+        if (missingElement) {
+            // En cas d'erreur, informer l'utilisateur et potentiellement bloquer le formulaire
+            alert("Erreur critique: Impossible d'initialiser le formulaire de paiement. Veuillez contacter le support.");
+            if(elements.submitBtn) elements.submitBtn.disabled = true;
+            return; // Arrêter l'exécution
+        }
+    
+        // Initialisation du Modal Bootstrap (si Bootstrap est chargé)
+        let successModal = null;
+        const successModalElement = document.getElementById('successModal');
+        if (typeof bootstrap !== 'undefined' && successModalElement) {
+            successModal = new bootstrap.Modal(successModalElement);
+        }
+    
+        // --- Fonctions Utilitaires ---
+        const formatDateForDisplay = (date) => {
+            return date.toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric' }); // Ex: 15 mai 2025
+        };
+    
+        const formatDateForInput = (date) => {
+            const year = date.getFullYear();
+            const month = (date.getMonth() + 1).toString().padStart(2, '0');
+            const day = date.getDate().toString().padStart(2, '0');
+            return `${year}-${month}-${day}`; // Format YYYY-MM-DD
+        };
+    
+        const calculateRemainingDays = (endDate) => {
+            const today = new Date();
+            today.setHours(0, 0, 0, 0); // Comparer uniquement les dates
+            const timeDiff = endDate.getTime() - today.getTime();
+            return Math.ceil(timeDiff / (1000 * 60 * 60 * 24));
+        };
+    
+        // --- Fonction Principale de Mise à Jour ---
+        const updatePaymentDetails = () => {
+            const nombreMois = parseInt(elements.nombreMoisInput.value) || 0;
+    
+            if (nombreMois > 0 && locationData.montantMensuel >= 0) {
+                const montantTotal = nombreMois * locationData.montantMensuel;
+    
+                // Calcul de la nouvelle date de fin
+                // IMPORTANT: Créer une *nouvelle* instance de Date pour éviter de modifier l'originale
+                const nouvelleDateFin = new Date(dateFinPaiement);
+                nouvelleDateFin.setMonth(nouvelleDateFin.getMonth() + nombreMois);
+    
+                // Calcul de la date de début de la nouvelle période (lendemain de la fin de paiement)
+                const dateDebutPeriode = new Date(dateFinPaiement);
+                dateDebutPeriode.setDate(dateDebutPeriode.getDate() + 1);
+    
+                 // Mise à jour de l'affichage
+                elements.montantPayeInput.value = montantTotal.toFixed(0); // Montant sans décimales
+                elements.montantTotalDisplay.textContent = `${montantTotal.toLocaleString('fr-FR', { style: 'currency', currency: 'XOF', minimumFractionDigits: 0, maximumFractionDigits: 0 })}`; // Format monétaire CFA
+                elements.dateFinDisplay.textContent = formatDateForDisplay(nouvelleDateFin);
+                elements.periodeDisplay.innerHTML = `Du ${formatDateForDisplay(dateDebutPeriode)}<br>au ${formatDateForDisplay(nouvelleDateFin)}`;
+    
+                const joursRestantsVal = calculateRemainingDays(nouvelleDateFin);
+                elements.joursRestantsDisplay.textContent = `(~${joursRestantsVal} jours restants)`;
+    
+                // --- Mise à jour de l'INPUT CACHE ---
+                elements.dateFinHiddenInput.value = formatDateForInput(nouvelleDateFin);
+                 // Activer le bouton si > 0 mois
+                elements.submitBtn.disabled = false;
+    
+            } else {
+                // Réinitialiser si nombre de mois est 0 ou invalide
+                elements.montantPayeInput.value = '';
+                elements.montantTotalDisplay.textContent = '-';
+                elements.dateFinDisplay.textContent = '-';
+                elements.joursRestantsDisplay.textContent = '-';
+                elements.periodeDisplay.textContent = '-';
+                // --- Réinitialiser l'INPUT CACHE ---
+                elements.dateFinHiddenInput.value = '';
+                 // Désactiver le bouton si 0 mois
+                elements.submitBtn.disabled = true;
+    
+            }
+        };
+    
+        // --- Écouteur d'événement ---
+        elements.nombreMoisInput.addEventListener('input', updatePaymentDetails);
+    
+        // --- Appel Initial ---
+        // Appeler une fois au chargement pour pré-remplir/calculer si le champ nombreMois a déjà une valeur (cas d'édition ou retour avec erreurs)
+        updatePaymentDetails();
+    
+        // --- Gestion du modal de succès (si besoin) ---
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.has('paiement_enregistre') && urlParams.get('paiement_enregistre') === 'true' && successModal) {
+            successModal.show();
+            const paiementId = urlParams.get('paiement_id'); // Récupérer l'ID du paiement
+            const printBtn = document.getElementById('printBtn');
+    
+            if(printBtn && paiementId) {
+                printBtn.addEventListener('click', () => {
+                    // Adaptez cette URL à votre vue qui génère le reçu PDF/HTML
+                    const receiptUrl = `/chemin/vers/votre/recu/${paiementId}/`;
+                    window.open(receiptUrl, '_blank'); // Ouvre dans un nouvel onglet
+                    successModal.hide();
+                });
+            } else if (printBtn) {
+                 printBtn.disabled = true; // Désactiver si pas d'ID
+            }
+        }
+    });
+</script>
+{% endblock %}
+<style>
+    .info-group label {
+        margin-bottom: 0.1rem;
+        font-size: 0.8rem; /* Taille légèrement réduite pour les labels infos */
+        font-weight: 500; /* Un peu plus de poids */
+    }
+    .info-group p {
+        margin-bottom: 0.5rem; /* Espace sous chaque info */
+        line-height: 1.3; /* Hauteur de ligne */
+    }
+
+    .form-floating > label {
+        /* Ajustements possibles pour les labels flottants si nécessaire */
+        font-size: 0.9rem;
+        padding-top: 0.8rem; /* Ajuste la position verticale */
+    }
+
+    .form-floating > .form-control:not(:placeholder-shown) ~ label {
+        /* Style du label quand le champ est rempli */
+         font-size: 0.75rem;
+    }
+
+    .form-floating > .form-control,
+    .form-floating > .form-select {
+        height: calc(3.5rem + 2px); /* Hauteur standard Bootstrap */
+        line-height: 1.25; /* Ajuste ligne interne */
+    }
+
+    .form-floating > textarea.form-control {
+        min-height: 100px; /* Hauteur minimum pour textarea */
+        height: auto;
+    }
+
+    .card {
+        border-radius: 0.5rem; /* Coins arrondis pour les cartes */
+        overflow: hidden; /* Empêche le contenu de déborder les coins arrondis */
+    }
+
+    .modal .fa-receipt { /* Style pour l'icône reçu si changé */
+        filter: drop-shadow(0 0 3px rgba(220, 53, 69, 0.4)); /* Ombre rouge légère */
+    }
+
+    #montant-total {
+        color: var(--bs-primary); /* Assure que la couleur est bien celle de Bootstrap primary */
+    }
+
+    /* Feedback d'erreur amélioré */
+    .invalid-feedback.d-block {
+        margin-top: 0.1rem; /* Réduire espace au-dessus */
+        text-align: left; /* Aligner à gauche */
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .card-body {
+            padding: 1rem; /* Moins de padding sur mobile */
+        }
+        .row.g-3 {
+            --bs-gutter-x: 0.8rem; /* Réduire gouttière horizontale */
+             --bs-gutter-y: 0.8rem; /* Réduire gouttière verticale */
+        }
+         .btn-lg { /* Réduire taille bouton sur mobile */
+             font-size: 0.9rem;
+             padding: 0.4rem 0.8rem;
+         }
+    }
+</style>
+{% endblock %}

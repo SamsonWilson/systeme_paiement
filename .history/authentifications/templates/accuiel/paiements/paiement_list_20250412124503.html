@@ -1,0 +1,170 @@
+{% extends "accuiel/base.html" %}
+{% block title %}Gestion des Paiements{% endblock %}
+{% block content %}
+<div class="mt-4 container-fluid">
+    <!-- En-tête avec recherche et bouton d'ajout -->
+    <div class="mb-4 d-flex justify-content-between align-items-center">
+        <h2 class="mb-0">
+            <i class="fas fa-money-bill-wave text-primary me-2"></i>Gestion des Paiements
+        </h2>
+        <div class="gap-3 d-flex">
+            <div class="input-group">
+                <input type="text" class="form-control" placeholder="Rechercher un paiement..." id="searchInput">
+                <button class="btn btn-outline-primary" type="button">
+                    <i class="fas fa-search"></i>
+                </button>
+            </div>
+        </div>
+        <a href="{% url 'utilisateurpeyement_list' %}" class="btn btn-primary">
+            <i class="fas fa-plus-circle me-2"></i>Nouveau Paiement
+        </a>
+    </div>
+
+    <!-- Cartes statistiques -->
+    <div class="mb-4 row g-4">
+        <!-- Total des Paiements -->
+        <div class="col-xl-3 col-md-6">
+            <div class="border-0 card stat-card bg-gradient-primary h-100">
+                <div class="p-4 card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="mb-2 text-white-50 text-uppercase">Total Paiements</h6>
+                            <h3 class="mb-0 text-white">
+                                <span class="counter display-6">{{ total_paiements }}</span>
+                            </h3>
+                        </div>
+                        <div class="bg-white bg-opacity-25 icon-circle">
+                            <i class="text-white fas fa-money-bill-wave fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Paiements Confirmés -->
+        <div class="col-xl-3 col-md-6">
+            <div class="border-0 card stat-card bg-gradient-success h-100">
+                <div class="p-4 card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="mb-2 text-white-50 text-uppercase">Confirmés</h6>
+                            <h3 class="mb-0 text-white">
+                                <span class="counter display-6">{{ paiements_confirmes }}</span>
+                            </h3>
+                        </div>
+                        <div class="bg-white bg-opacity-25 icon-circle">
+                            <i class="text-white fas fa-check-circle fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Paiements en Attente -->
+        <div class="col-xl-3 col-md-6">
+            <div class="border-0 card stat-card bg-gradient-warning h-100">
+                <div class="p-4 card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="mb-2 text-white-50 text-uppercase">En Attente</h6>
+                            <h3 class="mb-0 text-white">
+                                <span class="counter display-6">{{ paiements_en_attente }}</span>
+                            </h3>
+                        </div>
+                        <div class="bg-white bg-opacity-25 icon-circle">
+                            <i class="text-white fas fa-clock fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Liste des paiements -->
+    <div class="border-0 shadow-sm card">
+        <div class="p-0 card-body">
+            <div class="table-responsive">
+                <table class="table mb-0 align-middle table-hover" id="paiementsTable">
+                    <thead>
+                        <tr>
+                            <th class="px-4 bg-light">#</th>
+                            <th class="bg-light sortable" data-sort="date">
+                                <i class="fas fa-sort me-1"></i>Date
+                            </th>
+                            <th class="bg-light sortable" data-sort="montant">
+                                <i class="fas fa-sort me-1"></i>Montant
+                            </th>
+                            <th class="bg-light">Période</th>
+                            <th class="bg-light sortable" data-sort="statut">
+                                <i class="fas fa-sort me-1"></i>Statut
+                            </th>
+                            <th class="px-4 bg-light text-end">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for paiement in paiements %}
+                        <tr class="paiement-row">
+                            <td class="px-4">{{ forloop.counter }}</td>
+                            <td data-sort="{{ paiement.date_paiement|date:'Y-m-d' }}">
+                                <span style="color: {% if paiement.date_fin_paiement|date:'Y-m-d' < current_date_togo.date|date:'Y-m-d' %}red{% else %}black{% endif %};">
+                                    {{ paiement.date_paiement|date:"d/m/Y" }}
+                                </span>
+                            </td>
+                            <td data-sort="{{ paiement.montant_paye }}">
+                                <span class="fw-bold">{{ paiement.montant_paye|floatformat:0 }}</span>
+                                <small class="text-muted">CFA</small>
+                            </td>
+                            <td>
+                                <div>{{ paiement.nombre_mois_paye }} mois</div>
+                                <small class="text-muted">
+                                    Du {{ paiement.date_paiement|date:"d/m/Y" }} 
+                                    au {{ paiement.date_fin_paiement|date:"d/m/Y" }}
+                                </small>
+                            </td>
+                            <td>
+                                {% if paiement.statut_paiement == "confirmé" %}
+                                    <span class="badge bg-success-subtle text-success">
+                                        <i class="fas fa-check-circle me-1"></i>Confirmé
+                                    </span>
+                                {% elif paiement.statut_paiement == "en attente" %}
+                                    <span class="badge bg-warning-subtle text-warning">
+                                        <i class="fas fa-clock me-1"></i>En attente
+                                    </span>
+                                {% else %}
+                                    <span class="badge bg-danger-subtle text-danger">
+                                        <i class="fas fa-times-circle me-1"></i>{{ paiement.statut_paiement }}
+                                    </span>
+                                {% endif %}
+                            </td>
+                            <td class="px-4 text-end">
+                                <div class="btn-group">
+                                    <a href="{% url 'modifier_paiement' paiement.pk %}" 
+                                       class="btn btn-sm btn-primary">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    <button type="button" 
+                                            class="btn btn-sm btn-danger"
+                                            data-bs-toggle="modal"
+                                            data-bs-target="#deleteModal{{ paiement.pk }}">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="6" class="py-4 text-center">
+                                <div class="text-muted">
+                                    <i class="mb-3 fas fa-info-circle fa-2x"></i>
+                                    <p>Aucun paiement enregistré.</p>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

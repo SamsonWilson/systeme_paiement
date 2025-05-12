@@ -1,0 +1,785 @@
+<div class="dashboard-container">
+
+    <!-- STATS CARDS -->
+    <!-- ... your stats cards ... -->
+     <h3 class="section-title">Statistiques des Paiements</h3>
+    <div class="mb-4 row g-4">
+        <!-- Paiements à jour -->
+        <div class="col-xl-4 col-md-6">
+            <div class="border-0 card bg-success-subtle h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="mb-2 text-success text-uppercase fw-bold small">Locations à Jour</h6>
+                            <h3 class="mb-0" id="count-locations-a-jour">0</h3>
+                            <small class="text-muted fs-6">locations</small>
+                        </div>
+                        <div class="p-3 bg-opacity-10 bg-success rounded-circle">
+                            <i class="fas fa-check-circle text-success fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Locations Avance Expirée -->
+        <div class="col-xl-4 col-md-6">
+            <div class="border-0 card bg-warning-subtle h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="mb-2 text-warning text-uppercase fw-bold small">Avances Expirées</h6>
+                            <h3 class="mb-0" id="count-locations-expirees">0</h3>
+                            <small class="text-muted fs-6">locations</small>
+                        </div>
+                        <div class="p-3 bg-opacity-10 bg-warning rounded-circle">
+                            <i class="fas fa-history text-warning fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Paiements Période Expirée -->
+        <div class="col-xl-4 col-md-6">
+            <div class="border-0 card bg-danger-subtle h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="mb-2 text-danger text-uppercase fw-bold small">Paiements Expirés</h6>
+                            <h3 class="mb-0" id="count-paiements-expires">0</h3>
+                            <small class="text-muted fs-6">paiements</small>
+                        </div>
+                        <div class="p-3 bg-opacity-10 bg-danger rounded-circle">
+                            <i class="fas fa-calendar-times text-danger fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- INFO LOCATAIRE & RÉSUMÉ -->
+     <div class="mb-4 locataire-info">
+        <div class="row">
+            <div class="col-md-6">
+                <h3 class="mt-0 section-title">Informations Personnelles</h3>
+                <div class="info-card">
+                    <div class="info-item">
+                        <span class="info-label"><i class="fas fa-user"></i> Nom :</span>
+                        <span class="info-value">{{ locataire.nom }} {{ locataire.prenom }}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label"><i class="fas fa-envelope"></i> Email :</span>
+                        <span class="info-value">{{ locataire.email }}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label"><i class="fas fa-phone"></i> Téléphone :</span>
+                         {# Assuming locataire object has 'tel' attribute #}
+                        <span class="info-value">{{ locataire.tel }}</span>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <h3 class="mt-0 section-title">Résumé Financier (Calculé JS)</h3>
+                <ul class="summary-list">
+                    <li>
+                        <strong>Montant total dû (Contrats Actifs) :</strong>
+                        {/* MODIFICATION: Re-added span with ID */}
+                        <span id="montant-total-du-calcul">0.00</span> FCFA
+                    </li>
+                    <li>
+                        <strong>Montant payé (Calculé) :</strong>
+                         {/* MODIFICATION: Re-added span with ID */}
+                        <span id="montant-paye-calcul-global">0.00</span> FCFA
+                    </li>
+                    <li>
+                        <strong>Montant restant (Calculé) :</strong>
+                         {/* MODIFICATION: Re-added span with ID */}
+                        <span id="montant-restant-calcul">0.00</span> FCFA
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- LOCATIONS ACTUELLES -->
+    <h3 class="section-title">Locations Actuelles</h3>
+    {% if locations %}
+        <div class="table-responsive">
+            <table class="table table-striped table-hover" id="locations-actuelles-table">
+                <thead class="table-dark">
+                    <tr>
+                        <th>Chambre</th>
+                        <th>Début Loc.</th>
+                        <th>Mois Payés</th>
+                        <th>Fin Avance</th>
+                        <th>Montant Avance</th>
+                        <th>Montant Caution</th>
+                        <th>Montant Total Contrat</th>
+                        <th>Statut Contrat</th>
+                        <th>Détail Paiements</th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% for location in locations %}
+                    <tr data-location-row>
+                        <td>{{ location.chambre }}</td>
+                        <td>{{ location.date_debut_location|date:"d/m/Y" }}</td>
+                        <td>{{ location.nombre_mois_paye }}</td>
+                        <td class="fin-avance-cell">
+                            {{ location.date_fin_avance|date:"d/m/Y"|default:"" }}
+                        </td>
+                        <td>{{ location.montant_avance|default:"0" }} FCFA</td>
+                        <td>{{ location.montant_caution|default:"0" }} FCFA</td>
+                         {/* MODIFICATION: Added class */}
+                        <td class="montant-total-contrat-valeur">{{ location.montant_total|default:"0" }}</td>
+                        <td>{{ location.get_statut_paiement_display }}</td>
+                        <td>
+                            {% if location.paiements.all %}
+                                <table class="table mb-0 table-bordered table-sm inner-payment-table">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th>Date Paiement</th>
+                                            <th>Mois</th>
+                                            <th>Fin Période</th>
+                                            <th>Montant</th>
+                                            <th>Mode</th>
+                                            <th>Statut</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                    {% for paiement in location.paiements.all %}
+                                        <tr>
+                                            <td>{{ paiement.date_paiement|date:"d/m/Y" }}</td>
+                                            <td>{{ paiement.nombre_mois_paye }}</td>
+                                            <td class="fin-periode-cell">
+                                                {{ paiement.date_fin_paiement|date:"d/m/Y"|default:"" }}
+                                            </td>
+                                             {/* Class already exists here */}
+                                            <td class="montant-paiement-valeur">{{ paiement.montant_paye }}</td>
+                                            <td>{{ paiement.get_mode_paiement_display }}</td>
+                                            <td>{{ paiement.get_statut_paiement_display }}</td>
+                                        </tr>
+                                    {% endfor %}
+                                    </tbody>
+                                    <tfoot>
+                                        <tr>
+                                            <th colspan="3" style="text-align: right; font-weight: bold;">Total Payé (Location) :</th>
+                                            <td colspan="3" class="total-paye-location-cell" style="font-weight: bold; color: #27ae60;">0.00 FCFA</td>
+                                        </tr>
+                                    </tfoot>
+                                </table>
+                            {% else %}
+                                <p class="mb-0 no-data">Aucun paiement enregistré.</p>
+                            {% endif %}
+                        </td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <div class="alert alert-info">Aucune location en cours.</div>
+    {% endif %}
+
+    <!-- LOCATIONS TERMINÉES -->
+     <h3 class="section-title">Locations Terminées</h3>
+    {% if fins_locations %}
+        <div class="table-responsive">
+            <table class="table table-striped table-hover table-sm">
+                <thead class="table-light">
+                    <tr>
+                        <th>Date de Fin</th>
+                        <th>Montant Restant (Fin)</th>
+                        <th>Raison Départ</th>
+                         <th>Chambre</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for fin in fins_locations %}
+                    <tr>
+                        <td>{{ fin.date_fin_location|date:"d/m/Y" }}</td>
+                        <td>{{ fin.montant_restant }} FCFA</td>
+                        <td>{{ fin.raison_fin }}</td>
+                        <td>{{ fin.location.chambre }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+         <div class="alert alert-secondary">Aucune location terminée enregistrée.</div>
+    {% endif %}
+
+</div>
+
+<!-- STYLES -->
+<style>
+    /* ... your existing styles ... */
+    .date-expired {
+        background-color: #f8d7da !important;
+        color: #721c24 !important;
+        font-weight: bold !important;
+    }
+</style>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+    
+        // --- Helper Function to Clean and Parse Currency ---
+        function parseCurrency(valueStr) {
+            if (typeof valueStr !== 'string') return 0; // Return 0 for non-strings
+            // Remove currency symbols (FCFA, € etc.), thousands separators (spaces), keep dot/comma
+            const cleaned = valueStr.replace(/[^0-9.,]/g, '').replace(',', '.');
+            const value = parseFloat(cleaned);
+            return isNaN(value) ? 0 : value; // Return 0 if parsing fails
+        }
+    
+        // --- Helper Function to Format Currency ---
+        function formatCurrency(value) {
+             if (isNaN(value)) value = 0;
+             return value.toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        }
+    
+        // --- Function to Calculate and Display Summary Totals ---
+        function calculateAndDisplaySummaryTotals() {
+            let totalDuCalcule = 0;
+            let totalPayeCalcule = 0;
+    
+            // Calculate Total Due from "Montant Total Contrat" cells
+            document.querySelectorAll('#locations-actuelles-table .montant-total-contrat-valeur').forEach(cell => {
+                totalDuCalcule += parseCurrency(cell.textContent);
+            });
+    
+            // Calculate Total Paid from individual payment cells
+            document.querySelectorAll('#locations-actuelles-table .montant-paiement-valeur').forEach(cell => {
+                 totalPayeCalcule += parseCurrency(cell.textContent);
+            });
+    
+            // Calculate Remaining Amount
+            const totalRestantCalcule = totalDuCalcule - totalPayeCalcule;
+    
+            // Get the display elements
+            const totalDuEl = document.getElementById('montant-total-du-calcul');
+            const totalPayeEl = document.getElementById('montant-paye-calcul-global');
+            const restantEl = document.getElementById('montant-restant-calcul'); // Target the remaining span
+    
+            // Update the DOM
+            if (totalDuEl) totalDuEl.textContent = formatCurrency(totalDuCalcule);
+            if (totalPayeEl) totalPayeEl.textContent = formatCurrency(totalPayeCalcule);
+            if (restantEl) restantEl.textContent = formatCurrency(totalRestantCalcule);
+        }
+    
+        // --- Function to calculate total per location (optional but good to keep) ---
+         function calculatePerLocationTotals() {
+            const innerPaymentTables = document.querySelectorAll('.inner-payment-table');
+            innerPaymentTables.forEach(table => {
+                const paiementMontantCells = table.querySelectorAll('tbody .montant-paiement-valeur');
+                let totalPayePourCetteTable = 0;
+    
+                paiementMontantCells.forEach(cell => {
+                    totalPayePourCetteTable += parseCurrency(cell.textContent);
+                });
+    
+                const totalPayeDisplayCell = table.querySelector('tfoot .total-paye-location-cell');
+                if (totalPayeDisplayCell) {
+                    totalPayeDisplayCell.textContent = formatCurrency(totalPayePourCetteTable) + ' FCFA';
+                }
+            });
+        }
+    
+        // --- Run Calculations ---
+        try {
+            // Calculate totals per location first (if needed)
+            calculatePerLocationTotals();
+    
+            // Calculate and display the summary totals
+            calculateAndDisplaySummaryTotals();
+    
+            // Note: Date highlighting and stats counting code could be added back here if needed
+            // Remember to define the referenceDate (todayInTogo) if you add them back.
+    
+        } catch (error) {
+             console.error("Error during page calculations:", error);
+        }
+    
+    });
+    </script>
+{% comment %} 
+<!-- JAVASCRIPT -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+
+    // --- Helper Function to Parse Date and Check Expiry ---
+    // Returns true if expired, false otherwise (including invalid/empty dates)
+    function isDateExpired(dateStr, referenceDate) {
+        if (!dateStr) return false; // Empty date is not expired
+
+        const parts = dateStr.split('/'); // Expects DD/MM/YYYY
+        if (parts.length === 3) {
+            const day = parseInt(parts[0], 10);
+            const month = parseInt(parts[1], 10) - 1; // JS months 0-indexed
+            const year = parseInt(parts[2], 10);
+            const cellDate = new Date(Date.UTC(year, month, day)); // Use UTC midnight
+
+            if (!isNaN(cellDate.getTime()) && cellDate < referenceDate) {
+                return true; // Valid and before reference date
+            }
+        }
+        return false; // Invalid format or not before reference date
+    }
+
+    // --- Function to check and highlight expired dates ---
+    function checkAndHighlightDates(referenceDate) {
+        if (isNaN(referenceDate.getTime())) return; // Skip if reference date is invalid
+
+        const processDateCell = (cell) => {
+            const dateStr = cell.textContent.trim();
+            if (isDateExpired(dateStr, referenceDate)) {
+                cell.classList.add('date-expired');
+            } else {
+                cell.classList.remove('date-expired');
+            }
+        };
+
+        document.querySelectorAll('.fin-avance-cell').forEach(processDateCell);
+        document.querySelectorAll('.fin-periode-cell').forEach(processDateCell);
+    }
+
+    // --- Function to Calculate and Update Statistics Counts ---
+    function updateStatsCounts(referenceDate) {
+        if (isNaN(referenceDate.getTime())) {
+             console.error("Cannot update stats, reference date is invalid.");
+             return;
+        };
+
+        let locationsAJourCount = 0;
+        let locationsExpireesCount = 0;
+        let paiementsExpiresCount = 0;
+
+        // Count Locations (A Jour / Expirees based on Fin Avance)
+        document.querySelectorAll('#locations-actuelles-table > tbody > tr[data-location-row]').forEach(row => {
+            const finAvanceCell = row.querySelector('.fin-avance-cell');
+            if (finAvanceCell) {
+                const dateStr = finAvanceCell.textContent.trim();
+                if (isDateExpired(dateStr, referenceDate)) {
+                    locationsExpireesCount++;
+                } else {
+                    // Counts as "A Jour" if not expired (includes empty/invalid dates for this logic)
+                    locationsAJourCount++;
+                }
+            } else {
+                 // If cell not found, count as A Jour by default or log error
+                 locationsAJourCount++;
+                 console.warn("'.fin-avance-cell' not found in a location row:", row);
+            }
+        });
+
+        // Count Expired Payments (based on Fin Periode)
+        document.querySelectorAll('.fin-periode-cell').forEach(cell => {
+            const dateStr = cell.textContent.trim();
+            if (isDateExpired(dateStr, referenceDate)) {
+                paiementsExpiresCount++;
+            }
+        });
+
+        // Update the DOM elements
+        const countAJourEl = document.getElementById('count-locations-a-jour');
+        const countLocExpireesEl = document.getElementById('count-locations-expirees');
+        const countPaieExpireesEl = document.getElementById('count-paiements-expires');
+
+        if (countAJourEl) countAJourEl.textContent = locationsAJourCount;
+        if (countLocExpireesEl) countLocExpireesEl.textContent = locationsExpireesCount;
+        if (countPaieExpireesEl) countPaieExpireesEl.textContent = paiementsExpiresCount;
+    }
+
+
+    // --- Main Execution Logic ---
+    try {
+        // Get reference date (Today in Togo) ONCE
+        const todayInTogoStr = new Date().toLocaleDateString('en-CA', { timeZone: 'Africa/Lome' });
+        const todayInTogo = new Date(todayInTogoStr + 'T00:00:00Z'); // Start of day in Togo (UTC midnight)
+
+        if (isNaN(todayInTogo.getTime())) {
+            throw new Error("Could not determine today's date in Togo timezone reliably.");
+        }
+
+        // 1. Highlight Dates
+        checkAndHighlightDates(todayInTogo);
+
+        // 2. Update Stats Counts
+        updateStatsCounts(todayInTogo);
+
+        // 3. Calculate Totals (Existing Code)
+        // --- Calculation for Total Paid per Location ---
+        const innerPaymentTables = document.querySelectorAll('.inner-payment-table');
+        innerPaymentTables.forEach(table => {
+            const paiementMontantCells = table.querySelectorAll('tbody .montant-paiement-valeur');
+            let totalPayePourCetteTable = 0;
+
+            paiementMontantCells.forEach(cell => {
+                const montantText = cell.textContent.trim();
+                const cleanedMontantText = montantText.replace(/[^0-9.,]/g, '').replace(',', '.');
+                const montant = parseFloat(cleanedMontantText);
+                if (!isNaN(montant)) {
+                    totalPayePourCetteTable += montant;
+                }
+            });
+
+            const totalPayeDisplayCell = table.querySelector('tfoot .total-paye-location-cell');
+            if (totalPayeDisplayCell) {
+                totalPayeDisplayCell.textContent = totalPayePourCetteTable.toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' FCFA';
+            }
+        });
+
+        // --- Calculation for Overall Total Paid in Summary ---
+        const allPaiementMontantCells = document.querySelectorAll('#locations-actuelles-table .montant-paiement-valeur');
+        let grandTotalPaye = 0;
+        allPaiementMontantCells.forEach(cell => {
+             const montantText = cell.textContent.trim();
+             const cleanedMontantText = montantText.replace(/[^0-9.,]/g, '').replace(',', '.');
+             const montant = parseFloat(cleanedMontantText);
+             if (!isNaN(montant)) {
+                grandTotalPaye += montant;
+            }
+        });
+
+        const grandTotalPayeDisplayElement = document.getElementById('montant-paye-calcul-global');
+         if (grandTotalPayeDisplayElement) {
+             grandTotalPayeDisplayElement.textContent = grandTotalPaye.toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+         }
+
+    } catch (error) {
+         console.error("Error during page initialization:", error);
+         // Optionally display a user-friendly error message on the page
+    }
+
+});
+</script> {% endcomment %}
+
+
+
+{% comment %} {% extends "accuiel/base.html" %}
+{% load widget_tweaks %}
+{% block content %}
+<div class="dashboard-container">
+
+
+
+
+    <!-- ==================== CARTES STATISTIQUES ==================== -->
+    <!-- Cartes statistiques -->
+    <div class="mb-4 row g-4">
+        <!-- Paiements en cours -->
+        <div class="col-xl-3 col-md-6">
+            <div class="border-0 card bg-success-subtle h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h6 class="mb-2 text-success text-uppercase fw-bold">À jour</h6>
+                            <h3 class="mb-0">
+                                {{ paiements_confirmes }}
+                                <small class="text-muted fs-6">paiements</small>
+                            </h3>
+                        </div>
+                        <div class="p-3 bg-opacity-25 bg-success rounded-circle">
+                            <i class="fas fa-check-circle text-success fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Paiements en attente -->
+        <div class="col-xl-3 col-md-6">
+            <div class="border-0 card bg-warning-subtle h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h6 class="mb-2 text-warning text-uppercase fw-bold">En attente</h6>
+                            <h3 class="mb-0">
+                                {{ paiements_en_attente }}
+                                <small class="text-muted fs-6">paiements</small>
+                            </h3>
+                        </div>
+                        <div class="p-3 bg-opacity-25 bg-warning rounded-circle">
+                            <i class="fas fa-clock text-warning fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Paiements expirés -->
+        <div class="col-xl-3 col-md-6">
+            <div class="border-0 card bg-danger-subtle h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h6 class="mb-2 text-danger text-uppercase fw-bold">Expirés</h6>
+                            <h3 class="mb-0">
+                                {{ paiements_expires }}
+                                <small class="text-muted fs-6">paiements</small>
+                            </h3>
+                        </div>
+                        <div class="p-3 bg-opacity-25 bg-danger rounded-circle">
+                            <i class="fas fa-exclamation-circle text-danger fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+        
+    <div class="locataire-info">
+        <h3 class="section-title">Informations Personnelles</h3>
+        <div class="info-card">
+            <div class="info-item">
+                <span class="info-label"><i class="fas fa-user"></i> Nom :</span>
+                <span class="info-value">{{ locataire.nom }} {{ locataire.prenom }}</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label"><i class="fas fa-envelope"></i> Email :</span>
+                <span class="info-value">{{ locataire.email }}</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label"><i class="fas fa-phone"></i> Téléphone :</span>
+                <span class="info-value">{{ locataire.telephone }}</span>
+            </div>
+        </div>
+        
+    <h3 class="section-title">Résumé</h3>
+    <ul class="summary-list">
+        <li><strong>Montant total dû :</strong> {{ montant_total }} FCFA</li>
+        <li><strong>Montant payé :</strong> {{ montant_paye }} FCFA</li>
+        <li><strong>Montant restant :</strong> {{ montant_restant }} FCFA</li>
+    </ul>
+
+    </div>
+
+    <h3 class="section-title">Locations Actuelles</h3>
+    {% if locations %}
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Chambre</th>
+                <th>Début</th>
+                <th>Mois </th>
+                <th>fin</th>
+                <th>Avance</th>
+                <th>Caution</th>
+                <th>Montant Total</th>
+                <th>Statut</th>
+                <th>Paiements</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for location in locations %}
+            <tr>
+                <td>{{ location.chambre }}</td>
+                <td>{{ location.date_debut_location }}</td>
+                <td>{{ location.nombre_mois_paye }}</td>
+                <td class="{% if location.date_fin_avance and location.date_fin_avance|date:"Y-m-d" < today %}date-expired{% endif %}">
+                    {{ location.date_fin_avance }}
+                </td>
+                <td>{{ location.montant_avance }}</td>
+                <td>{{ location.montant_caution }}</td>
+
+                <td>{{ location.montant_total }}</td>
+                <td>{{ location.get_statut_paiement_display }}</td>
+                <td>
+                    {% if location.paiements.all %}
+                        <table class="table table-bordered">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Mois</th>
+                                    <th class="date-header">Fin</th>
+                                    <th>Montant</th>
+                                    <th>Mode</th>
+                                    <th>Statut</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for paiement in location.paiements.all %}
+                                <tr>
+                                    <td>{{ paiement.date_paiement }}</td>
+                                    <td>{{ paiement.nombre_mois_paye }}</td>
+                                    <td class="{% if paiement.date_fin_paiement and paiement.date_fin_paiement|date:"Y-m-d" < today %}date-expired{% endif %}">
+                                        {{ paiement.date_fin_paiement }}
+                                    </td>                                    <td>{{ paiement.montant_paye }}</td>
+                                    <td>{{ paiement.get_mode_paiement_display }}</td>
+                                    <td>{{ paiement.get_statut_paiement_display }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    {% else %}
+                        <p class="no-data">Aucun paiement enregistré pour cette location.</p>
+                    {% endif %}
+                </td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+        <p class="no-data">Aucune location en cours.</p>
+    {% endif %}
+
+    <h3 class="section-title">Locations Terminées</h3>
+    {% if fins_locations %}
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Date de fin</th>
+                <th>Montant Restant</th>
+                <th>Raison</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for fin in fins_locations %}
+            <tr>
+                <td>{{ fin.date_fin_location }}</td>
+                <td>{{ fin.montant_restant }}</td>
+                <td>{{ fin.raison_fin }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+        <p class="no-data">Aucune location terminée.</p>
+    {% endif %}
+</div>
+
+<style>
+    /* Conteneur des informations personnelles */
+    .date-expired {
+        background-color: #f8d7da;
+        color: #721c24;
+        font-weight: bold;
+    }
+    .locataire-info {
+        margin: 20px 0;
+        padding: 20px;
+        background-color: #f4f4f4;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .info-card {
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+    }
+
+    .info-item {
+        display: flex;
+        align-items: center;
+        font-size: 16px;
+        color: #555;
+    }
+
+    .info-label {
+        font-weight: bold;
+        color: #2c3e50;
+        margin-right: 10px;
+        display: flex;
+        align-items: center;
+    }
+
+    .info-label i {
+        margin-right: 8px;
+        color: #3498db;
+    }
+
+    .info-value {
+        color: #34495e;
+    }
+    /* Conteneur principal */
+    .dashboard-container {
+        margin: 20px auto;
+        padding: 20px;
+        background-color: #f9f9f9;
+        border-radius: 10px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        font-family: Arial, sans-serif;
+    }
+
+    /* Titres */
+    .dashboard-title {
+        text-align: center;
+        font-size: 28px;
+        color: #2c3e50;
+        margin-bottom: 20px;
+    }
+
+    .section-title {
+        font-size: 22px;
+        color: #34495e;
+        margin-top: 30px;
+        margin-bottom: 15px;
+    }
+
+    /* Informations locataire */
+    .locataire-info p {
+        font-size: 16px;
+        color: #555;
+        margin: 5px 0;
+    }
+
+    /* Liste de résumé */
+    .summary-list {
+        list-style: none;
+        padding: 0;
+        margin: 0 0 20px 0;
+    }
+
+    .summary-list li {
+        font-size: 16px;
+        margin-bottom: 10px;
+    }
+
+    .summary-list li strong {
+        color: #2c3e50;
+    }
+
+    /* Tableaux */
+    .table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-bottom: 20px;
+    }
+
+    .table th, .table td {
+        padding: 12px;
+        text-align: left;
+        border: 1px solid #ddd;
+    }
+
+    .table th {
+        background-color: #34495e;
+        color: #fff;
+    }
+
+    .table-striped tbody tr:nth-child(odd) {
+        background-color: #f9f9f9;
+    }
+
+    .table-striped tbody tr:nth-child(even) {
+        background-color: #f1f1f1;
+    }
+
+    .table-bordered {
+        margin-top: 10px;
+        border: 1px solid #ccc;
+    }
+
+    /* Texte pour les données manquantes */
+    .no-data {
+        font-size: 14px;
+        color: #e74c3c;
+        font-style: italic;
+    }
+</style>
+{% endblock %} {% endcomment %}

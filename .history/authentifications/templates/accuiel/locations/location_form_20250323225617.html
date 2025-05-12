@@ -1,0 +1,51 @@
+{% extends "accuiel/base.html" %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2 class="mb-4 text-center">Créer une Location</h2>
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        <div class="mb-3">
+            {{ form.date_debut_location.label_tag }}
+            {{ form.date_debut_location }}
+        </div>
+        <div class="mb-3">
+            {{ form.nombre_mois_paye.label_tag }}
+            {{ form.nombre_mois_paye }}
+        </div>
+        <div class="mb-3">
+            {{ form.date_fin_avance.label_tag }}
+            {{ form.date_fin_avance }}
+        </div>
+        <div class="mb-3">
+            {{ form.montant_avance.label_tag }}
+            {{ form.montant_avance }}
+        </div>
+        <button type="submit" class="btn btn-primary">Enregistrer</button>
+    </form>
+</div>
+
+<script>
+    // Récupérer les champs du formulaire
+    const dateDebutInput = document.getElementById("id_date_debut_location");
+    const nombreMoisInput = document.getElementById("id_nombre_mois_paye");
+    const dateFinInput = document.getElementById("id_date_fin_avance");
+
+    // Fonction pour calculer la date de fin
+    function calculerDateFin() {
+        const dateDebut = new Date(dateDebutInput.value);
+        const nombreMois = parseInt(nombreMoisInput.value);
+
+        if (!isNaN(dateDebut.getTime()) && !isNaN(nombreMois)) {
+            // Ajouter le nombre de mois à la date de début
+            dateDebut.setMonth(dateDebut.getMonth() + nombreMois);
+            // Mettre à jour le champ "date_fin_avance"
+            dateFinInput.value = dateDebut.toISOString().split("T")[0];
+        }
+    }
+
+    // Ajouter des écouteurs d'événements pour recalculer la date de fin
+    dateDebutInput.addEventListener("change", calculerDateFin);
+    nombreMoisInput.addEventListener("input", calculerDateFin);
+</script>
+{% endblock %}

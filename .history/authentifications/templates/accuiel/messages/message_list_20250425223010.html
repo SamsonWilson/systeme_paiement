@@ -1,0 +1,406 @@
+{% extends 'accuiel/base.html' %}
+{% block content %}
+<style>
+   /* Styles généraux */
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #f4f4f4;
+    margin: 0;
+    padding: 0;
+}
+
+.chat-container {
+    display: flex;
+    height: 600px;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    margin: 20px;
+    background-color: #fff;
+}
+
+/* Liste des utilisateurs */
+.user-list {
+    width: 250px;
+    border-right: 1px solid #e0e0e0;
+    padding: 20px;
+    background-color: #f9f9f9;
+}
+
+.user-list h3 {
+    margin-top: 0;
+    color: #333;
+    font-size: 1.4em;
+    margin-bottom: 15px;
+}
+
+.user-list ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.user-list li {
+    margin-bottom: 10px;
+}
+
+.user-list a {
+    display: block;
+    text-decoration: none;
+    color: #333;
+    padding: 10px;
+    border-radius: 5px;
+    transition: background-color 0.3s;
+}
+
+.user-list a:hover {
+    background-color: #e9ecef;
+}
+
+/* Zone de chat */
+.chat-box-container {
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+}
+
+.chat-header {
+    background-color: #007bff;
+    color: white;
+    padding: 20px;
+    text-align: center;
+    font-size: 1.6em;
+    border-bottom: 1px solid #0056b3;
+}
+
+.chat-box {
+    flex-grow: 1;
+    overflow-y: auto;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Messages */
+.message {
+    margin-bottom: 15px;
+    display: flex;
+    clear: both;
+}
+
+.message.sent {
+    justify-content: flex-end;
+}
+
+.message.received {
+    justify-content: flex-start;
+}
+
+.message-content {
+    background-color: #DCF8C6;
+    border-radius: 10px;
+    padding: 10px 15px;
+    max-width: 80%;
+    word-wrap: break-word;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.message.received .message-content {
+    background-color: #fff;
+}
+
+/* Formulaire de message */
+.message-form {
+    padding: 20px;
+    background-color: #f9f9f9;
+    border-top: 1px solid #e0e0e0;
+    display: flex;
+}
+
+.message-form input[type="text"] {
+    flex-grow: 1;
+    padding: 12px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    margin-right: 10px;
+    font-size: 1em;
+}
+
+.message-form button {
+    padding: 12px 20px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 1em;
+    transition: background-color 0.3s;
+}
+
+.message-form button:hover {
+    background-color: #0056b3;
+}
+
+/* Notification de nouveau message */
+.new-message-notification {
+    position: relative;
+}
+
+.new-message-notification::after {
+    content: attr(data-count);
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    background-color: red;
+    color: white;
+    font-size: 0.7em;
+    padding: 2px 5px;
+    border-radius: 50%;
+}
+</style>
+{% block content %}
+    <div class="chat-container">
+        <div class="user-list">
+            <h3>Utilisateurs</h3>
+            <ul>
+                {% for user in all_users %}
+                    <li class="new-message-notification" data-count="0" id="user-{{ user.id }}">
+                        <a href="{% url 'chat_page' receiver_id=user.id %}">
+                            {{ user.username }}
+                        </a>
+                    </li>
+                {% endfor %}
+            </ul>
+        </div>
+        <div class="chat-box-container">
+            <div class="chat-header">
+                <h2>Conversation avec {% if chat_user %}{{ chat_user.username }}{% else %}Tous les utilisateurs{% endif %}</h2>
+            </div>
+            <div id="chat-box" class="chat-box">
+                {% for msg in messages %}
+                    <div class="message {% if msg.sender == user %}sent{% else %}received{% endif %}">
+                        <div class="message-content">
+                            <p>
+                                {{ msg.message }}
+                            </p>
+                            {% if msg.is_group_message %}
+                                <div class="message-group">
+                                    (Message de groupe à:
+                                    {% for receiver in msg.group_receivers.all %}
+                                        {{ receiver.username }}{% if not forloop.last %}, {% endif %}
+                                    {% endfor %})
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+
+            <form id="message-form" class="message-form">
+                {% csrf_token %}
+                {% if not is_admin %}
+                    <input type="hidden" id="receiver_id" value="{{ admin_user.id }}">
+                {% else %}
+                    {% if not chat_user %}
+                        <select id="group_receivers" name="group_receivers" multiple>
+                            {% for user in all_users %}
+                                <option value="{{ user.id }}">{{ user.username }}</option>
+                            {% endfor %}
+                        </select>
+                        <input type="hidden" name="is_group_message" value="true">
+                    {% else %}
+                        <input type="hidden" id="receiver_id" value="{{ chat_user.id }}">
+                        <input type="hidden" name="is_group_message" value="false">
+                    {% endif %}
+                {% endif %}
+                <input type="text" id="message" placeholder="Écrivez un message...">
+                <button type="submit">Envoyer</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('message-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            const message = document.getElementById('message').value;
+            let receiver_id = document.getElementById('receiver_id') ? document.getElementById('receiver_id').value : '';
+            let is_group_message = document.querySelector('input[name="is_group_message"]').value;
+            let group_receivers = [];
+
+            if (is_group_message === 'true') {
+                let select = document.getElementById('group_receivers');
+                for (let i = 0; i < select.options.length; i++) {
+                    if (select.options[i].selected) {
+                        group_receivers.push(select.options[i].value);
+                    }
+                }
+            }
+
+            let formData = new FormData();
+            formData.append('message', message);
+            formData.append('is_group_message', is_group_message);
+            if (is_group_message === 'true') {
+                group_receivers.forEach(function(receiver_id) {
+                    formData.append('group_receivers', receiver_id);
+                });
+            } else {
+                formData.append('receiver_id', receiver_id);
+            }
+
+            fetch("{% url 'send_message' %}", {
+                method: "POST",
+                headers: {
+                    "X-CSRFToken": "{{ csrf_token }}",
+                },
+                body: formData,
+            })
+            .then(response => response.json())
+            .then(data => {
+                // Ajoute le message envoyé à l'interface
+                addMessage(data.message, data.sender, data.is_group_message, data.group_receivers);
+                document.getElementById('message').value = ''; // Efface le champ de texte
+                // Mettre à jour la notification de nouveau message
+                updateNotification(data.sender);
+            })
+            .catch((error) => {
+                console.error('Error:', error);
+            });
+        });
+
+        function addMessage(message, sender, isGroupMessage, groupReceivers) {
+            const chatBox = document.getElementById('chat-box');
+            const messageDiv = document.createElement('div');
+            messageDiv.classList.add('message');
+            messageDiv.classList.add(sender === '{{ user.username }}' ? 'sent' : 'received');
+
+            let messageHTML = `
+                <div class="message-content">
+                    <p>
+                        ${message}
+                    </p>`;
+
+            if (isGroupMessage === 'true') {
+                messageHTML += `<div class="message-group">(Message de groupe à: ${groupReceivers.join(', ')})</div>`;
+            }
+
+            messageHTML += `</div>`;
+            messageDiv.innerHTML = messageHTML;
+            chatBox.appendChild(messageDiv);
+            chatBox.scrollTop = chatBox.scrollHeight; // Défilement vers le bas
+        }
+
+        function updateNotification(sender) {
+            // Récupérer l'ID de l'utilisateur qui a envoyé le message
+            let userId = sender.split('-')[1]; // Supposant que le sender est "user-ID"
+            let userElement = document.getElementById('user-' + userId);
+
+            // Vérifier si l'élément existe
+            if (userElement) {
+                // Incrémenter le compteur de notifications
+                let count = parseInt(userElement.dataset.count) + 1;
+                userElement.dataset.count = count;
+
+                // Mettre à jour l'affichage de la notification
+                userElement.setAttribute('data-count', count);
+            }
+        }
+    </script>
+{% endblock %}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+{% comment %} 
+<style>
+    #chat-box {
+        border: 1px solid #ccc;
+        padding: 10px;
+        height: 400px;
+        overflow-y: scroll;
+        margin-bottom: 20px;
+        background-color: #f9f9f9;
+    }
+    
+    .message {
+        margin-bottom: 10px;
+        padding: 5px;
+        border-radius: 5px;
+    }
+    
+    .message.sent {
+        text-align: right;
+        background-color: #d1ffd6;
+    }
+    
+    .message.received {
+        text-align: left;
+        background-color: #ffe6e6;
+    }
+    
+    .timestamp {
+        font-size: 0.8em;
+        color: gray;
+    }
+</style>
+<h1>Chat avec {{ chat_user.username }}</h1>
+
+<!-- Boîte de discussion -->
+<div id="chat-box">
+    {% for message in messages %}
+        <div class="message {% if message.sender == user %}sent{% else %}received{% endif %}">
+            <p><strong>{{ message.sender.username }}</strong>: {{ message.message }}</p>
+            <p class="timestamp">{{ message.timestamp }}</p>
+        </div>
+    {% endfor %}
+</div>
+
+<!-- Formulaire d'envoi de message -->
+<form id="message-form" method="POST" action="{% url 'send_message' %}">
+    {% csrf_token %}
+    <input type="hidden" name="receiver_id" value="{{ chat_user.id }}">
+    <textarea name="message" placeholder="Écrivez votre message ici..." required></textarea>
+    <button type="submit">Envoyer</button>
+</form>
+
+<script>
+    // Gestion de l'envoi du formulaire sans recharger la page
+    const form = document.getElementById('message-form');
+    form.onsubmit = async (e) => {
+        e.preventDefault(); // Empêcher le rechargement de la page
+        const formData = new FormData(form);
+
+        const response = await fetch(form.action, {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-CSRFToken': form.querySelector('[name=csrfmiddlewaretoken]').value,
+            }
+        });
+
+        const result = await response.json();
+        if (result.status === 'Message envoyé avec succès') {
+            location.reload(); // Recharge les messages après envoi
+        } else {
+            alert('Erreur lors de l\'envoi du message : ' + result.error);
+        }
+    };
+</scrip> 
+{% endblock %} {% endcomment %}

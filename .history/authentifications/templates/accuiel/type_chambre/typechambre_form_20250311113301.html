@@ -1,0 +1,10 @@
+{% extends 'accuiel/base.html' %}
+
+{% block content %}
+<h2>{% if object %}Modifier{% else %}Créer{% endif %} un Type de Chambre</h2>
+<form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit" class="btn btn-primary">Enregistrer</button>
+</form>
+{% endblock %}C:\Users\hugues\Music\Projet text\authentifications\templates\accuiel\type_chambre\typechambre_form.html

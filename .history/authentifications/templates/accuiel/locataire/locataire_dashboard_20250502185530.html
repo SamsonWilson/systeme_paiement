@@ -1,0 +1,577 @@
+{% extends "accuiel/base.html" %}
+{% load widget_tweaks %}
+{% block content %}
+<div class="dashboard-container">
+    <div class="locataire-info">
+        <h3 class="section-title">Informations Personnelles</h3>
+        <div class="info-card">
+            <div class="info-item">
+                <span class="info-label"><i class="fas fa-user"></i> Nom :</span>
+                <span class="info-value">{{ locataire.nom }} {{ locataire.prenom }}</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label"><i class="fas fa-envelope"></i> Email :</span>
+                <span class="info-value">{{ locataire.email }}</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label"><i class="fas fa-phone"></i> Téléphone :</span>
+                <span class="info-value">{{ locataire.telephone }}</span>
+            </div>
+        </div>
+    </div>
+
+    <h3 class="section-title">Résumé</h3>
+    <ul class="summary-list">
+        <li><strong>Montant total dû :</strong> {{ montant_total }} FCFA</li>
+        <li><strong>Montant payé :</strong> {{ montant_paye }} FCFA</li>
+        <li><strong>Montant restant :</strong> {{ montant_restant }} FCFA</li>
+    </ul>
+
+    <h3 class="section-title">Locations Actuelles</h3>
+    {% if locations %}
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Chambre</th>
+                <th>Début</th>
+                <th>Mois </th>
+                <th>fin</th>
+                <th>Avance</th>
+                <th>Caution</th>
+                <th>Montant Total</th>
+                <th>Statut</th>
+                <th>Paiements</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for location in locations %}
+            <tr>
+                <td>{{ location.chambre }}</td>
+                <td>{{ location.date_debut_location }}</td>
+                <td>{{ location.nombre_mois_paye }}</td>
+                <td>{{ location.date_fin_avance }}</td>
+                <td>{{ location.montant_avance }}</td>
+                <td>{{ location.montant_caution }}</td>
+
+                <td>{{ location.montant_total }}</td>
+                <td>{{ location.get_statut_paiement_display }}</td>
+                <td>
+                    {% if location.paiements.all %}
+                        <table class="table table-bordered">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Mois</th>
+                                    <th>Fin</th>
+                                    <th>Montant</th>
+                                    <th>Mode</th>
+                                    <th>Statut</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for paiement in location.paiements.all %}
+                                <tr>
+                                    <td>{{ paiement.date_paiement }}</td>
+                                    <td>{{ paiement.nombre_mois_paye }}</td>
+                                    <td>{{ paiement.date_fin_paiement }}</td>
+                                    <td>{{ paiement.montant_paye }}</td>
+                                    <td>{{ paiement.get_mode_paiement_display }}</td>
+                                    <td>{{ paiement.get_statut_paiement_display }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    {% else %}
+                        <p class="no-data">Aucun paiement enregistré pour cette location.</p>
+                    {% endif %}
+                </td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+        <p class="no-data">Aucune location en cours.</p>
+    {% endif %}
+
+    <h3 class="section-title">Locations Terminées</h3>
+    {% if fins_locations %}
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Date de fin</th>
+                <th>Montant Restant</th>
+                <th>Raison</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for fin in fins_locations %}
+            <tr>
+                <td>{{ fin.date_fin_location }}</td>
+                <td>{{ fin.montant_restant }}</td>
+                <td>{{ fin.raison_fin }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+        <p class="no-data">Aucune location terminée.</p>
+    {% endif %}
+</div>
+{% comment %} {% endblock %} {% endcomment %}
+
+<style>
+    /* Conteneur principal */
+    .dashboard-container {
+        margin: 20px auto;
+        padding: 20px;
+        background-color: #f9f9f9;
+        border-radius: 10px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        font-family: Arial, sans-serif;
+    }
+
+    /* Titres */
+    .dashboard-title {
+        text-align: center;
+        font-size: 28px;
+        color: #2c3e50;
+        margin-bottom: 20px;
+    }
+
+    .section-title {
+        font-size: 22px;
+        color: #34495e;
+        margin-top: 30px;
+        margin-bottom: 15px;
+    }
+
+    /* Informations locataire */
+    .locataire-info p {
+        font-size: 16px;
+        color: #555;
+        margin: 5px 0;
+    }
+
+    /* Liste de résumé */
+    .summary-list {
+        list-style: none;
+        padding: 0;
+        margin: 0 0 20px 0;
+    }
+
+    .summary-list li {
+        font-size: 16px;
+        margin-bottom: 10px;
+    }
+
+    .summary-list li strong {
+        color: #2c3e50;
+    }
+
+    /* Tableaux */
+    .table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-bottom: 20px;
+    }
+
+    .table th, .table td {
+        padding: 12px;
+        text-align: left;
+        border: 1px solid #ddd;
+    }
+
+    .table th {
+        background-color: #34495e;
+        color: #fff;
+    }
+
+    .table-striped tbody tr:nth-child(odd) {
+        background-color: #f9f9f9;
+    }
+
+    .table-striped tbody tr:nth-child(even) {
+        background-color: #f1f1f1;
+    }
+
+    .table-bordered {
+        margin-top: 10px;
+        border: 1px solid #ccc;
+    }
+
+    /* Texte pour les données manquantes */
+    .no-data {
+        font-size: 14px;
+        color: #e74c3c;
+        font-style: italic;
+    }
+</style>
+{% endblock %}
+
+{% comment %} {% extends "accuiel/base.html" %}
+{% load widget_tweaks %}
+{% block content %}
+<div class="dashboard-container">
+    <h2>Tableau de bord de {{ locataire.nom }} {{ locataire.prenom }}</h2>
+    <p><strong>Email :</strong> {{ locataire.email }}</p>
+    <p><strong>Téléphone :</strong> {{ locataire.telephone }}</p>
+
+    <h3>Résumé</h3>
+    <ul class="summary-list">
+        <li><strong>Montant total dû :</strong> {{ montant_total }} FCFA</li>
+        <li><strong>Montant payé :</strong> {{ montant_paye }} FCFA</li>
+        <li><strong>Montant restant :</strong> {{ montant_restant }} FCFA</li>
+    </ul>
+
+    <h3>Locations Actuelles</h3>
+    {% if locations %}
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Chambre</th>
+                <th>Début</th>
+                <th>Montant Total</th>
+                <th>Statut</th>
+                <th>Paiements</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for location in locations %}
+            <tr>
+                <td>{{ location.chambre }}</td>
+                <td>{{ location.date_debut_location }}</td>
+                <td>{{ location.montant_total }}</td>
+                <td>{{ location.get_statut_paiement_display }}</td>
+                <td>
+                    {% if location.paiements.all %}
+                        <table class="table table-bordered">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Montant</th>
+                                    <th>Mode</th>
+                                    <th>Statut</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for paiement in location.paiements.all %}
+                                <tr>
+                                    <td>{{ paiement.date_paiement }}</td>
+                                    <td>{{ paiement.montant_paye }}</td>
+                                    <td>{{ paiement.nombre_mois_paye }}</td>
+                                    <td>{{ paiement.get_mode_paiement_display }}</td>
+                                    <td>{{ paiement.get_statut_paiement_display }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    {% else %}
+                        <p>Aucun paiement enregistré pour cette location.</p>
+                    {% endif %}
+                </td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+        <p>Aucune location en cours.</p>
+    {% endif %}
+
+    <h3>Locations Terminées</h3>
+    {% if fins_locations %}
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Date de fin</th>
+                <th>Montant Restant</th>
+                <th>Raison</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for fin in fins_locations %}
+            <tr>
+                <td>{{ fin.date_fin_location }}</td>
+                <td>{{ fin.montant_restant }}</td>
+                <td>{{ fin.raison_fin }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+        <p>Aucune location terminée.</p>
+    {% endif %}
+</div> {% endcomment %}
+
+<style>
+    /* Style général pour la page */
+    .dashboard-container {
+        max-width: 1100px;
+        margin: 20px auto;
+        font-family: Arial, sans-serif;
+        padding: 20px;
+        background-color: #f9f9f9;
+        border-radius: 8px;
+    }
+
+    h2 {
+        text-align: center;
+        margin-bottom: 20px;
+    }
+
+    h3 {
+        color: #2c3e50;
+        margin-top: 40px;
+    }
+
+    /* Liste de résumé */
+    .summary-list {
+        list-style: none;
+        padding-left: 0;
+    }
+
+    .summary-list li {
+        margin-bottom: 10px;
+    }
+
+    .summary-list li strong {
+        font-weight: bold;
+    }
+
+    /* Tableau stylisé */
+    table {
+        width: 100%;
+        margin-bottom: 20px;
+        border-collapse: collapse;
+        border: 1px solid #ddd;
+    }
+
+    th, td {
+        padding: 12px;
+        text-align: left;
+        border-bottom: 1px solid #ddd;
+    }
+
+    th {
+        background-color: #f4f4f4;
+        color: #333;
+    }
+
+    tr:nth-child(even) {
+        background-color: #f9f9f9;
+    }
+
+    /* Ajouter une bordure à la table des paiements */
+    .table-bordered {
+        border: 2px solid #ddd;
+    }
+
+    .table-striped tbody tr:nth-child(odd) {
+        background-color: #f9f9f9;
+    }
+
+    .table-striped tbody tr:nth-child(even) {
+        background-color: #f1f1f1;
+    }
+
+    p {
+        font-size: 16px;
+        color: #555;
+    }
+
+    /* Table de paiements */
+    .table th, .table td {
+        text-align: center;
+    }
+</style>
+
+
+
+{% comment %} {% extends "accuiel/base.html" %}
+{% load widget_tweaks %}
+{% block content %}
+<h2>Tableau de bord de {{ locataire.nom }} {{ locataire.prenom }}</h2>
+<p>Email : {{ locataire.email }}</p>
+<p>Téléphone : {{ locataire.telephone }}</p>
+
+<h3>Résumé</h3>
+<ul>
+    <li>Montant total dû : {{ montant_total }} FCFA</li>
+    <li>Montant payé : {{ montant_paye }} FCFA</li>
+    <li>Montant restant : {{ montant_restant }} FCFA</li>
+</ul>
+
+<h3>Locations Actuelles</h3>
+{% if locations %}
+<table border="1">
+    <thead>
+        <tr>
+            <th>Chambre</th>
+            <th>Début</th>
+            <th>Montant Total</th>
+            <th>Statut</th>
+            <th>Paiements</th>
+        </tr>
+    </thead>
+    <tbody>
+    {% for location in locations %}
+        <tr>
+            <td>{{ location.chambre }}</td>
+            <td>{{ location.date_debut_location }}</td>
+            <td>{{ location.montant_total }}</td>
+            <td>{{ location.get_statut_paiement_display }}</td>
+            <td>
+                {% if location.paiements.all %}
+                    <table border="1">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Montant</th>
+                                <th>Mode</th>
+                                <th>Statut</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for paiement in location.paiements.all %}
+                            <tr>
+                                <td>{{ paiement.date_paiement }}</td>
+                                <td>{{ paiement.montant_paye }}</td>
+                                <td>{{ paiement.nombre_mois_paye }}</td>
+
+                                <td>{{ paiement.get_mode_paiement_display }}</td>
+                                <td>{{ paiement.get_statut_paiement_display }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                {% else %}
+                    <p>Aucun paiement enregistré pour cette location.</p>
+                {% endif %}
+            </td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
+{% else %}
+    <p>Aucune location en cours.</p>
+{% endif %}
+
+<h3>Locations Terminées</h3>
+{% if fins_locations %}
+<table border="1">
+    <thead>
+        <tr>
+            <th>Date de fin</th>
+            <th>Montant Restant</th>
+            <th>Raison</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for fin in fins_locations %}
+        <tr>
+            <td>{{ fin.date_fin_location }}</td>
+            <td>{{ fin.montant_restant }}</td>
+            <td>{{ fin.raison_fin }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% else %}
+    <p>Aucune location terminée.</p>
+{% endif %}
+{% endblock %} {% endcomment %}
+
+
+
+
+
+
+{% comment %} <tbody>
+    {% for fin_location in fins_locations %}
+    <tr>
+        <td>{{ fin_location.date_fin_location }}</td>
+        <td>{{ fin_location.montant_restant }}</td>
+        <td>{{ fin_location.raison_fin }}</td>
+    </tr>
+    {% endfor %}
+</tbody> {% endcomment %}
+
+{% comment %} {% extends "accuiel/base.html" %}
+{% block content %}
+
+
+<h2>Locations Actuelles</h2>
+{% if locations %}
+    <table>
+        <thead>
+            <tr>
+                <th>Chambre</th>
+                <th>Début</th>
+                <th>Montant Total</th>
+                <th>Statut</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for location in locations %}
+            <tr>
+                <td>{{ location.chambre }}</td>
+                <td>{{ location.date_debut_location }}</td>
+                <td>{{ location.montant_total }}</td>
+                <td>{{ location.get_statut_paiement_display }}</td> <!-- Pour afficher le choix lisible d'un statut si c'est un choix -->
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% else %}
+    <p>Aucune location actuelle.</p>
+{% endif %}
+
+<h2>Paiements</h2>
+{% if paiements %}
+    <table>
+        <thead>
+            <tr>
+                <th>Date</th>
+                <th>Montant</th>
+                <th>Mode de Paiement</th>
+                <th>Statut</th>
+            </tr>
+        </thead>
+         <tbody>
+            {% for paiement in paiements %}
+            <tr>
+                <td>{{ paiement.date_paiement }}</td>
+                <td>{{ paiement.montant_paye }}</td>
+                <td>{{ paiement.get_mode_paiement_display }}</td> <!-- Si c'est un choix, afficher la valeur lisible -->
+                <td>{{ paiement.get_statut_paiement_display }}</td> <!-- Si c'est un choix, afficher la valeur lisible -->
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% else %}
+    <p>Aucun paiement enregistré.</p>
+{% endif %}
+
+<h2>Fin des Locations</h2>
+{% if fins_locations %}
+    <table>
+        <thead>
+            <tr>
+                <th>Date de Fin</th>
+                <th>Montant Restant</th>
+                <th>Raison</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for fin_location in fins_locations %}
+            <tr>
+                <td>{{ fin_location.date_fin_location }}</td>
+                <td>{{ fin_location.montant_restant }}</td>
+                <td>{{ fin_location.raison_fin }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% else %}
+    <p>Aucune location terminée.</p>
+{% endif %}
+{% endblock %} {% endcomment %}

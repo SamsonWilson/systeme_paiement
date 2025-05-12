@@ -1,0 +1,370 @@
+{% extends "accuiel/Base.html" %}
+{% block content %}
+
+<div class="container mt-4">
+    <div class="shadow card">
+        <!-- En-tête -->
+        <div class="text-white card-header bg-primary d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">
+                <i class="fas fa-money-bill-wave me-2"></i>
+                {% if form.instance.pk %}Modifier{% else %}Nouveau{% endif %} Paiement
+            </h5>
+            {% if location and location.chambre %}
+            <span class="badge bg-light text-primary">
+                <i class="fas fa-home me-1"></i>
+                Chambre {{ location.chambre.numero }}
+            </span>
+            {% endif %}
+        </div>
+
+        <div class="card-body">
+            {% if location %}
+            <!-- Informations location -->
+            <div class="border-4 alert alert-info border-start border-info">
+                <div class="row g-3">
+                    <!-- Informations locataire -->
+                    <div class="col-md-6">
+                        <h6 class="mb-3 text-muted">Informations Locataire</h6>
+                        <div class="mb-2 d-flex align-items-center">
+                            <i class="fas fa-user text-primary me-2"></i>
+                            <div>
+                                <small class="text-muted d-block">Nom</small>
+                                <strong>{{ location.utilisateur.nom }}</strong>
+                            </div>
+                        </div>
+                        <div class="d-flex align-items-center">
+                            <i class="fas fa-envelope text-primary me-2"></i>
+                            <div>
+                                <small class="text-muted d-block">Email</small>
+                                {{ location.utilisateur.email }}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Informations location -->
+                    <div class="col-md-6">
+                        <h6 class="mb-3 text-muted">Détails Location</h6>
+                        <div class="mb-2 d-flex align-items-center">
+                            <i class="fas fa-calendar text-primary me-2"></i>
+                            <div>
+                                <small class="text-muted d-block">Fin d'avance actuelle</small>
+                                <strong>{{ location.date_fin_avance|date:"d/m/Y" }}</strong>
+                            </div>
+                        </div>
+                        <div class="d-flex align-items-center">
+                            <i class="fas fa-money-bill text-primary me-2"></i>
+                            <div>
+                                <small class="text-muted d-block">Loyer mensuel</small>
+                                <strong>{{ location.chambre.prix|floatformat:0 }} CFA</strong>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Récapitulatif calculs -->
+            <div class="mb-4 border-0 card bg-light">
+                <div class="card-body">
+                    <h6 class="mb-3 card-title">Récapitulatif du paiement</h6>
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <div class="p-3 border rounded">
+                                <small class="mb-1 text-muted d-block">Date actuelle (Lomé)</small>
+                                <p id="date-paiement" class="mb-0 text-primary fw-bold">-</p>
+                                <small class="mt-2 mb-1 text-muted d-block">Période de location</small>
+                                <p id="periode-paiement" class="mb-0 fw-bold">-</p>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="p-3 border rounded">
+                                <small class="mb-1 text-muted d-block">Montant à payer</small>
+                                <p id="montant-total" class="mb-0 text-primary fw-bold">-</p>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="p-3 border rounded">
+                                <small class="mb-1 text-muted d-block">Nouvelle échéance</small>
+                                <div id="nouvelle-echeance">
+                                    <p id="date-fin" class="mb-0 fw-bold">-</p>
+                                    <small class="text-muted" id="jours-restants"></small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Formulaire -->
+            <form method="post" id="paiementForm" class="needs-validation" novalidate>
+                {% csrf_token %}
+                <div class="row g-3">
+                    <!-- Nombre de mois -->
+                    <div class="col-md-6">
+                        <div class="form-floating">
+                            {{ form.nombre_mois_paye }}
+                            <label for="{{ form.nombre_mois_paye.id_for_label }}">
+                                <i class="fas fa-calendar-alt me-1"></i>Nombre de mois
+                            </label>
+                        </div>
+                        {% if form.nombre_mois_paye.errors %}
+                        <div class="invalid-feedback d-block">{{ form.nombre_mois_paye.errors }}</div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Date de fin -->
+                    <div class="col-md-6">
+                        <div class="form-floating">
+                            {{ form.montant_paye }}
+                            <input type="date" class="form-control" id="id_date_fin_paiement" name="date_fin_paiement" readonly>
+                            <label for="id_date_fin_paiement">
+                                <i class="fas fa-calendar-check me-1"></i>Date de fin
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Montant -->
+                    <div class="col-md-6">
+                        <div class="form-floating">
+                            {{ form.montant_paye }}
+                            <label for="{{ form.montant_paye.id_for_label }}">
+                                <i class="fas fa-coins me-1"></i>Montant (CFA)
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Mode de paiement -->
+                    <div class="col-md-6">
+                        <div class="form-floating">
+                            {{ form.mode_paiement }}
+                            <label for="{{ form.mode_paiement.id_for_label }}">
+                                <i class="fas fa-credit-card me-1"></i>Mode de paiement
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Statut -->
+                    <div class="col-md-6">
+                        <div class="form-floating">
+                            {{ form.statut_paiement }}
+                            <label for="{{ form.statut_paiement.id_for_label }}">
+                                <i class="fas fa-check-circle me-1"></i>Statut
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Commentaire -->
+                    <div class="col-12">
+                        <div class="form-floating">
+                            {{ form.commentaire }}
+                            <label for="{{ form.commentaire.id_for_label }}">
+                                <i class="fas fa-comment me-1"></i>Commentaire (optionnel)
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                <!-- Boutons -->
+                <div class="mt-4 d-flex justify-content-between">
+                    <button type="submit" class="btn btn-primary" id="submitBtn" disabled>
+                        <i class="fas fa-save me-2"></i>Enregistrer le paiement
+                    </button>
+                    <a href="{% url 'liste_paiements' %}" class="btn btn-outline-secondary">
+                        <i class="fas fa-times me-2"></i>Annuler
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+{% block extra_js %}
+<script>
+// Fonction pour formatter les nombres avec séparateur de milliers
+function formatNumber(number) {
+    return new Intl.NumberFormat('fr-FR').format(number);
+}
+
+// Fonction pour calculer le nombre de jours entre deux dates
+function calculateDaysBetween(start, end) {
+    const diffTime = Math.abs(end - start);
+    return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    // Éléments du formulaire
+    const elements = {
+        form: document.getElementById('paiementForm'),
+        nombreMois: document.getElementById('id_nombre_mois_paye'),
+        montant: document.getElementById('id_montant_paye'),
+        dateFin: document.getElementById('id_date_fin_paiement'),
+        submitBtn: document.getElementById('submitBtn'),
+        datePaiement: document.getElementById('date-paiement'),
+        periodePaiement: document.getElementById('periode-paiement'),
+        montantTotal: document.getElementById('montant-total'),
+        dateFinDisplay: document.getElementById('date-fin'),
+        joursRestants: document.getElementById('jours-restants')
+    };
+
+    // Constantes
+    const config = {
+        montantMensuel: parseFloat('{{ location.chambre.prix|default:0 }}'.replace(',', '.')) || 0,
+        dateFinAvance: new Date('{{ location.date_fin_avance|date:"Y-m-d" }}'),
+        optionsDate: {
+            timeZone: 'Africa/Lome',
+            weekday: 'long',
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+        },
+        optionsDateSimple: {
+            timeZone: 'Africa/Lome',
+            day: 'numeric',
+            month: 'long',
+            year: 'numeric'
+        }
+    };
+
+    // Fonctions
+    function formatDate(date, withTime = false) {
+        try {
+            return date.toLocaleString('fr-FR', 
+                withTime ? config.optionsDate : config.optionsDateSimple);
+        } catch (error) {
+            console.error('Erreur de formatage de date:', error);
+            return '-';
+        }
+    }
+
+    function updateDisplay(nombreMois, montant, dateFin) {
+        elements.montant.value = montant.toFixed(0);
+        elements.montantTotal.textContent = `${formatNumber(montant)} CFA`;
+        elements.dateFin.value = dateFin.toISOString().split('T')[0];
+        elements.dateFinDisplay.textContent = formatDate(dateFin);
+        
+        const joursRestants = calculateDaysBetween(new Date(), dateFin);
+        elements.joursRestants.textContent = `(${joursRestants} jours)`;
+
+        elements.periodePaiement.innerHTML = `
+            <span class="d-block">Du ${formatDate(config.dateFinAvance)}</span>
+            <span class="d-block">au ${formatDate(dateFin)}</span>
+        `;
+
+        elements.submitBtn.disabled = false;
+    }
+
+    function resetDisplay() {
+        elements.montant.value = '0';
+        elements.montantTotal.textContent = '-';
+        elements.periodePaiement.textContent = '-';
+        elements.dateFin.value = '';
+        elements.dateFinDisplay.textContent = '-';
+        elements.joursRestants.textContent = '';
+        elements.submitBtn.disabled = true;
+    }
+
+    function calculer() {
+        const maintenant = new Date();
+        elements.datePaiement.textContent = formatDate(maintenant, true);
+
+        const nombreMois = parseInt(elements.nombreMois.value) || 0;
+        
+        if (nombreMois > 0) {
+            try {
+                const montant = nombreMois * config.montantMensuel;
+                const dateFin = new Date(config.dateFinAvance);
+                dateFin.setMonth(config.dateFinAvance.getMonth() + nombreMois);
+
+                updateDisplay(nombreMois, montant, dateFin);
+            } catch (error) {
+                console.error('Erreur dans les calculs:', error);
+                resetDisplay();
+            }
+        } else {
+            resetDisplay();
+        }
+    }
+
+    // Événements
+    elements.nombreMois.addEventListener('input', calculer);
+    elements.nombreMois.addEventListener('change', calculer);
+
+    elements.form.addEventListener('submit', function(e) {
+        if (parseInt(elements.nombreMois.value) <= 0) {
+            e.preventDefault();
+            alert('Veuillez saisir un nombre de mois valide (supérieur à 0).');
+        }
+    });
+
+    // Initialisation
+    elements.montant.readOnly = true;
+    calculer();
+    setInterval(calculer, 60000);
+});
+
+
+
+
+
+
+
+
+
+
+
+
+
+</script>
+{% endblock %}
+
+<style>
+.form-floating {
+    position: relative;
+    margin-bottom: 1rem;
+}
+
+.form-floating > .form-control,
+.form-floating > .form-select {
+    height: calc(3.5rem + 2px);
+    padding: 1rem 0.75rem;
+}
+
+.form-floating > textarea.form-control {
+    height: auto;
+    min-height: 100px;
+}
+
+.form-control[readonly] {
+    background-color: #f8f9fa;
+    cursor: not-allowed;
+}
+
+.card {
+    border: none;
+    border-radius: 0.5rem;
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+}
+
+.alert-info {
+    background-color: rgba(13, 110, 253, 0.1);
+    border-color: rgba(13, 110, 253, 0.15);
+}
+
+.card-body {
+    padding: 2rem;
+}
+
+#jours-restants {
+    font-size: 0.875rem;
+    color: #6c757d;
+}
+
+.invalid-feedback {
+    display: block;
+    margin-top: 0.25rem;
+    font-size: 0.875rem;
+    color: #dc3545;
+}
+</style>
+{% endblock %}

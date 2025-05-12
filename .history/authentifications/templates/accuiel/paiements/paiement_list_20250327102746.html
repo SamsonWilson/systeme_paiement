@@ -1,0 +1,102 @@
+
+
+{% comment %} {% extends "accuiel/base.html" %}
+{% block content %}
+<div class="container mt-4">
+    <h2 class="text-center text-primary">📜 Liste des Paiements par Chambre</h2>
+    <hr class="mb-4">
+
+    <!-- Statistiques -->
+    <div class="mb-4 row">
+        <div class="col-md-4">
+            <div class="p-3 text-center border rounded shadow-sm bg-light">
+                <h5 class="text-primary">💰 Total des Paiements</h5>
+                <p class="fs-4 fw-bold">{{ total_paiements }}</p>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="p-3 text-center border rounded shadow-sm bg-light">
+                <h5 class="text-success">✅ Paiements Confirmés</h5>
+                <p class="fs-4 fw-bold">{{ paiements_confirmes }}</p>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="p-3 text-center border rounded shadow-sm bg-light">
+                <h5 class="text-warning">⏳ Paiements en Attente</h5>
+                <p class="fs-4 fw-bold">{{ paiements_en_attente }}</p>
+            </div>
+        </div>
+    </div>
+
+    {% if paiements_par_chambre %}
+    <div class="table-responsive">
+        <table class="table shadow-sm table-hover table-bordered">
+            <thead class="text-center text-white table-dark">
+                <tr>
+                    <th>#</th>
+                    <th>Date Début</th>
+                    <th>Date Fin</th>
+                    <th>Nom de la Maison</th>
+                    <th>Prix de la Chambre</th>
+                    <th>Type de la Chambre</th>
+                    <th>Locataire</th>
+                    <th>Mois Payés</th>
+                    <th>Mode Paiement</th>
+                    <th>Statut</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in paiements_par_chambre %}
+                <tr class="text-center table-primary">
+                    <td colspan="11"><strong>🏠 Chambre : {{ item.chambre.nom }}</strong></td>
+                </tr>
+                
+                {% with date_debut=item.date_debut date_fin=item.date_fin %}
+                {% for paiement in item.paiements %}
+                <tr class="text-center">
+                    <td>{{ forloop.parentloop.counter }}</td>
+                    <td>{{ paiement.date_paiement|date:"d/m/Y" }}</td>
+                    <td>{{ paiement.date_fin_paiement|date:"d/m/Y" }}</td>
+                    <td>{{ item.chambre.nom }}</td>
+                    <td>{{ item.chambre.prix }} CFA</td>
+                    <td>{{ item.chambre.type }}</td>
+                    <td>{{ paiement.location.utilisateur.nom }} {{ paiement.location.utilisateur.prenom }}</td>
+                    <td>{{ paiement.nombre_mois_paye }}</td>
+                    <td>{{ paiement.mode_paiement }}</td>
+                    <td>
+                        {% if paiement.statut_paiement == "confirmé" %}
+                            <span class="badge bg-success">Confirmé</span>
+                        {% elif paiement.statut_paiement == "en attente" %}
+                            <span class="badge bg-warning">En attente</span>
+                        {% else %}
+                            <span class="badge bg-danger">{{ paiement.statut_paiement }}</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <a href="{% url 'modifier_paiement' paiement.pk %}" class="btn btn-warning btn-sm">Modifier</a>
+                        <a href="{% url 'supprimer_paiement' paiement.pk %}" class="btn btn-danger btn-sm">Supprimer</a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr class="text-center text-muted">
+                    <td>{{ forloop.parentloop.counter }}</td>
+                    <td>{{ date_debut|date:"d/m/Y" }}</td>
+                    <td>{{ date_fin|date:"d/m/Y" }}</td>
+                    <td>{{ item.chambre.nom }}</td>
+                    <td>{{ item.chambre.prix }} CFA</td>
+                    <td>{{ item.chambre.type }}</td>
+                    <td>{{ item.location.utilisateur.nom }} {{ item.location.utilisateur.prenom }}</td>
+                    <td colspan="4">Aucun paiement effectué</td>
+                </tr>
+                {% endfor %}
+                {% endwith %}
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <p class="mt-4 text-center text-muted">Aucune chambre trouvée.</p>
+    {% endif %}
+</div>
+{% endblock %} {% endcomment %}

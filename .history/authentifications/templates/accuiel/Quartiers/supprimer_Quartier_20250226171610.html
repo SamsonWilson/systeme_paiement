@@ -1,0 +1,12 @@
+{% extends "accuiel/Base.html" %}
+{% block content %}
+<div class="container">
+    <h2>Supprimer la ville</h2>
+    <p>Êtes-vous sûr de vouloir supprimer "{{ object }}" ?</p>
+    <form method="post">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-danger">Supprimer</button>
+        <a href="{% url 'Quartiers_list' %}" class="btn btn-secondary">Annuler</a>
+    </form>
+</div>
+{% endblock %}

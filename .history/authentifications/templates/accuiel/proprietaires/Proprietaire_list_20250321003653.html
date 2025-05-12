@@ -1,0 +1,93 @@
+{% extends "accuiel/Base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Liste des propriétaires</h2>
+    <a href="{% url 'creer_proprietaire' %}" class="mb-2 btn btn-primary">Ajouter un propriétaire</a>
+    <div class="list-group">
+    {% for proprietaire in proprietaires %}
+        <div class="list-group-item">
+            <h5>{{ proprietaire }}</h5>
+            <p>Email: {{ proprietaire.email }}</p>
+            <p>Sexe: {% if proprietaire.sexe == 'M' %}Homme{% else %}Femme{% endif %}</p>
+            <a href="{% url 'modifier_proprietaire' proprietaire.pk %}" class="btn btn-warning btn-sm">Modifier</a>
+            <a href="{% url 'supprimer_proprietaire' proprietaire.pk %}" class="btn btn-danger btn-sm">Supprimer</a>
+        </div>
+    {% endfor %}
+    </div>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+{% block title %}
+    Liste des Villes
+{% endblock %}
+
+{% block header %}
+    Liste des Quartier
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2 class="mb-4">Liste des Quartiers</h2>
+
+    <!-- Bouton Ajouter -->
+    <div class="mb-3">
+        <a href="{% url 'add_Quatier' %}" class="btn btn-success">Ajouter un Quartier</a>
+        {% comment %} <a href="#" class="btn btn-success">Ajouter une ville</a> {% endcomment %}
+    </div>
+
+    <!-- Formulaire de Recherche -->
+    <form method="get" class="mb-4 form-inline">
+        <div class="mb-2 form-group mx-sm-3">
+            {{ form.recherche.label_tag }}
+            {% comment %} {{ form.recherche|add_class:"form-control mx-sm-3" }} {% endcomment %}
+        </div>
+        <button type="submit" class="mb-2 btn btn-primary">Rechercher</button>
+    </form>
+
+    <!-- Tableau des Villes -->
+    <div class="table-responsive">
+        <table class="table table-bordered table-hover table-striped table-sm">
+            <thead class="thead-dark">
+                <tr>
+                    <th scope="col">Nom</th>
+                    <th scope="col">Description</th>
+                    <th scope="col">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% if Quartiers %}
+                    {% for Quartier in Quartiers %}
+                        <tr>
+                            <td>{{ Quartier.nom }}</td>
+                            <td>{{ Quartier.description }}</td>
+                            <td>
+                                {% comment %} {% comment %} {% comment %} {% comment %} {% comment %} {% comment %} {% comment %} {% comment %} <a href="{% url 'villes:edit' ville.id %}" class="btn btn-primary btn-sm">Modifier</a>
+                                <a href="" class="btn btn-danger btn-sm">Supprimer</a> {% endcomment %}
+
+                                <a href="{% url 'edit_Quatier' Quartier.id %}" class="btn btn-primary btn-sm">Modifier</a>
+                                <a href="{% url 'delete_Quatier' Quartier.id %}" class="btn btn-danger btn-sm">Supprimer</a>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                {% else %}
+                    <tr>
+                        <td colspan="3" class="text-center">Aucune ville trouvée.</td>
+                    </tr>
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

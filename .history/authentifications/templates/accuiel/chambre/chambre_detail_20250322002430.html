@@ -1,0 +1,39 @@
+{% extends "accuiel/Base.html" %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="shadow-lg card">
+        <div class="text-center text-white card-header bg-primary">
+            <h2>Détails de la Chambre : {{ chambre.nom }}</h2>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <!-- Image de la chambre -->
+                <div class="text-center col-md-6">
+                    <img src="{{ chambre.image.url }}" alt="Image de {{ chambre.nom }}" class="rounded shadow img-fluid">
+                </div>
+                <!-- Informations sur la chambre -->
+                <div class="col-md-6">
+                    <h4>Description</h4>
+                    <p>{{ chambre.description|default:"Aucune description disponible." }}</p>
+                    <h4>Loyer Mensuel</h4>
+                    <p class="fs-5 text-success"><strong>{{ chambre.loyer_mensuel }} €</strong></p>
+                </div>
+            </div>
+            <hr>
+            <!-- Boutons d'action -->
+            <div class="text-center">
+                {% comment %} <a href="{% url 'chambre_modifier' chambre.pk %}" class="mx-2 btn btn-warning btn-lg">
+                    <i class="fas fa-edit"></i> Modifier
+                </a>
+                <a href="{% url 'chambre_supprimer' chambre.pk %}" class="mx-2 btn btn-danger btn-lg">
+                    <i class="fas fa-trash"></i> Supprimer
+                </a>
+                <a href="{% url 'chambre_list' %}" class="mx-2 btn btn-secondary btn-lg">
+                    <i class="fas fa-arrow-left"></i> Retour à la liste
+                </a> {% endcomment %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
