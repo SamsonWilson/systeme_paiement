@@ -1,0 +1,85 @@
+
+{% extends "accuiel/Base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6">
+            <div class="shadow-sm card">
+                <div class="card-body">
+                    <h2 class="mb-4 text-center card-title"> Ajouter une nouvelle Quartier</h2>
+
+                    <form method="post" enctype="multipart/form-data" novalidate>
+                        {% csrf_token %}
+                        {# Affiche les erreurs qui ne sont pas liées à un champ spécifique #}
+                        {% if form.non_field_errors %}
+                            <div class="alert alert-danger">
+                                {% for error in form.non_field_errors %}
+                                    <p class="mb-0">{{ error }}</p>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+
+                        {# On boucle sur chaque champ du formulaire #}
+                        {% for field in form %}
+                            <div class="mb-3">
+                                {# Affiche le label du champ #}
+                                <label for="{{ field.id_for_label }}" class="form-label">{{ field.label }}</label>
+
+                                {# Affiche le champ (input, textarea, etc.) #}
+                                {# La classe 'is-invalid' est ajoutée automatiquement s'il y a une erreur #}
+                                {{ field }}
+
+                                {# Affiche les erreurs spécifiques à ce champ #}
+                                {% if field.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {% for error in field.errors %}
+                                            {{ error }}
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+
+                                {# Affiche le texte d'aide s'il existe #}
+                                {% if field.help_text %}
+                                    <small class="form-text text-muted">{{ field.help_text }}</small>
+                                {% endif %}
+                            </div>
+                        {% endfor %}
+
+                        <div class="gap-2 mt-4 d-grid">
+                            <button type="submit" class="btn btn-success btn-lg">Ajouter la ville</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% comment %} 
+{% extends "accuiel/Base.html" %}
+{% block content %}
+<div  class="container mt-4">
+    <h2>Ajouter une nouvelle ville</h2>
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        {{ form.as_p }}
+        {% if form.errors %}
+            <div class="errors">
+                <ul>
+                    {% for field in form %}
+                        {% for error in field.errors %}
+                            <li>{{ field.label }}: {{ error }}</li>
+                        {% endfor %}
+                    {% endfor %}
+                    {% for error in form.non_field_errors %}
+                        <li>{{ error }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        {% endif %}
+        <button type="submit" class="btn btn-success">Ajouter</button>
+    </form>
+</div>
+{% endblock %} {% endcomment %}

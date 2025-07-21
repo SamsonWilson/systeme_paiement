@@ -1,0 +1,401 @@
+{% extends "accuiel/Base.html" %}
+{% load static %} {# Assurez-vous d'avoir load static pour les fichiers CSS/JS #}
+
+{% block title %}Liste des Villes{% endblock %}
+
+{% block extra_head %}
+{# C'est une bonne pratique de mettre le CSS dans un fichier séparé #}
+<link rel="stylesheet" href="{% static 'css/ville_list.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <!-- En-tête avec statistiques -->
+    <div class="mb-4 row g-4">
+        <div class="col-md-4">
+            <div class="shadow-sm card stat-card h-100">
+                <div class="p-4 card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="mb-2 text-secondary text-uppercase fw-bold small">Total Villes</h6>
+                            <h3 class="mb-0 display-6">{{ villes.count }}</h3>
+                        </div>
+                        <div class="text-white icon-circle bg-primary">
+                            <i class="fas fa-city fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {# Vous pourriez ajouter d'autres cartes de stats ici (col-md-4) #}
+    </div>
+
+    <!-- Barre de recherche et bouton d'ajout -->
+    <div class="mb-4 shadow-sm card">
+        <div class="p-3 card-body">
+            <div class="row g-3 justify-content-between align-items-center">
+                <div class="col-md-7 col-lg-6">
+                    {# Le formulaire de recherche a maintenant un meilleur style grâce au forms.py #}
+                    <form method="get" class="gap-2 d-flex">
+                        <div class="input-group">
+                            <span class="bg-transparent input-group-text border-end-0">
+                                <i class="fas fa-search text-muted"></i>
+                            </span>
+                            {{ form.recherche }}
+                        </div>
+                        <button type="submit" class="btn btn-primary">Rechercher</button>
+                    </form>
+                </div>
+                <div class="col-md-auto">
+                    <a href="{% url 'add_ville' %}" class="btn btn-success d-flex align-items-center">
+                        <i class="fas fa-plus-circle me-2"></i>
+                        <span>Nouvelle Ville</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Liste des villes -->
+    <div class="shadow-sm card">
+        <div class="p-0 card-body">
+            <div class="table-responsive">
+                {# AJOUT: table-hover pour surligner les lignes et table-striped pour alterner les couleurs #}
+                <table class="table mb-0 align-middle table-hover table-striped">
+                    <thead class="bg-light">
+                        <tr>
+                            <th class="py-3 ps-4">Image</th>
+                            <th class="py-3">Nom</th>
+                            <th class="py-3">Description</th>
+                            <th class="py-3 pe-4 text-end">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for ville in villes %}
+                            <tr class="table-row-hover">
+                                <td class="ps-4" style="width: 120px">
+                                    {% if ville.image %}
+                                        <img src="{{ ville.image.url }}" alt="{{ ville.nom }}" class="rounded-3 city-image">
+                                    {% else %}
+                                        <div class="bg-light rounded-3 d-flex align-items-center justify-content-center city-image-placeholder">
+                                            <i class="fas fa-image text-muted fa-2x"></i>
+                                        </div>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <h6 class="mb-0 fw-bold">{{ ville.nom }}</h6>
+                                </td>
+                                <td>
+                                    <p class="mb-0 text-muted small">{{ ville.description|truncatechars:100 }}</p>
+                                </td>
+                                <td class="pe-4 text-end">
+                                    <div class="btn-group">
+                                        <a href="{% url 'edit_ville' ville.id %}" class="btn btn-sm btn-outline-primary" data-bs-toggle="tooltip" title="Modifier">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        <a href="{% url 'delete_ville' ville.id %}" class="btn btn-sm btn-outline-danger" data-bs-toggle="tooltip" title="Supprimer" onclick="return confirm('Êtes-vous sûr de vouloir supprimer cette ville ?')">
+                                            <i class="fas fa-trash"></i>
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                        {% empty %}
+                            <tr>
+                                <td colspan="4" class="py-5 text-center">
+                                    <div class="text-muted">
+                                        <i class="mb-3 opacity-50 fas fa-search-location fa-4x text-primary"></i>
+                                        <h4 class="fw-light">Aucune ville trouvée.</h4>
+                                        <p class="mb-4">Essayez d'ajuster votre recherche ou ajoutez une nouvelle ville.</p>
+                                        <a href="{% url 'add_ville' %}" class="btn btn-primary">
+                                            <i class="fas fa-plus-circle me-2"></i>Ajouter la première ville
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- JavaScript pour les tooltips (s'il n'est pas déjà dans votre Base.html) -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+    var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl)
+    })
+});
+</script>
+{% endblock %}
+
+---
+
+### Étape 3 : Fichier CSS externe (Recommandé)
+
+Créez un fichier `static/css/ville_list.css` dans votre application et mettez-y le CSS. C'est plus propre que d'avoir une balise `<style>` dans le HTML.
+
+```css
+/* static/css/ville_list.css */
+
+/* Carte de statistique */
+.stat-card .icon-circle {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.3s ease;
+}
+
+.stat-card:hover .icon-circle {
+    transform: rotate(15deg) scale(1.1);
+}
+
+/* Style de la table */
+.table th {
+    font-weight: 600;
+    color: #344767;
+    white-space: nowrap; /* Empêche les titres de passer à la ligne */
+}
+
+.table td {
+    padding-top: 1rem;
+    padding-bottom: 1rem;
+}
+
+/* Image de la ville dans la table */
+.city-image {
+    width: 100px;
+    height: 70px;
+    object-fit: cover;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.city-image-placeholder {
+    width: 100px;
+    height: 70px;
+}
+
+.table-row-hover:hover .city-image {
+    transform: scale(1.1);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+/* Boutons d'action */
+.btn-group .btn {
+    transition: all 0.2s ease-in-out;
+}
+
+.btn-group .btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+{% endblock %}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+{% comment %} {% extends "accuiel/Base.html" %}
+
+{% block title %}Liste des Villes{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <!-- En-tête avec statistiques -->
+    <div class="mb-4 row g-4">
+        <div class="col-md-4">
+            <div class="border-0 card stat-card h-100 bg-gradient-primary">
+                <div class="p-4 card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="mb-2 text-white-50 text-uppercase">Total Villes</h6>
+                            <h3 class="mb-0 text-white display-6">{{ villes.count }}</h3>
+                        </div>
+                        <div class="bg-white bg-opacity-25 icon-circle">
+                            <i class="text-white fas fa-city fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- En-tête avec recherche et bouton d'ajout -->
+    <div class="mb-4 border-0 shadow-sm card">
+        <div class="card-body">
+            <div class="row g-3 align-items-center">
+                <div class="col-md-6">
+                    <form method="get" class="gap-2 d-flex">
+                        <div class="flex-grow-1">
+                            <div class="input-group">
+                                <span class="bg-white input-group-text border-end-0">
+                                    <i class="fas fa-search text-muted"></i>
+                                </span>
+                                {{ form.recherche }}
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-search me-2"></i>Rechercher
+                        </button>
+                    </form>
+                </div>
+                <div class="col-md-6 text-md-end">
+                    <a href="{% url 'add_ville' %}" class="btn btn-success">
+                        <i class="fas fa-plus-circle me-2"></i>Nouvelle Ville
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Liste des villes -->
+    <div class="border-0 shadow-sm card">
+        <div class="p-0 card-body">
+            <div class="table-responsive">
+                <table class="table mb-0 align-middle">
+                    <thead class="bg-light">
+                        <tr>
+                            <th class="border-0">Image</th>
+                            <th class="border-0">Nom</th>
+                            <th class="border-0">Description</th>
+                            <th class="border-0 text-end">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% if villes %}
+                            {% for ville in villes %}
+                                <tr>
+                                    <td style="width: 120px">
+                                        {% if ville.image %}
+                                            <img src="{{ ville.image.url }}" 
+                                                 alt="{{ ville.nom }}" 
+                                                 class="rounded-3"
+                                                 style="width: 100px; height: 70px; object-fit: cover;">
+                                        {% else %}
+                                            <div class="bg-light rounded-3 d-flex align-items-center justify-content-center"
+                                                 style="width: 100px; height: 70px;">
+                                                <i class="fas fa-image text-muted fa-2x"></i>
+                                            </div>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <h6 class="mb-0">{{ ville.nom }}</h6>
+                                    </td>
+                                    <td>
+                                        <p class="mb-0 text-muted">{{ ville.description|truncatechars:100 }}</p>
+                                    </td>
+                                    <td class="text-end">
+                                        <div class="btn-group">
+                                            <a href="{% url 'edit_ville' ville.id %}" 
+                                               class="btn btn-sm btn-outline-primary"
+                                               data-bs-toggle="tooltip"
+                                               title="Modifier">
+                                                <i class="fas fa-edit"></i>
+                                            </a>
+                                                <a href="{% url 'delete_ville' ville.id %}" 
+                                                   class="btn btn-sm btn-outline-danger"
+                                                   data-bs-toggle="tooltip"
+                                                   title="Supprimer"
+                                                   onclick="return confirm('Êtes-vous sûr de vouloir supprimer cette ville ?')">
+                                                    <i class="fas fa-trash"></i>
+                                                </a>
+                                        </div>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        {% else %}
+                            <tr>
+                                <td colspan="4" class="py-5 text-center">
+                                    <div class="text-muted">
+                                        <i class="mb-3 fas fa-city fa-3x"></i>
+                                        <p>Aucune ville n'a été trouvée.</p>
+                                        <a href="{% url 'add_ville' %}" class="btn btn-primary">
+                                            <i class="fas fa-plus-circle me-2"></i>Ajouter une ville
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Styles supplémentaires -->
+<style>
+.btn-group .btn {
+    padding: .375rem .75rem;
+}
+
+.btn-group .btn:hover {
+    transform: translateY(-2px);
+}
+
+.table th {
+    font-weight: 600;
+    color: #344767;
+}
+
+.table td {
+    padding: 1rem;
+}
+
+/* Animation pour les images */
+img {
+    transition: transform 0.3s ease;
+}
+
+img:hover {
+    transform: scale(1.05);
+}
+</style>
+
+<!-- JavaScript pour les tooltips -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+    var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl)
+    })
+});
+</script>
+{% endblock %} {% endcomment %}

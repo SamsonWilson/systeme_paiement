@@ -1,7 +1,0 @@
-<h2>{% if form.instance.pk %}Modifier{% else %}Ajouter{% endif %} une Chambre</h2>
-<form method="post" enctype="multipart/form-data">
-  {% csrf_token %}
-  {{ form.as_p }}
-  <button type="submit">Enregistrer</button>
-</form>
-<a href="{% url 'chambre_list' %}">Annuler</a>

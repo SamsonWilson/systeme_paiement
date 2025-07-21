@@ -1,0 +1,189 @@
+{% extends "accuiel/Base.html" %}
+{% load widget_tweaks %}
+
+{% block content %}
+<div class="container mt-5">
+    <!-- Section pour afficher les informations sur la maison -->
+    {% if maison %}
+        <div class="mb-4 row">
+            <div class="col-md-3">
+                <div class="text-center alert alert-primary">
+                    <h5>Maison</h5>
+                    <p class="mb-0"><strong>{{ maison.nom }}</strong></p>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="text-center alert alert-info">
+                    <h5>Nombre Total de Pièces</h5>
+                    <p class="mb-0"><strong>{{ nombre_total_pieces }}</strong></p>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="text-center alert alert-success">
+                    <h5>Nombre de Pièces Enregistrées</h5>
+                    <p class="mb-0"><strong>{{ pieces_enregistrees }}</strong></p>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="text-center alert alert-warning">
+                    <h5>Nombre de Pièces Non Enregistrées</h5>
+                    <p class="mb-0"><strong>{{ pieces_non_enregistrees }}</strong></p>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+
+    <div class="shadow-lg card">
+        <div class="text-center text-white card-header bg-primary">
+            <h2>Ajouter une Chambre</h2>
+        </div>
+        <div class="card-body">
+            <!-- Afficher les erreurs générales du formulaire -->
+            {% if form.non_field_errors %}
+                <div class="alert alert-danger">
+                    {% for error in form.non_field_errors %}
+                        <p>{{ error }}</p>
+                    {% endfor %}
+                </div>
+            {% endif %}
+
+            <form method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                <!-- Boucle sur tous les champs du formulaire sauf maison -->
+                {% for field in form %}
+                    {% if field.name != 'maison' %}
+                        <div class="mb-3">
+                            <label for="{{ field.id_for_label }}" class="form-label"><strong>{{ field.label }}</strong></label>
+                            {{ field|add_class:"form-control" }}
+                            {% if field.help_text %}
+                                <small class="form-text text-muted">{{ field.help_text }}</small>
+                            {% endif %}
+                            {% if field.errors %}
+                                <div class="text-danger">
+                                    {% for error in field.errors %}
+                                        <p>{{ error }}</p>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                    {% endif %}
+                {% endfor %}
+
+
+
+
+
+
+
+
+
+
+ <!-- champ cliquable -->
+<div class="mb-3">
+    <label for="id_surface" class="form-label"><strong>Surface</strong></label>
+    <input type="text" id="id_surface" name="surface" class="form-control" readonly onclick="ouvrirSurfaceOptions()" placeholder="Cliquez pour calculer">
+</div>
+
+<!-- Choix du type -->
+<div id="surface-options" class="mb-3" style="display: none;">
+    <label class="form-label"><strong>Type de chambre</strong></label>
+    <select id="type_selection" class="mb-3 form-control" onchange="afficherZoneDimensions()">
+        <option value="">-- Sélectionner --</option>
+        <option value="chambre">Chambre simple</option>
+        <option value="salon">Salon seul</option>
+        <option value="chambre_salon">Chambre + Salon</option>
+    </select>
+
+    <!-- Zone chambre -->
+    <div id="zone-chambre" style="display: none;">
+        <h5>🛏️ Chambre</h5>
+        <input type="number" step="0.01" id="longueur_chambre" class="form-control" placeholder="Longueur chambre" oninput="calculerSurfaceFormattee()">
+        <input type="number" step="0.01" id="largeur_chambre" class="mt-2 form-control" placeholder="Largeur chambre" oninput="calculerSurfaceFormattee()">
+    </div>
+
+    <!-- Zone salon -->
+    <div id="zone-salon" style="display: none;">
+        <h5>🛋️ Salon</h5>
+        <input type="number" step="0.01" id="longueur_salon" class="form-control" placeholder="Longueur salon" oninput="calculerSurfaceFormattee()">
+        <input type="number" step="0.01" id="largeur_salon" class="mt-2 form-control" placeholder="Largeur salon" oninput="calculerSurfaceFormattee()">
+    </div>
+</div>
+
+
+
+
+
+
+
+
+                
+                <div class="text-center">
+                    <button type="submit" class="btn btn-success">
+                        <i class="fas fa-save"></i> Enregistrer
+                    </button>
+                    <a href="{% url 'liste_chambres' %}" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left"></i> Annuler
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+
+
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    const selectType = document.getElementById("id_type_chambre");
+    const zone = document.getElementById("dimensions-zone");
+    const surfaceField = document.getElementById("id_surface");
+
+    selectType.addEventListener("change", async function() {
+        const typeId = this.value;
+        if (!typeId) return;
+
+        // Récupérer le nombre de pièces via AJAX (à faire : créer une vue Django pour ça)
+        const response = await fetch(`/api/type-chambre/${typeId}/`);
+        const data = await response.json();
+        const nbPieces = data.piece;
+
+        zone.innerHTML = ""; // on vide la zone
+
+        let totalSurface = 0;
+
+        for (let i = 1; i <= nbPieces; i++) {
+            zone.innerHTML += `
+                <div class="mb-2 row">
+                    <div class="col">
+                        <input type="number" class="form-control" placeholder="Longueur pièce ${i}" step="0.01" oninput="recalculerSurface()"
+                            id="longueur_${i}">
+                    </div>
+                    <div class="col">
+                        <input type="number" class="form-control" placeholder="Largeur pièce ${i}" step="0.01" oninput="recalculerSurface()"
+                            id="largeur_${i}">
+                    </div>
+                </div>
+            `;
+        }
+
+        // Calcul automatique
+        window.recalculerSurface = function () {
+            let surfaceTotale = 0;
+            for (let i = 1; i <= nbPieces; i++) {
+                const l = parseFloat(document.getElementById(`longueur_${i}`)?.value) || 0;
+                const L = parseFloat(document.getElementById(`largeur_${i}`)?.value) || 0;
+                surfaceTotale += l * L;
+            }
+            surfaceField.value = surfaceTotale.toFixed(2);
+        };
+    });
+});
+</script>
+
+
+
+
+{% endblock %}
+
+
+

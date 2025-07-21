@@ -1,0 +1,275 @@
+{% extends "accuiel/base.html" %}
+{% block content %}
+
+<style>
+/* ... le CSS personnalisé que je vais te fournir sera collé ici ... */
+:root {
+  --primary-color: #007bff;
+  --secondary-color: #6c757d;
+  --light-gray: #f8f9fa;
+  --medium-gray: #e9ecef;
+  --dark-gray: #495057;
+  --text-color: #343a40;
+  --white: #ffffff;
+  --success-color: #25c36f;
+  --danger-color: #dc3545;
+  --info-color: #17a2b8;
+  --warning-color: #ffc107;
+  --border-radius: 0.6rem;
+}
+body {
+  font-family: 'Inter', Arial, 'Segoe UI', Verdana, sans-serif;
+  background-color: var(--light-gray);
+  color: var(--text-color);
+  line-height: 1.64;
+}
+.page-container.form-page {
+  margin: 35px auto 20px auto;
+  padding: 32px 28px;
+  background-color: var(--white);
+  border-radius: var(--border-radius);
+  box-shadow: 0 7px 24px 0 rgba(60,80,100,0.11);
+  max-width: 940px; /* Ajuste largeur max du form */
+}
+.form-title {
+  color: var(--primary-color);
+  font-size: 2.1em;
+  font-weight: 700;
+  margin-bottom: 1.1em;
+  text-align: center;
+  letter-spacing: -.01em;
+}
+.elegant-form .form-section {
+  margin-bottom: 2.1em;
+  padding-bottom: 1.4em;
+  border-bottom: 1.5px solid var(--medium-gray);
+}
+.elegant-form .form-section:last-child {
+  border-bottom: none;
+  margin-bottom: 1.4em;
+  padding-bottom: 0;
+}
+.elegant-form .section-heading {
+  color: var(--dark-gray);
+  font-size: 1.4em;
+  font-weight: 700;
+  margin-top: 0;
+  margin-bottom: 1.2em;
+  display: flex;
+  align-items: center;
+  gap: .5em;
+}
+.elegant-form .section-heading i {
+  color: var(--primary-color);
+  font-size: 1.4em;
+}
+/* Form Grid & Group */
+.elegant-form .form-row {
+  display: flex;
+  flex-wrap: wrap;
+  margin-right: -15px;
+  margin-left: -15px;
+}
+.elegant-form .form-group {
+  margin-bottom: 1.4em;
+}
+.elegant-form .col-md-6 {
+  flex: 0 0 50%;
+  max-width: 50%;
+  padding-right: 15px;
+  padding-left: 15px;
+}
+/* Label & Input */
+.elegant-form label {
+  display: inline-block;
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+  color: var(--secondary-color);
+}
+.elegant-form .form-control {
+  display: block;
+  width: 100%;
+  padding: 0.7rem 0.8rem;
+  font-size: 1rem;
+  font-weight: 400;
+  line-height: 1.5;
+  color: var(--text-color);
+  background-color: var(--white);
+  background-clip: padding-box;
+  border: 1px solid var(--medium-gray);
+  appearance: none;
+  border-radius: var(--border-radius);
+  transition: border-color .15s ease-in-out, box-shadow .15s ease-in-out;
+}
+.elegant-form .form-control:focus {
+  color: var(--text-color);
+  background-color: var(--white);
+  border-color: var(--primary-color);
+  outline: 0;
+  box-shadow: 0 0 0 0.25rem rgba(0, 123, 255, .25);
+}
+.elegant-form select.form-control {
+  padding-right: 2.25rem;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23343a40' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M2 5l6 6 6-6'/%3e%3c/svg%3e");
+  background-repeat: no-repeat;
+  background-position: right 0.75rem center;
+  background-size: 16px 12px;
+}
+.elegant-form textarea.form-control {
+  min-height: 90px;
+}
+.elegant-form .form-error {
+  font-size: 0.9em;
+  color: var(--danger-color);
+  margin-top: 0.4rem;
+}
+/* Actions & Button */
+.elegant-form .form-actions {
+  padding-top: 1.8em;
+  text-align: right; /* Aligne bouton à droite */
+}
+.elegant-form .btn.btn-primary {
+  color: #fff;
+  background-color: var(--primary-color);
+  border-color: var(--primary-color);
+  display: inline-block;
+  font-weight: 500;
+  line-height: 1.5;
+  text-align: center;
+  text-decoration: none;
+  vertical-align: middle;
+  cursor: pointer;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  user-select: none;
+  background-color: transparent;
+  border: 1px solid transparent;
+  padding: 0.75rem 1.25rem;
+  font-size: 1rem;
+  border-radius: var(--border-radius);
+  transition: color .15s ease-in-out, background-color .15s ease-in-out, border-color .15s ease-in-out, box-shadow .15s ease-in-out;
+}
+.elegant-form .btn.btn-primary:hover {
+  color: #fff;
+  background-color: #0056b3;
+  border-color: #004f9a;
+}
+.elegant-form .btn.btn-primary:focus {
+  box-shadow: 0 0 0 0.25rem rgba(0, 123, 255, .5);
+}
+.elegant-form .btn.btn-primary i { margin-right: .4em; }
+@media (max-width: 768px) {
+  .elegant-form .col-md-6 { flex: 0 0 100%; max-width: 100%; } /* 1 colonne sur mobile */
+  .page-container.form-page { padding: 22px 15px; }
+  .form-title { font-size: 1.8em; }
+  .elegant-form .section-heading { font-size: 1.25em; margin-bottom: 1em; }
+}
+</style>
+
+<div class="page-container form-page">
+    <h1 class="form-title">Formulaire Fin de Location</h1>
+    <form method="post" enctype="multipart/form-data" class="elegant-form">
+        {% csrf_token %}
+
+        <div class="form-section">
+            <h2 class="section-heading"><i class="fa-solid fa-location-pin"></i> Informations Location</h2>
+            <div class="form-row">
+                <div class="form-group col-md-6">
+                  <label for="id_location">Location</label>
+                  <input type="text" class="form-control" value="{{ location }}" readonly>
+                  <input type="" name="location" value="{{ location.id }}">
+                  hidden
+                    {% if form.location.errors %}
+                        <div class="form-error">{{ form.location.errors|striptags }}</div>
+                    {% endif %}
+                </div>
+                <div class="form-group col-md-6">
+                    {{ form.date_fin_location.label_tag }}
+                    {{ form.date_fin_location }}
+                    {% if form.date_fin_location.errors %}
+                        <div class="form-error">{{ form.date_fin_location.errors|striptags }}</div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <div class="form-section">
+            <h2 class="section-heading"><i class="fa-solid fa-file-alt"></i> Détails de Fin</h2>
+            <div class="form-group">
+                {{ form.raison_fin.label_tag }}
+                {{ form.raison_fin }}
+                {% if form.raison_fin.errors %}
+                    <div class="form-error">{{ form.raison_fin.errors|striptags }}</div>
+                {% endif %}
+            </div>
+            <div class="form-row">
+                <div class="form-group col-md-6">
+                    {{ form.montant_restant.label_tag }}
+                    {{ form.montant_restant }}
+                    {% if form.montant_restant.errors %}
+                        <div class="form-error">{{ form.montant_restant.errors|striptags }}</div>
+                    {% endif %}
+                </div>
+                <div class="form-group col-md-6">
+                    {{ form.montant_remboursement_caution.label_tag }}
+                    {{ form.montant_remboursement_caution }}
+                    {% if form.montant_remboursement_caution.errors %}
+                        <div class="form-error">{{ form.montant_remboursement_caution.errors|striptags }}</div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <div class="form-section">
+            <h2 class="section-heading"><i class="fa-solid fa-paperclip"></i> Pièces Jointes</h2>
+             <div class="form-group">
+                {{ form.image_contrat.label_tag }}
+                {{ form.image_contrat }}
+                 {% if form.image_contrat.errors %}
+                    <div class="form-error">{{ form.image_contrat.errors|striptags }}</div>
+                {% endif %}
+            </div>
+             <div class="form-group">
+                {{ form.etat_chambre_final.label_tag }}
+                {{ form.etat_chambre_final }}
+                 {% if form.etat_chambre_final.errors %}
+                    <div class="form-error">{{ form.etat_chambre_final.errors|striptags }}</div>
+                {% endif %}
+            </div>
+            <div class="form-group">
+                {{ form.Recu_pdf.label_tag }}
+                {{ form.Recu_pdf }}
+                 {% if form.Recu_pdf.errors %}
+                    <div class="form-error">{{ form.Recu_pdf.errors|striptags }}</div>
+                {% endif %}
+            </div>
+        </div>
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary"><i class="fa-solid fa-check-circle"></i> Enregistrer Fin Location</button>
+        </div>
+    </form>
+</div>
+
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+      const montantRestantInput = document.querySelector("#id_montant_restant");
+      const montantRemboursementInput = document.querySelector("#id_montant_remboursement_caution");
+  
+      const caution = parseFloat("{{ montant_caution }}");
+  
+      if (montantRemboursementInput) {
+          montantRemboursementInput.value = caution.toFixed(2);
+      }
+  
+      montantRestantInput.addEventListener("input", function () {
+          const restant = parseFloat(montantRestantInput.value) || 0;
+          const remboursement = (caution - restant).toFixed(2);
+          montantRemboursementInput.value = remboursement >= 0 ? remboursement : 0;
+      });
+  });
+  </script>
+  
+{% endblock %}

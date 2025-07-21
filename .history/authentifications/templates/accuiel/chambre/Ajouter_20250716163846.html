@@ -1,0 +1,216 @@
+{% extends "accuiel/Base.html" %}
+{% load widget_tweaks %}
+
+{% block content %}
+<div class="container mt-5">
+    <!-- Section pour afficher les informations sur la maison -->
+    {% if maison %}
+        <div class="mb-4 row">
+            <div class="col-md-3">
+                <div class="text-center alert alert-primary">
+                    <h5>Maison</h5>
+                    <p class="mb-0"><strong>{{ maison.nom }}</strong></p>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="text-center alert alert-info">
+                    <h5>Nombre Total de Pièces</h5>
+                    <p class="mb-0"><strong>{{ nombre_total_pieces }}</strong></p>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="text-center alert alert-success">
+                    <h5>Nombre de Pièces Enregistrées</h5>
+                    <p class="mb-0"><strong>{{ pieces_enregistrees }}</strong></p>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="text-center alert alert-warning">
+                    <h5>Nombre de Pièces Non Enregistrées</h5>
+                    <p class="mb-0"><strong>{{ pieces_non_enregistrees }}</strong></p>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+
+    <div class="shadow-lg card">
+        <div class="text-center text-white card-header bg-primary">
+            <h2>Ajouter une Chambre</h2>
+        </div>
+        <div class="card-body">
+            <!-- Afficher les erreurs générales du formulaire -->
+            {% if form.non_field_errors %}
+                <div class="alert alert-danger">
+                    {% for error in form.non_field_errors %}
+                        <p>{{ error }}</p>
+                    {% endfor %}
+                </div>
+            {% endif %}
+
+            <form method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                <!-- Boucle sur tous les champs du formulaire sauf maison -->
+                {% for field in form %}
+                    {% if field.name != 'maison' %}
+                        <div class="mb-3">
+                            <label for="{{ field.id_for_label }}" class="form-label"><strong>{{ field.label }}</strong></label>
+                            {{ field|add_class:"form-control" }}
+                            {% if field.help_text %}
+                                <small class="form-text text-muted">{{ field.help_text }}</small>
+                            {% endif %}
+                            {% if field.errors %}
+                                <div class="text-danger">
+                                    {% for error in field.errors %}
+                                        <p>{{ error }}</p>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                    {% endif %}
+                {% endfor %}
+
+
+
+
+
+
+
+
+
+<!-- Champ cliquable -->
+<div class="mb-3">
+    <label for="id_surface" class="form-label"><strong>Surface</strong></label>
+    <input type="text"
+           id="id_surface"
+           name="surface"
+           class="form-control"
+           readonly
+           data-bs-toggle="modal"
+           data-bs-target="#surfaceModal"
+           placeholder="Cliquez pour calculer">
+</div>
+ <!-- Fenêtre modale pour calculer la surface -->
+<div class="modal fade" id="surfaceModal" tabindex="-1" aria-labelledby="surfaceModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content">
+      <div class="text-white modal-header bg-primary">
+        <h5 class="modal-title" id="surfaceModalLabel">Calcul de la surface</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Fermer"></button>
+      </div>
+      <div class="modal-body">
+        <label class="form-label"><strong>Type de chambre</strong></label>
+        <select id="type_selection" class="mb-3 form-control" onchange="afficherZoneDimensions()">
+            <option value="">-- Choisir --</option>
+            <option value="chambre">Chambre</option>
+            <option value="salon">Salon</option>
+            <option value="chambre_salon">Chambre + Salon</option>
+        </select>
+
+        <!-- Zone chambre -->
+        <div id="zone-chambre" style="display: none;">
+            <h5>🛏️ Chambre</h5>
+            <input type="number" step="0.01" id="longueur_chambre" class="form-control" placeholder="Longueur chambre" oninput="calculerSurfaceFormatee()">
+            <input type="number" step="0.01" id="largeur_chambre" class="mt-2 form-control" placeholder="Largeur chambre" oninput="calculerSurfaceFormatee()">
+        </div>
+
+        <!-- Zone salon -->
+        <div id="zone-salon" style="display: none;">
+            <h5>🛋️ Salon</h5>
+            <input type="number" step="0.01" id="longueur_salon" class="form-control" placeholder="Longueur salon" oninput="calculerSurfaceFormatee()">
+            <input type="number" step="0.01" id="largeur_salon" class="mt-2 form-control" placeholder="Largeur salon" oninput="calculerSurfaceFormatee()">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+        <button type="button" class="btn btn-success" onclick="fermerEtValider()">Valider</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+                
+                <div class="text-center">
+                    <button type="submit" class="btn btn-success">
+                        <i class="fas fa-save"></i> Enregistrer
+                    </button>
+                    <a href="{% url 'liste_chambres' %}" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left"></i> Annuler
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+
+
+<script>
+function afficherZoneDimensions() {
+    const type = document.getElementById('type_selection').value;
+
+    // Cacher les zones
+    document.getElementById('zone-chambre').style.display = 'none';
+    document.getElementById('zone-salon').style.display = 'none';
+
+    if (type === "chambre") {
+        document.getElementById('zone-chambre').style.display = 'block';
+    } else if (type === "salon") {
+        document.getElementById('zone-salon').style.display = 'block';
+    } else if (type === "chambre_salon") {
+        document.getElementById('zone-chambre').style.display = 'block';
+        document.getElementById('zone-salon').style.display = 'block';
+    }
+}
+
+function calculerSurfaceFormatee() {
+    const lc = parseFloat(document.getElementById('longueur_chambre')?.value) || 0;
+    const Lc = parseFloat(document.getElementById('largeur_chambre')?.value) || 0;
+    const ls = parseFloat(document.getElementById('longueur_salon')?.value) || 0;
+    const Ls = parseFloat(document.getElementById('largeur_salon')?.value) || 0;
+
+    window.surfaceChambre = lc * Lc;
+    window.surfaceSalon = ls * Ls;
+}
+
+function fermerEtValider() {
+    const chambre = window.surfaceChambre || 0;
+    const salon = window.surfaceSalon || 0;
+
+    let texte = "";
+    if (salon > 0) texte += `Salon ${salon.toFixed(2)} m²`;
+    if (chambre > 0) {
+        if (texte !== "") texte += " et ";
+        texte += `Chambre ${chambre.toFixed(2)} m²`;
+    }
+
+    if ((chambre + salon) > 0) {
+        texte += ` (Total: ${(chambre + salon).toFixed(2)} m²)`;
+    }
+
+    document.getElementById('id_surface').value = texte;
+    const modal = bootstrap.Modal.getInstance(document.getElementById('surfaceModal'));
+    modal.hide();
+}
+</script>
+
+
+
+
+
+
+
+
+{% endblock %}
+
+
+

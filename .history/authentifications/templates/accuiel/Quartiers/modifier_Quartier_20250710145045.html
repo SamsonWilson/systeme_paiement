@@ -1,0 +1,24 @@
+{% extends "accuiel/Base.html" %}
+{% block content %}
+<div class="container">
+    <h2>Modifier la q widgets = {
+                            'nom': forms.TextInput(attrs={
+                                'class': 'form-control', 
+                                'placeholder': 'Nom de la ville'
+                            }),
+                            'description': forms.Textarea(attrs={
+                                'class': 'form-control', 
+                                'rows': 5,
+                                'placeholder': 'Description'
+                            }),
+                            'image': forms.ClearableFileInput(attrs={
+                                'class': 'form-control-file'
+                            }),
+                        }</h2>
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit" class="btn btn-primary">Modifier</button>
+    </form>
+</div>
+{% endblock %}
