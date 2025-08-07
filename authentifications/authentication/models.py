@@ -6,6 +6,9 @@ from django.conf import settings
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 from django.utils.timezone import now
+from django.db.models import Manager, OuterRef, Exists
+from django.db import models
+
 class UserType(models.Model):
     """
     Modèle définissant les types d’utilisateurs pré-définis.
@@ -242,7 +245,6 @@ class Location(models.Model):
         on_delete=models.CASCADE,
         related_name='locations'
     )
-    
     date_debut_location = models.DateField(verbose_name="Date de début de location")
     date_fin_avance = models.DateField(null=True, blank=True, verbose_name="Date de fin d'avance")
     montant_avance = models.DecimalField(
@@ -366,9 +368,52 @@ class Location(models.Model):
 #     def __str__(self):
 #         return f"Fin de location - {self.location.utilisateur.username if self.location.utilisateur else 'N/A'} - {self.date_fin_location}"
 
+# class FinLocation(models.Model):
+#     location = models.ManyToManyField(
+#         'Location',
+#         related_name='fins_location'
+#     )
+#     date_fin_location = models.DateField()
+#     raison_fin = models.TextField(blank=True, null=True)
+#     montant_restant = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+#     montant_remboursement_caution = models.DecimalField(
+#         max_digits=10,
+#         decimal_places=2,
+#         default=0,
+#         help_text="Montant remboursé au locataire pour la caution"
+#     )
+#     image_contrat = models.ImageField(
+#         upload_to='images/fin_location/',
+#         blank=True,
+#         null=True,
+#         help_text="Image du contrat de fin de location"
+#     )
+
+#     def save(self, *args, **kwargs):
+#         # Vérifie que la somme des remboursements ne dépasse pas la somme des cautions
+#         total_caution = sum(loc.montant_caution for loc in self.locations.all())
+#         if self.montant_remboursement_caution > total_caution:
+#             raise ValueError("Le remboursement de la caution ne peut pas dépasser la somme des cautions.")
+
+#         # Libère les chambres associées
+#         for loc in self.locations.all():
+#             if loc.chambre:
+#                 loc.chambre.etat = 'libre'
+#                 loc.chambre.save()
+
+#         super().save(*args, **kwargs)
+    
+#     def __str__(self):
+#         noms = ", ".join([loc.utilisateur.username for loc in self.locations.all()])
+#         return f"Fin de location(s) - {noms} - {self.date_fin_location}"
+# Fichier : authentifications\authentication\models.py
+
+# Importez d'autres modèles si nécessaire, comme 'Location' et 'Chambre'
+# from .autre_modele import Location, Chambre # Exemple, adaptez
+
 class FinLocation(models.Model):
     location = models.ManyToManyField(
-        'Location',
+        'Location', # Assurez-vous que 'Location' est importé ou référencé correctement
         related_name='fins_location'
     )
     date_fin_location = models.DateField()
@@ -387,24 +432,28 @@ class FinLocation(models.Model):
         help_text="Image du contrat de fin de location"
     )
 
-    def save(self, *args, **kwargs):
-        # Vérifie que la somme des remboursements ne dépasse pas la somme des cautions
-        total_caution = sum(loc.montant_caution for loc in self.locations.all())
-        if self.montant_remboursement_caution > total_caution:
-            raise ValueError("Le remboursement de la caution ne peut pas dépasser la somme des cautions.")
-
-        # Libère les chambres associées
-        for loc in self.locations.all():
-            if loc.chambre:
-                loc.chambre.etat = 'libre'
-                loc.chambre.save()
-
-        super().save(*args, **kwargs)
+    # La méthode save() du modèle sera supprimée ou laissée vide si elle ne fait que super().save()
+    # def save(self, *args, **kwargs):
+    #     # Cette logique sera déplacée dans la vue pour le bon timing
+    #     super().save(*args, **kwargs)
 
     def __str__(self):
-        noms = ", ".join([loc.utilisateur.username for loc in self.locations.all()])
-        return f"Fin de location(s) - {noms} - {self.date_fin_location}"
+        # Correction : utiliser 'location' (singulier) et gérer les cas où la relation n'est pas encore chargée
+        # Ou si une FinLocation n'a pas encore de Locations associées (ce qui est le cas lors du premier save)
+        # Utilisez une liste pour les noms et un try-except pour la robustesse
+        noms = []
+        try:
+            # self.location.all() pourrait être vide si l'objet n'est pas encore lié ou sauvegardé
+            for loc in self.location.all():
+                if loc.utilisateur: # Assurez-vous que Location a un champ 'utilisateur'
+                    noms.append(loc.utilisateur.username)
+                else:
+                    noms.append(f"Location {loc.id}") # Fallback si pas d'utilisateur lié directement
+        except Exception:
+            # Gérer l'exception si le Manager ManyToMany n'est pas encore disponible
+            noms.append("N/A")
 
+        return f"Fin de location(s) - {', '.join(noms)} - {self.date_fin_location}"
 
 class PaiementLoyer(models.Model):
     location = models.ForeignKey('Location', on_delete=models.CASCADE, related_name='paiements')
@@ -460,7 +509,11 @@ class PaiementLoyer(models.Model):
         ordering = ['-date_paiement']
         verbose_name = "Paiement de Loyer"
         verbose_name_plural = "Paiements de Loyer"
-        
+
+
+
+
+
 # class Locataire(models.Model):
 #     nom = models.CharField(max_length=100)
 #     prenom = models.CharField(max_length=100)

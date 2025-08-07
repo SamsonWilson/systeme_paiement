@@ -1,0 +1,35 @@
+{% extends "accuiel/Base.html" %}
+{% load static %}
+
+{% block title %}Détail de l'utilisateur{% endblock %}
+
+{% block content %}
+<h2 style="color: #2c3e50; border-bottom: 2px solid #3498db; padding-bottom: 10px;">Détail de l'utilisateur</h2>
+
+<div style="display: flex; align-items: center; gap: 30px; background-color: #ecf0f1; padding: 25px; border-radius: 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.1);">
+
+    {% if utilisateur.image %}
+        <img src="{{ utilisateur.image.url }}" alt="Photo de profil"
+             style="width: 150px; height: 150px; border-radius: 50%; object-fit: cover; border: 4px solid #3498db;">
+    {% else %}
+        <img src="{% static 'image/employee.png' %}" alt="Photo par défaut"
+             style="width: 150px; height: 150px; border-radius: 50%; object-fit: cover; border: 4px solid #bdc3c7;">
+    {% endif %}
+
+    <ul style="list-style: none; padding: 0; margin: 0; font-size: 16px;">
+        <li><strong style="color: #2980b9;">Nom :</strong> {{ utilisateur.nom }}</li>
+        <li><strong style="color: #2980b9;">Prénom :</strong> {{ utilisateur.prenom }}</li>
+        <li><strong style="color: #2980b9;">Nom d'utilisateur :</strong> {{ utilisateur.username }}</li>
+        <li><strong style="color: #2980b9;">Téléphone :</strong> {{ utilisateur.tel }}</li>
+        <li><strong style="color: #2980b9;">Type :</strong> {{ utilisateur.type_utilisateur.nom }}</li>
+        <li><strong style="color: #2980b9;">Genre :</strong> {{ utilisateur.get_gender_display }}</li>
+        <li><strong style="color: #c0392b;">Personne à prévenir :</strong><br>
+            {{ utilisateur.nom_personne_prevenir }} {{ utilisateur.prenom_personne_prevenir }}<br>
+            ({{ utilisateur.telephone_personne_prevenir }})
+        </li>
+    </ul>
+</div>
+
+<br>
+<a href="{% url 'liste_utilisateurs' %}" style="display: inline-block; padding: 10px 20px; background-color: #3498db; color: white; text-decoration: none; border-radius: 5px;">← Retour à la liste</a>
+{% endblock %}

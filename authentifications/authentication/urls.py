@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import  ChambreCreateView, ChambreDeleteView, ChambreDetailLocataireView, ChambreDetailView, ChambreListView, ChambreUpdateView, ChatView, ConversationDetailView, ConversationListView, CustomLoginView, DashboarProprietairedView, FinLocationCreateView, FinLocationListView, FinLocationUpdateView, GeneratePDFView, GroupMessagesListView, ListePaiementsLocationView, LocataireDashboardView, LocationCreateView, LocationDeleteView, LocationListView, LocationUpdateView, MaisonCreateView, MaisonDeleteView, MaisonDetailView, MaisonListView, MaisonUpdateView, MessageCreateView, MessageListView, PDFTemplateViewLocation, PDFTemplateViewpaiyement, PaiementLoyer2CreateView, PaiementLoyerCreateView, PaiementLoyerDeleteView, PaiementLoyerListView, PaiementLoyerUpdateView, ProprietaireCreateView, ProprietaireDashboardView, ProprietaireDeleteView, ProprietaireDetailView, ProprietaireDetaimaisonlView, ProprietaireListView, ProprietaireListmaisonView, ProprietaireUpdateView, RedirectionParTypeUtilisateurView, ServePDFAndRedirectViewLocation, ServePDFAndRedirectViewpaiyement, SignUpView, TableauDeBordView, TypeChambreCreateView, TypeChambreDeleteView, TypeChambreListView, TypeChambreUpdateView, UtilisateurList_PeyementView, UtilisateurListView , VilleCreateView, VilleDeleteView, VilleListView, VilleUpdateView, QuartierCreateView, QuartierDeleteView, QuartierListView, QuartierUpdateView
+from .views import  ChambreCreateView, ChambreDeleteView, ChambreDetailLocataireView, ChambreDetailView, ChambreListView, ChambreUpdateView, ChatView, ConversationDetailView, ConversationListView, CustomLoginView, DashboarProprietairedView, FinLocationCreateView, FinLocationListView, FinLocationUpdateView, GeneratePDFView, GroupMessagesListView, ListePaiementsLocationView, LocataireDashboardView, LocationCreateView, LocationDeleteView, LocationListView, LocationUpdateView, MaisonCreateView, MaisonDeleteView, MaisonDetailView, MaisonListView, MaisonUpdateView, MessageCreateView, MessageListView, PDFTemplateViewLocation, PDFTemplateViewpaiyement, PaiementLoyer2CreateView, PaiementLoyerCreateView, PaiementLoyerDeleteView, PaiementLoyerListView, PaiementLoyerUpdateView, ProprietaireCreateView, ProprietaireDashboardView, ProprietaireDeleteView, ProprietaireDetailView, ProprietaireDetaimaisonlView, ProprietaireListView, ProprietaireListmaisonView, ProprietaireUpdateView, RedirectionParTypeUtilisateurView, ServePDFAndRedirectViewLocation, ServePDFAndRedirectViewpaiyement, SignUpView, TableauDeBordView, TypeChambreCreateView, TypeChambreDeleteView, TypeChambreListView, TypeChambreUpdateView, UserDetailView, UserListView, UserUpdateReinitialisationPasswordView, UserUpdateView, UtilisateurList_PeyementView, UtilisateurListView , VilleCreateView, VilleDeleteView, VilleListView, VilleUpdateView, QuartierCreateView, QuartierDeleteView, QuartierListView, QuartierUpdateView
 # ,ChambreCreateView, ChambreDeleteView, ChambreDetailView, ChambreListView, ChambreUpdateView, LocataireCreateView, LocataireDeleteView, LocataireDetailView, LocataireListView, LocataireUpdateView, LocationCreateView, LocationDeleteView, LocationDetailView, LocationListView, LocationUpdateView, MaisonCreateView, MaisonDeleteView, MaisonListView, MaisonUpdateView, PaiementCreateView, PaiementDeleteView, PaiementDetailView, PaiementListView, PaiementUpdateView, ProprietaireCreateView, ProprietaireDeleteView, ProprietaireListView, ProprietaireUpdateView 
 
 urlpatterns = [
@@ -7,7 +7,10 @@ urlpatterns = [
     path('', CustomLoginView.as_view(), name='login'),
     path('tableau_de_bord/', TableauDeBordView.as_view(), name='tableau_de_bord'),
     path('rediriger/', RedirectionParTypeUtilisateurView.as_view(), name='rediriger_par_type'),
-
+    path('utilisateurs/', UserListView.as_view(), name='liste_utilisateurs'),
+    path('utilisateurs/<int:pk>/', UserDetailView.as_view(), name='detail_utilisateur'),
+    path('utilisateurs/<int:pk>/modifier/', UserUpdateView.as_view(), name='modifier_utilisateur'),
+    path('utilisateurs/<int:pk>/modifier_reset_password/', UserUpdateReinitialisationPasswordView.as_view(), name='modifier_reset_password'),
    #...existing code...
     # path('chat/', ChatView.as_view(), name='chat_page'),
     path('messagerie/messages/<int:receiver_id>/', ChatView.as_view(), name='chat_page'),
@@ -93,12 +96,8 @@ urlpatterns = [
 
 
 
-
-
-
-
     path('utilisateur_payement/', UtilisateurList_PeyementView.as_view(), name='utilisateurpeyement_list'),  # noqa: F821
-    path('utilisateurs/<int:chambre_id>/', UtilisateurListView.as_view(), name='utilisateur_list'),  # noqa: F821
+    path('utilisateurs_location/<int:chambre_id>/', UtilisateurListView.as_view(), name='utilisateur_list'),  # noqa: F821
 
 
 # location

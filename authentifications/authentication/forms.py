@@ -28,6 +28,7 @@ from reportlab.lib.pagesizes import A4
 # from authentifications.authentication import models
 User = get_user_model()  # Assurez-vous de récupérer CustomUser  # noqa: F811
 
+from django.contrib.auth.hashers import make_password
 
 
 
@@ -133,8 +134,35 @@ class CustomUserCreationForm(UserCreationForm):
         recipient_list = [user.email]
         send_mail(subject, message, from_email, recipient_list, fail_silently=False)
 
+class CustomUserChangeForm(forms.ModelForm):
+    class Meta:
+        model = CustomUser
+        exclude = ('password', 'last_login', 'is_superuser', 'user_permissions', 'groups', 'is_staff', 'is_active', 'date_joined')
+        widgets = {
+            'username': forms.TextInput(attrs={'class': 'form-control'}),
+            'nom': forms.TextInput(attrs={'class': 'form-control'}),
+            'prenom': forms.TextInput(attrs={'class': 'form-control'}),
+            'email': forms.EmailInput(attrs={'class': 'form-control'}),
+            'tel': forms.TextInput(attrs={'class': 'form-control'}),
+            'type_utilisateur': forms.Select(attrs={'class': 'form-select'}),
+            'telephone_personne_prevenir': forms.TextInput(attrs={'class': 'form-control'}),
+            'nom_personne_prevenir': forms.TextInput(attrs={'class': 'form-control'}),
+            'prenom_personne_prevenir': forms.TextInput(attrs={'class': 'form-control'}),
+            'gender': forms.Select(attrs={'class': 'form-select'}),
+        }
+class CustomUserReinitialisationPasswordForm(forms.ModelForm):
+    password = forms.CharField(widget=forms.PasswordInput, label="Nouveau mot de passe")
+    class Meta:
+        model = CustomUser
+        fields = ['password']
 
-        
+    def save(self, commit=True):
+        user = super().save(commit=False)
+        user.password = make_password(self.cleaned_data['password'])  # hash le mot de passe
+        if commit:
+            user.save()
+        return user
+
 class CustomAuthenticationForm(AuthenticationForm):
     """
     Formulaire de connexion personnalisé avec Bootstrap
@@ -1193,18 +1221,41 @@ class PaiementLoyerForm(forms.ModelForm):
         return instance
 
 
+# class FinLocationForm(forms.ModelForm):
+#     class Meta:
+#         model = FinLocation
+#         fields = ['location', 'date_fin_location', 'raison_fin', 'montant_restant', 'montant_remboursement_caution', 'image_contrat']
+#         widgets = {
+#             # 'location': forms.Select(attrs={'class': 'form-select'}), # Classe pour le select
+#             'date_fin_location': forms.DateInput(attrs={'type': 'date', 'class': 'form-control'}), # Classe pour l'input date
+#             'raison_fin': forms.Textarea(attrs={'rows': 3, 'class': 'form-control'}), # Classe pour textarea
+#             'montant_restant': forms.NumberInput(attrs={'class': 'form-control'}), # Classe pour input nombre
+#             'montant_remboursement_caution': forms.NumberInput(attrs={'class': 'form-control'}), # Classe pour input nombre
+#             'image_contrat': forms.FileInput(attrs={'class': 'form-control'}), # Classe pour input file
+#         }
+
+# Fichier : authentifications\authentication\forms.py
 class FinLocationForm(forms.ModelForm):
     class Meta:
         model = FinLocation
-        fields = ['location', 'date_fin_location', 'raison_fin', 'montant_restant', 'montant_remboursement_caution', 'image_contrat']
+        # Exclure 'location' car il sera géré manuellement dans la vue
+        # Exclure aussi les champs du template qui ne sont pas dans le modèle
+        fields = ['date_fin_location', 'raison_fin', 'montant_restant', 'montant_remboursement_caution', 'image_contrat']
         widgets = {
-            'location': forms.Select(attrs={'class': 'form-select'}), # Classe pour le select
-            'date_fin_location': forms.DateInput(attrs={'type': 'date', 'class': 'form-control'}), # Classe pour l'input date
-            'raison_fin': forms.Textarea(attrs={'rows': 3, 'class': 'form-control'}), # Classe pour textarea
-            'montant_restant': forms.NumberInput(attrs={'class': 'form-control'}), # Classe pour input nombre
-            'montant_remboursement_caution': forms.NumberInput(attrs={'class': 'form-control'}), # Classe pour input nombre
-            'image_contrat': forms.FileInput(attrs={'class': 'form-control'}), # Classe pour input file
+            'date_fin_location': forms.DateInput(attrs={'type': 'date', 'class': 'form-control'}),
+            'raison_fin': forms.Textarea(attrs={'rows': 3, 'class': 'form-control'}),
+            'montant_restant': forms.NumberInput(attrs={'class': 'form-control'}),
+            'montant_remboursement_caution': forms.NumberInput(attrs={'class': 'form-control'}),
+            'image_contrat': forms.FileInput(attrs={'class': 'form-control'}),
         }
+
+    # Vous pouvez ajouter une méthode clean pour la validation spécifique au formulaire ici,
+    # mais pour le 'montant_remboursement_caution' qui dépend de la somme des cautions des locations liées,
+    # c'est mieux de le faire dans la vue après que la relation ManyToMany soit établie.
+    # Cependant, vous pouvez le faire ici si vous passez le 'total_caution' au formulaire.
+    # Pour l'instant, on laisse la validation dans la vue.
+
+
 
 # class CustomUserCreationForm(UserCreationForm):
 #     email = forms.EmailField(required=True, help_text='Required. Enter a valid email address.')

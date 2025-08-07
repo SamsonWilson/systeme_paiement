@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <title>Reçu de Location</title>
+    <title>Reçu de Paiement</title>
     <style>
         @page {
             size: A3;
@@ -108,52 +108,60 @@
 <body>
     <div class="recu">
         <div class="header">
-            <h1>Reçu de Location</h1>
-            <div class="numero-recu">Reçu N° {{ location.id|stringformat:"05d" }}</div>
-            <div>Date d'émission : {{ location.date_paiement|date:"d/m/Y" }}</div>
+            <h1>Reçu de Paiement</h1>
+            <div class="numero-recu">Reçu N° {{ paiement.id|stringformat:"05d" }}</div>
+            <div>Date d'émission : {{ paiement.date_paiement|date:"d/m/Y" }}</div>
         </div>
 
-        <!-- Détails de la Location -->
+        <!-- Détails du Paiement -->
         <div class="card">
             <div class="card-header">
-                <h5><i class="fas fa-file-contract me-2"></i>Détails de la Location</h5>
+                <h5><i class="fas fa-file-invoice me-2"></i>Détails du Paiement</h5>
             </div>
             <div class="card-body">
                 <div class="row">
                     <div class="col-md-4">
-                        <p><strong>Nom :</strong> {{ location.utilisateur.nom }}</p>
+                        <label class="form-label">Nom du locataire</label>
+                        <p>{{ paiement.location.utilisateur.nom }}</p>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Nombre de mois payé</label>
+                        <p>{{ paiement.nombre_mois_paye }}</p>
+                    </div>
+                    <div class="col-md-4">
                         <label class="form-label">Date de début</label>
-                        <p>{{ location.date_debut_location|date:"d/m/Y" }}</p>
+                        <p>{{ paiement.location.date_debut_location|date:"d/m/Y" }}</p>
                     </div>
                     <div class="col-md-4">
-                        <label class="form-label">Nombre de mois</label>
-                        <p>{{ location.nombre_mois_paye }}</p>
+                        <label class="form-label">Date de fin du paiement</label>
+                        <p>{{ paiement.date_fin_paiement|date:"d/m/Y" }}</p>
                     </div>
                     <div class="col-md-4">
-                        <label class="form-label">Date de fin</label>
-                        <p>{{ location.date_fin_avance|date:"d/m/Y" }}</p>
-                    </div>
-                    <div class="col-md-4">
-                        <label class="form-label">Montant caution</label>
-                        <p>{{ location.montant_caution }} CFA</p>
-                    </div>
-                    <div class="col-md-4">
-                        <label class="form-label">Montant avance</label>
-                        <p>{{ location.montant_avance }} CFA</p>
+                        <label class="form-label">Montant payé</label>
+                        <p>{{ paiement.montant_paye }} CFA</p>
                     </div>
                     <div class="col-md-4">
                         <label class="form-label">Mode de paiement</label>
-                        <p>{{ location.mode_paiement }}</p>
+                        <p>{{ paiement.mode_paiement }}</p>
                     </div>
                     <div class="col-md-4">
-                        <label class="form-label">Statut du paiement</label>
-                        <p>{{ location.statut_paiement }}</p>
+                        <label class="form-label">Statut</label>
+                        <p>{{ paiement.statut_paiement }}</p>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Commission</label>
+                        <p>{{ paiement.commission }} CFA</p>
                     </div>
                 </div>
+                {% if paiement.commentaire %}
+                <div class="alert alert-primary">
+                    <strong>Commentaire :</strong> {{ paiement.commentaire }}
+                </div>
+                {% endif %}
                 <div class="alert alert-primary">
                     <div class="d-flex justify-content-between align-items-center">
                         <span class="h5">Montant Total :</span>
-                        <span class="h4">{{ location.montant_total }} CFA</span>
+                        <span class="h4">{{ paiement.montant_paye }} CFA</span>
                     </div>
                 </div>
             </div>
@@ -173,7 +181,7 @@
         <div class="footer">
             <p>Ce reçu fait office de preuve de paiement officielle.</p>
             <p>Pour toute question, veuillez nous contacter au : +XXX XX XX XX XX</p>
-            <p>© {{ location.date_paiement|date:"Y" }} Gestion Immobilière - Tous droits réservés</p>
+            <p>© {{ paiement.date_paiement|date:"Y" }} Gestion Immobilière - Tous droits réservés</p>
         </div>
     </div>
 </body>

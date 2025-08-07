@@ -129,6 +129,7 @@
                     </thead>
                     <tbody>
                         {% for item in paiements_par_location %}
+                        
                         <tr class="paiement-row {% if item.date_expiree %}table-danger{% endif %}">
                             <td class="px-4 py-3">{{ forloop.counter }}</td>
                                 <td class="py-3">
@@ -149,7 +150,7 @@
                                     </div>
                                     {% endif %}
                                     <div>
-                                        <div class="fw-bold">{{ item.locataire.nom }} {{ item.locataire.prenom }}</div>
+                                        <div class="fw-bold">{{ item.locataire.username }} {{ item.locataire.prenom }}</div>
                                         <small class="text-muted">{{ item.locataire.email }}</small>
                                     </div>
                                 </div>

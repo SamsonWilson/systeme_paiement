@@ -15,7 +15,7 @@ from django.contrib.auth.views import LoginView
 from django.contrib.auth.decorators import login_required
 from django.utils.decorators import method_decorator
 from django.views.generic import TemplateView, ListView, CreateView, UpdateView, DeleteView
-from .forms import  ChambreForm, CustomUserCreationForm, CustomAuthenticationForm, LocationForm, MaisonForm, MessageForm, PaiementLoyerForm, ProprietaireForm, TypeChambreForm, VilleForm, VilleSearchForm,QuartierForm
+from .forms import  ChambreForm, CustomUserChangeForm, CustomUserCreationForm, CustomAuthenticationForm, CustomUserReinitialisationPasswordForm, LocationForm, MaisonForm, MessageForm, PaiementLoyerForm, ProprietaireForm, TypeChambreForm, VilleForm, VilleSearchForm,QuartierForm
 from .models import Chambre, CustomUser, Location, Maison, PaiementLoyer, Proprietaire, TypeChambre, Ville, Quartier
 from django.views.generic.detail import DetailView
 from django.db.models import Q
@@ -44,6 +44,47 @@ from django.contrib.auth.models import User
 from django.utils.timezone import now
 from django.db.models import Sum
 # from django.http import HttpResponse
+
+from django.views.generic import ListView
+from .models import CustomUser
+
+
+
+class UserListView(ListView):
+    model = CustomUser
+    template_name = 'registration/utilisateurListe.html'  # Le template que tu vas créer
+    context_object_name = 'utilisateurs'    # Le nom utilisé dans le template (facultatif)
+    paginate_by = 10  # (Facultatif) Pour ajouter la pagination
+    # def get_queryset(self):
+    #     return CustomUser.objects.filter(type_utilisateur__nom='propriétaire')
+
+class UserDetailView(DetailView):
+    model = CustomUser
+    template_name = 'registration/user_detail.html'  # Tu vas créer ce template
+    context_object_name = 'utilisateur'
+
+class UserUpdateView(UpdateView):
+    model = CustomUser
+    form_class = CustomUserChangeForm 
+    template_name = 'registration/user_formUpdate.html'  # crée ce template
+    success_url = reverse_lazy('liste_utilisateurs')
+
+# class UserUpdateReinitialisationPasswordView(UpdateView):
+#     model = CustomUser
+#     form_class = CustomUserReinitialisationPasswordForm
+#     template_name = 'registration/ReinitialisationPasswordForm.html'  # crée ce template
+#     success_url = reverse_lazy('liste_utilisateurs')
+class UserUpdateReinitialisationPasswordView(UpdateView):
+    model = CustomUser
+    form_class = CustomUserReinitialisationPasswordForm
+    template_name = 'registration/ReinitialisationPasswordForm.html' # à adapter
+    success_url = reverse_lazy('liste_utilisateurs')  # redirection après modification
+    def get_object(self, queryset=None):
+        return CustomUser.objects.get(pk=self.kwargs['pk'])
+    # facultatif : si tu veux changer l'objet à récupérer autrement que par pk
+    # def get_object(self):
+    #     return CustomUser.objects.get(pk=self.kwargs['pk'])
+# CustomUserReinitialisationPasswordForm
 class SignUpView(generic.CreateView):
     form_class = CustomUserCreationForm
     success_url = reverse_lazy('login')
@@ -1746,31 +1787,140 @@ class PaiementLoyer2CreateView(LoginRequiredMixin, CreateView):
         """Redirige vers la génération de reçu PDF après paiement."""
         return reverse('generate_pdfpayement', kwargs={'paiementloyer_id': self.object.id})
 
+# Fichier : authentifications\authentication\views.py
+
+from django.views.generic.edit import CreateView
+from django.shortcuts import get_object_or_404
+from django.urls import reverse
+from django.forms import ValidationError # Important pour les erreurs de validation
+# Importez vos modèles Location et FinLocation
+# from .models import FinLocation, Location, Chambre # Exemple, adaptez
+
 class FinLocationCreateView(CreateView):
     model = FinLocation
     form_class = FinLocationForm
     template_name = 'accuiel/Finlocation/fin_location_form.html'
+
+    # get_initial pour définir la valeur initiale du champ du formulaire
     def get_initial(self):
         initial = super().get_initial()
-        initial['montant_remboursement_caution'] = self.location.montant_caution
+        # Assurez-vous que self.location est déjà défini par dispatch()
+        if hasattr(self, 'location') and self.location:
+            initial['montant_remboursement_caution'] = self.location.montant_caution
         return initial
 
     def dispatch(self, request, *args, **kwargs):
+        # 'location_id' doit correspondre au nom dans votre urls.py
         self.location = get_object_or_404(Location, pk=self.kwargs['location_id'])
         return super().dispatch(request, *args, **kwargs)
 
     def form_valid(self, form):
-        form.instance.location = self.location  # Associer la fin à la location
-        return super().form_valid(form)
+        # 1. Appelle la méthode parent pour sauvegarder l'instance FinLocation.
+        #    À ce stade, l'instance (self.object) est créée dans la DB,
+        #    mais la relation ManyToMany 'location' n'est PAS encore établie.
+        response = super().form_valid(form)
+
+        # 2. Établit la relation ManyToMany pour l'objet FinLocation nouvellement créé (self.object).
+        #    Nous associons la 'Location' obtenue de l'URL (`self.location`).
+        #    `.set()` attend un itérable (une liste), donc [self.location].
+        if self.location: # Vérifie que self.location existe bien
+            self.object.location.set([self.location])
+
+        # --- Toutes les logiques dépendant des relations ManyToMany doivent venir APRES le .set() ---
+
+        # 3. Calcule la somme des cautions des locations associées.
+        #    self.object.location.all() est maintenant peuplé.
+        total_caution_calculee = sum(loc.montant_caution for loc in self.object.location.all())
+
+        # 4. Effectue la validation du remboursement de la caution.
+        #    Si la validation échoue, ajoute une erreur au formulaire et retourne form_invalid.
+        if form.instance.montant_remboursement_caution > total_caution_calculee:
+            form.add_error(
+                'montant_remboursement_caution',
+                "Le remboursement de la caution ne peut pas dépasser la somme des cautions ({}).".format(total_caution_calculee)
+            )
+            # Important : Si l'erreur est ajoutée, nous devons retourner form_invalid
+            return self.form_invalid(form) # Ceci réaffichera le formulaire avec l'erreur
+
+        # 5. Libère les chambres associées aux locations.
+        #    Note: Assurez-vous que votre modèle Location a bien un champ 'chambre' (ForeignKey vers Chambre).
+        for loc_obj in self.object.location.all():
+            if hasattr(loc_obj, 'chambre') and loc_obj.chambre: # Vérifie si 'chambre' existe et n'est pas None
+                loc_obj.chambre.etat = 'libre' # Assurez-vous que 'etat' est un champ valide sur Chambre
+                loc_obj.chambre.save()
+
+        # Si vous aviez d'autres champs à mettre à jour sur `self.object` après ces calculs,
+        # vous les mettriez ici, puis appelleriez `self.object.save()` à nouveau.
+        # Par exemple:
+        # self.object.champ_calcule = une_valeur_calculee
+        # self.object.save(update_fields=['champ_calcule']) # Utilisez update_fields pour plus d'efficacité
+
+        # Retourne la réponse HTTP de redirection obtenue initialement.
+        return response
+
+    def form_invalid(self, form):
+        # Override form_invalid pour s'assurer que le contexte est bien passé
+        # lorsque le formulaire est réaffiché après une erreur.
+        # Cela est crucial si vous utilisez self.location dans votre template.
+        context = self.get_context_data(form=form)
+        return self.render_to_response(context)
+
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['location'] = self.location  # Passer au template
-        context['montant_caution'] = self.location.montant_caution
+        # S'assurer que 'location' et 'montant_caution' sont toujours disponibles dans le contexte
+        # pour le template, même en cas d'erreur de formulaire.
+        context['location'] = self.location
+        if hasattr(self.location, 'montant_caution'):
+            context['montant_caution'] = self.location.montant_caution
+        else:
+            context['montant_caution'] = 0 # Valeur par défaut si montant_caution n'existe pas
         return context
 
     def get_success_url(self):
-        return reverse('liste_paiements', args=[self.location.id])  
+        # Assurez-vous que 'liste_paiements' existe et prend un argument 'location_id'
+        return reverse('liste_paiements', args=[self.location.id])
+# class FinLocationCreateView(CreateView):
+#     model = FinLocation
+#     form_class = FinLocationForm
+#     template_name = 'accuiel/Finlocation/fin_location_form.html'
+#     def get_initial(self):
+#         initial = super().get_initial()
+#         initial['montant_remboursement_caution'] = self.location.montant_caution
+#         return initial
+
+#     def dispatch(self, request, *args, **kwargs):
+#         self.location = get_object_or_404(Location, pk=self.kwargs['location_id'])
+#         return super().dispatch(request, *args, **kwargs)
+
+#     # def form_valid(self, form):
+#     #     form.instance.location = self.location  # Associer la fin à la location
+#     #     return super().form_valid(form)
+#     # C:\Users\hugues\Music\Projet text\authentifications\authentication\views.py
+
+# # ... à l'intérieur de votre classe de vue ...
+# def form_valid(self, form):
+#     # 1. Laisser la méthode parente sauvegarder le formulaire. Cela crée l'objet
+#     #    dans la base de données et retourne la réponse de redirection HTTP.
+#     #    L'objet sauvegardé est stocké dans `self.object`.
+#     response = super().form_valid(form)
+
+#     # 2. Maintenant que `self.object` (qui est identique à `form.instance` après sauvegarde)
+#     #    a une clé primaire, nous pouvons gérer sa relation ManyToMany.
+#     #    La méthode .set() attend un itérable (comme une liste ou un queryset).
+#     #    En supposant que `self.location` est un seul objet Location, nous l'enveloppons dans une liste.
+#     self.object.location.set([self.location])
+
+#     # 3. Retourner la réponse de redirection que nous avons obtenue de la méthode parente.
+#     return response
+#     def get_context_data(self, **kwargs):
+#         context = super().get_context_data(**kwargs)
+#         context['location'] = self.location  # Passer au template
+#         context['montant_caution'] = self.location.montant_caution
+#         return context
+
+#     def get_success_url(self):
+#         return reverse('liste_paiements', args=[self.location.id])  
 class FinLocationUpdateView(UpdateView):
     model = FinLocation
     form_class = FinLocationForm
@@ -2312,48 +2462,131 @@ class GeneratePDFView(DetailView):
 
 
 
-class PaiementLoyerListView(TemplateView):
+# class PaiementLoyerListView(TemplateView):
+#     template_name = 'accuiel/paiements/paiement_list.html'
+#     paginate_by = 15
+
+#     def get_context_data(self, **kwargs):
+#         context = super().get_context_data(**kwargs)
+#         current_date_togo = datetime.now(pytz.timezone('Africa/Lome'))
+#         chambre_id = self.kwargs.get('chambre_id', None)
+
+#         paiements_par_location = []
+#         chambres_deja_vues = set()  # 👈 Pour éviter les doublons
+
+#         if chambre_id:
+#             locations = Location.objects.filter(chambre__id=chambre_id).select_related('chambre', 'utilisateur')
+#         else:
+#             locations = Location.objects.select_related('chambre', 'utilisateur')
+
+#         for location in locations:
+#             chambre = location.chambre
+
+#             # 💡 Ignore les chambres déjà vues ou les chambres libres
+#             if chambre.id in chambres_deja_vues or chambre.etat == 'libre':
+#                 continue
+
+#             dernier_paiement = location.paiements.order_by('-date_paiement').first()
+#             if dernier_paiement:
+#                 date_fin = dernier_paiement.date_fin_paiement
+#                 date_expiree = date_fin < current_date_togo.date() if date_fin else False
+#                 paiements_par_location.append({
+#                     'location': location,
+#                     'chambre': chambre,
+#                     'locataire': location.utilisateur,
+#                     'dernier_paiement': dernier_paiement,
+#                     'date_fin': date_fin,
+#                     'date_expiree': date_expiree
+#                 })
+#                 chambres_deja_vues.add(chambre.id)  # ✅ Marquer la chambre comme vue
+
+#         # Trier par date de fin de paiement
+#         paiements_par_location.sort(key=lambda x: x['date_fin'] or current_date_togo.date())
+
+#         # Pagination uniquement si on affiche tout
+#         if not chambre_id:
+#             paginator = Paginator(paiements_par_location, self.paginate_by)
+#             page_number = self.request.GET.get('page')
+#             page_obj = paginator.get_page(page_number)
+#         else:
+#             page_obj = paiements_par_location
+
+#         context.update({
+#             'paiements_par_location': page_obj,
+#             'is_paginated': not chambre_id and hasattr(page_obj, 'has_other_pages') and page_obj.has_other_pages(),
+#             'current_date_togo': current_date_togo,
+#             'total_paiements': PaiementLoyer.objects.count(),
+#             'paiements_confirmes': sum(1 for p in paiements_par_location if not p['date_expiree']),
+#             'paiements_en_attente': PaiementLoyer.objects.filter(statut_paiement="en attente").count(),
+#             'paiements_expires': sum(1 for p in paiements_par_location if p['date_expiree']),
+#             'chambre_affichee': chambre_id,
+#         })
+#         return context
+
+# ----- IMPORTS CORRECTS -----
+
+# Pour la gestion du temps avec Django (contient .now())
+from django.utils import timezone
+
+# Pour les fuseaux horaires spécifiques comme 'Africa/Lome'
+import pytz
+
+# Si vous avez besoin de `date` du module datetime, gardez-le
+from datetime import date
+class PaiementLoyerListView(ListView):
+    model = PaiementLoyer
     template_name = 'accuiel/paiements/paiement_list.html'
     paginate_by = 15
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        current_date_togo = datetime.now(pytz.timezone('Africa/Lome'))
+        current_date_togo = timezone.now().astimezone(pytz.timezone('Africa/Lome'))
         chambre_id = self.kwargs.get('chambre_id', None)
 
         paiements_par_location = []
-        chambres_deja_vues = set()  # 👈 Pour éviter les doublons
+
+        # <<< LA CORRECTION CLÉ EST ICI >>>
+        # On filtre pour ne garder que les locations qui n'ont AUCUNE FinLocation associée.
+        # Cela signifie que ce sont les locations ACTIVES.
+        base_locations = Location.objects.filter(
+            fins_location__isnull=True
+        ).select_related('chambre', 'utilisateur')
 
         if chambre_id:
-            locations = Location.objects.filter(chambre__id=chambre_id).select_related('chambre', 'utilisateur')
+            # Si on cherche une chambre spécifique, on filtre sur cette base
+            locations = base_locations.filter(chambre__id=chambre_id)
         else:
-            locations = Location.objects.select_related('chambre', 'utilisateur')
+            locations = base_locations.all()
 
+        # Comme on ne récupère que les locations actives, on n'a plus besoin
+        # de `chambres_deja_vues`. Chaque chambre n'apparaîtra qu'une seule fois.
         for location in locations:
-            chambre = location.chambre
-
-            # 💡 Ignore les chambres déjà vues ou les chambres libres
-            if chambre.id in chambres_deja_vues or chambre.etat == 'libre':
+            # On ne traite que les chambres qui sont réellement occupées
+            if location.chambre.etat == 'libre':
                 continue
-
             dernier_paiement = location.paiements.order_by('-date_paiement').first()
             if dernier_paiement:
                 date_fin = dernier_paiement.date_fin_paiement
+                # Comparaison correcte entre une date et un objet date
                 date_expiree = date_fin < current_date_togo.date() if date_fin else False
                 paiements_par_location.append({
                     'location': location,
-                    'chambre': chambre,
+                    'chambre': location.chambre,
                     'locataire': location.utilisateur,
                     'dernier_paiement': dernier_paiement,
                     'date_fin': date_fin,
                     'date_expiree': date_expiree
                 })
-                chambres_deja_vues.add(chambre.id)  # ✅ Marquer la chambre comme vue
+            # Optionnel : que faire si une location active n'a encore aucun paiement ?
+            # Vous pourriez vouloir l'afficher aussi avec un statut spécial.
+            # else:
+            #     paiements_par_location.append({ ... 'dernier_paiement': None, ... })
+
 
         # Trier par date de fin de paiement
         paiements_par_location.sort(key=lambda x: x['date_fin'] or current_date_togo.date())
 
-        # Pagination uniquement si on affiche tout
+        # Pagination (votre logique était déjà bonne)
         if not chambre_id:
             paginator = Paginator(paiements_par_location, self.paginate_by)
             page_number = self.request.GET.get('page')
@@ -2361,18 +2594,19 @@ class PaiementLoyerListView(TemplateView):
         else:
             page_obj = paiements_par_location
 
+        # Les statistiques peuvent maintenant utiliser la liste filtrée
         context.update({
             'paiements_par_location': page_obj,
             'is_paginated': not chambre_id and hasattr(page_obj, 'has_other_pages') and page_obj.has_other_pages(),
             'current_date_togo': current_date_togo,
-            'total_paiements': PaiementLoyer.objects.count(),
+            'total_paiements': PaiementLoyer.objects.count(), # Total historique
             'paiements_confirmes': sum(1 for p in paiements_par_location if not p['date_expiree']),
-            'paiements_en_attente': PaiementLoyer.objects.filter(statut_paiement="en attente").count(),
+            'paiements_en_attente': PaiementLoyer.objects.filter(statut_paiement="en attente").count(), # Historique
             'paiements_expires': sum(1 for p in paiements_par_location if p['date_expiree']),
             'chambre_affichee': chambre_id,
         })
-
         return context
+
 
 
 class PaiementLoyerDeleteView(DeleteView):
@@ -2533,6 +2767,9 @@ class PDFTemplateViewLocation(View):
         # Rediriger vers la vue qui sert le fichier
         return redirect('serve_pdf_and_redirect') 
     
+
+
+# c'est pour la location     
 class ServePDFAndRedirectViewLocation(View):
     def get(self, request):
         pdf_data = request.session.get('pdf_data')
@@ -2581,7 +2818,7 @@ class ServePDFAndRedirectViewLocation(View):
 class PDFTemplateViewpaiyement(View):
     def get(self, request, location_id):
         PaiementLoyer = get_object_or_404(Location, id=PaiementLoyer)  # noqa: F823
-        template = get_template('recu/recu_peyement.html')
+        template = get_template('Recu/Recu_peyement.html')
         context = {'paiement': PaiementLoyer}
         html = template.render(context)
 

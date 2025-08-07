@@ -121,7 +121,7 @@
             <div class="card-body">
                 <div class="row">
                     <div class="col-md-4">
-                        <p><strong>Nom :</strong> {{ location.utilisateur.nom }}</p>
+                        <p><strong>Nom :</strong> {{ location.utilisateur.nom }} {{ location.utilisateur.prenom }} {{ location.utilisateur.tel }} </p>
                         <label class="form-label">Date de début</label>
                         <p>{{ location.date_debut_location|date:"d/m/Y" }}</p>
                     </div>
@@ -158,21 +158,16 @@
                 </div>
             </div>
         </div>
-
         <!-- Signatures -->
         <div class="signature">
-            <div class="signature-box">
-                <div class="signature-line">Signature du locataire</div>
-            </div>
             <div class="signature-box">
                 <div class="signature-line">Signature du gestionnaire</div>
             </div>
         </div>
-
         <!-- Footer -->
         <div class="footer">
             <p>Ce reçu fait office de preuve de paiement officielle.</p>
-            <p>Pour toute question, veuillez nous contacter au : +XXX XX XX XX XX</p>
+            <p>Pour toute question, veuillez nous contacter au : 91134160 </p>
             <p>© {{ location.date_paiement|date:"Y" }} Gestion Immobilière - Tous droits réservés</p>
         </div>
     </div>

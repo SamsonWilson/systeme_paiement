@@ -86,6 +86,24 @@ WSGI_APPLICATION = 'authentifications.wsgi.application'
 #         'NAME': BASE_DIR / 'db.sqlite3',
 #     }
 # }
+# Charge les variables du fichier .env à la racine du projet
+
+# ...
+# Assurez-vous d'avoir vos autres configurations ici (SECRET_KEY, etc.)
+# ...
+
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.mysql',
+#         # Les noms de variables doivent correspondre au .env et docker-compose.yml
+#         'NAME': os.getenv('MYSQL_DATABASE'),
+#         'USER': os.getenv('MYSQL_USER'),
+#         'PASSWORD': os.getenv('MYSQL_PASSWORD'),
+#         # C'EST LA LIGNE LA PLUS IMPORTANTE : le nom du service Docker
+#         'HOST': 'db',
+#         'PORT': '3306',
+#     }
+# }
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
