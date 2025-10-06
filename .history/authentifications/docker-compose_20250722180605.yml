@@ -1,0 +1,41 @@
+version: '3.8'
+
+services:
+  db:
+    image: mysql:8.0
+    container_name: mysql_db_container
+    restart: always
+    volumes:
+      - mysql_data:/var/lib/mysql
+    environment:
+      MYSQL_DATABASE: immobilier
+      MYSQL_USER: root
+      MYSQL_ROOT_PASSWORD: un_mot_de_passe_solide
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-pun_mot_de_passe_solide"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  web:
+    build: .
+    container_name: django_app_container
+    command: gunicorn authentifications.wsgi:application --bind 0.0.0.0:8000
+    volumes:
+      - .:/app
+    ports:
+      - "8000:8000"
+    restart: always
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DB_HOST: db
+      DB_NAME: immobilier
+      DB_USER: root
+      DB_PASSWORD: un_mot_de_passe_solide
+      SECRET_KEY: django-insecure-9cr+ja%d0ace@j1+8+r_a$$czlq3e^zikmg@12hea4puk#(lm-o
+      DEBUG: 1
+
+volumes:
+  mysql_data:

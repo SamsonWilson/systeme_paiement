@@ -1,0 +1,971 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Tableau de Bord{% endblock %}</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(120deg, #f8f9fa 60%, #e0eafc 100%);
+            color: #333;
+        }
+        .sidebar {
+            background: linear-gradient(135deg, #2c3e50 70%, #4ca1af 100%);
+            color: white;
+            padding: 25px 15px;
+            min-height: 100vh;
+            position: fixed;
+            width: 260px;
+            box-shadow: 2px 0 18px rgba(44, 62, 80, 0.12);
+            border-top-right-radius: 30px;
+            border-bottom-right-radius: 30px;
+        }
+        .sidebar h2 {
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 1.7rem;
+            font-weight: 700;
+            letter-spacing: 1px;
+            border-bottom: 1px solid rgba(255,255,255,0.15);
+            padding-bottom: 15px;
+        }
+        .sidebar ul {
+            list-style: none;
+            padding: 0;
+        }
+        .sidebar li {
+            margin-bottom: 18px;
+        }
+        .sidebar a {
+            color: white;
+            text-decoration: none;
+            font-size: 1.13rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px 18px;
+            border-radius: 8px;
+            transition: background 0.2s, transform 0.2s;
+            background: rgba(255,255,255,0.04);
+        }
+        .sidebar a:hover {
+            background: rgba(255,255,255,0.13);
+            transform: translateX(7px) scale(1.04);
+            box-shadow: 0 2px 12px rgba(44,62,80,0.08);
+        }
+        .main-content {
+            margin-left: 270px;
+            padding: 30px 20px;
+            min-height: 100vh;
+        }
+        .header {
+            background: linear-gradient(135deg, #667eea 70%, #764ba2 100%);
+            color: white;
+            padding: 28px 30px;
+            box-shadow: 0 6px 24px rgba(102,126,234,0.13);
+            margin-bottom: 35px;
+            border-radius: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 2.3rem;
+            font-weight: 800;
+            text-shadow: 1px 2px 8px rgba(44,62,80,0.08);
+            letter-spacing: 1px;
+        }
+        .card {
+            border: none;
+            border-radius: 16px;
+            box-shadow: 0 8px 24px rgba(44,62,80,0.09);
+            transition: all 0.3s;
+            margin-bottom: 28px;
+            overflow: hidden;
+            background: #fff;
+        }
+        .card:hover {
+            transform: translateY(-7px) scale(1.01);
+            box-shadow: 0 16px 32px rgba(44,62,80,0.13);
+        }
+        .card-body {
+            padding: 28px;
+        }
+        .card-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 12px;
+            color: #34495e;
+        }
+        .stat-card {
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 8px 24px rgba(44,62,80,0.09);
+            transition: all 0.3s;
+        }
+        .stat-card:hover {
+            transform: translateY(-7px) scale(1.03);
+            box-shadow: 0 16px 32px rgba(44,62,80,0.13);
+        }
+        .bg-gradient-primary { background: linear-gradient(45deg, #0d6efd, #0a58ca); }
+        .bg-gradient-success { background: linear-gradient(45deg, #198754, #146c43); }
+        .bg-gradient-info { background: linear-gradient(45deg, #0dcaf0, #0997b3); }
+        .bg-gradient-warning { background: linear-gradient(45deg, #ffc107, #e0a800); }
+        .icon-circle {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(255,255,255,0.18);
+            transition: all 0.3s;
+        }
+        .stat-card:hover .icon-circle {
+            transform: rotate(15deg) scale(1.13);
+        }
+        .display-6 {
+            font-size: 2.2rem;
+            font-weight: 700;
+            animation: countUp 0.8s ease-out forwards;
+            margin: 0;
+        }
+        @keyframes countUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .chart-container {
+            position: relative;
+            height: 350px;
+            width: 100%;
+            margin-top: 20px;
+        }
+        .btn-custom {
+            border-radius: 8px;
+            padding: 10px 20px;
+            font-weight: 600;
+            transition: all 0.3s;
+            background: linear-gradient(90deg, #667eea 60%, #764ba2 100%);
+            color: #fff;
+            border: none;
+        }
+        .btn-custom:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(44,62,80,0.09);
+            background: linear-gradient(90deg, #764ba2 60%, #667eea 100%);
+        }
+        /* Responsive */
+        @media (max-width: 991px) {
+            .sidebar { width: 100%; min-height: auto; position: relative; margin-bottom: 20px; border-radius: 0 0 30px 30px; }
+            .main-content { margin-left: 0; padding: 18px 8px; }
+            .header { padding: 18px 10px; font-size: 1.2rem; }
+        }
+        @media (max-width: 600px) {
+            .sidebar { padding: 10px 5px; }
+            .header h1 { font-size: 1.3rem; }
+            .card-body { padding: 12px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="sidebar">
+        <h2>{{ user.username }}</h2>
+        <ul>
+            {% if request.user.is_authenticated and request.user.type_utilisateur %}
+                {% if request.user.type_utilisateur.nom == 'admin' %}
+                    {# Assurez-vous que ces URLs nommées sont définies dans votre urls.py pour les vues accessibles par l'admin #}
+                    {% comment %} <li><a href="{% url 'maison_liste' %}"><i class="fas fa-home me-2"></i>Listes des Maisons</a></li>
+                    <li><a href="{% url 'Quatiers_list' %}"><i class="fas fa-map-marker-alt me-2"></i>Listes des Quartiers</a></li>
+                    <li><a href="{% url 'ville_list' %}"><i class="fas fa-city me-2"></i>Listes des villes</a></li>
+                    <li><a href="{% url 'liste_typechambres' %}"><i class="fas fa-bed me-2"></i>Type de chambre</a></li>
+                    <li><a href="{% url 'liste_chambres' %}"><i class="fas fa-door-open me-2"></i>Chambre</a></li>
+                    <li><a href="{% url 'liste_proprietaire' %}"><i class="fas fa-user-tie me-2"></i>Listes des Propriétaires</a></li>
+                    <li><a href="{% url 'liste_paiements' %}"><i class="fas fa-money-bill-wave me-2"></i>Paiement</a></li>
+                    <li><a href="{% url 'liste_locations' %}"><i class="fas fa-key me-2"></i>Liste de location</a></li>
+                    <li><a href="{% url 'utilisateurs_parchambre'%}"> Fin location </a></li>
+                    <li><a href="{% url 'liste_utilisateurs'%}">Voir les utilisateur</a></li>
+
+                    <li><a href="{% url 'message-list' %}">tttttttttttt</a></li> {% endcomment %}
+                    <!-- Maisons -->
+    <li>
+        <a href="{% url 'maison_liste' %}">
+            <i class="fas fa-home me-2"></i> Liste des Maisons
+        </a>
+    </li>
+
+    <!-- Quartiers -->
+    <li>
+        <a href="{% url 'Quatiers_list' %}">
+            <i class="fas fa-map-marker-alt me-2"></i> Liste des Quartiers
+        </a>
+    </li>
+
+    <!-- Villes -->
+    <li>
+        <a href="{% url 'ville_list' %}">
+            <i class="fas fa-city me-2"></i> Liste des Villes
+        </a>
+    </li>
+
+    <!-- Types de chambres -->
+    <li>
+        <a href="{% url 'liste_typechambres' %}">
+            <i class="fas fa-bed me-2"></i> Types de Chambres
+        </a>
+    </li>
+
+    <!-- Chambres -->
+    <li>
+        <a href="{% url 'liste_chambres' %}">
+            <i class="fas fa-door-open me-2"></i> Chambres
+        </a>
+    </li>
+
+    <!-- Propriétaires -->
+    <li>
+        <a href="{% url 'liste_proprietaire' %}">
+            <i class="fas fa-user-tie me-2"></i> Liste des Propriétaires
+        </a>
+    </li>
+
+    <!-- Paiements -->
+    <li>
+        <a href="{% url 'liste_paiements' %}">
+            <i class="fas fa-money-bill-wave me-2"></i> Paiements
+        </a>
+    </li>
+
+    <!-- Locations -->
+    <li>
+        <a href="{% url 'liste_locations' %}">
+            <i class="fas fa-key me-2"></i> Liste des Locations
+        </a>
+    </li>
+
+    <!-- Fin de Location -->
+    <li>
+        <a href="{% url 'utilisateurs_parchambre' %}">
+            <i class="fas fa-door-closed me-2"></i> Fin de Location
+        </a>
+    </li>
+
+    <!-- Utilisateurs -->
+    <li>
+        <a href="{% url 'liste_utilisateurs' %}">
+            <i class="fas fa-users me-2"></i> Voir les Utilisateurs
+        </a>
+    </li>
+
+    <!-- Messagerie -->
+    <li>
+        <a href="{% url 'message_inbox' %}">
+            <i class="fas fa-envelope me-2"></i> Messagerie
+        </a>
+    </li>
+
+    {% for user in users %}
+    <li>
+        <a href="{% url 'chat_page' receiver_id=user.id %}">
+            <i class="fas fa-comment me-2"></i> Envoyer un message à {{ user.username }}
+        </a>
+    </li>
+    {% endfor %}
+
+    <!-- Création de compte -->
+    <li>
+        <a href="{% url 'signup' %}">
+            <i class="fas fa-user-plus me-2"></i> Création de Compte
+        </a>
+    </li>
+                    liste_chambres
+                    {% for user in users %}
+                        <li><a href="{% url 'send_message   chat_page' receiver_id=user.id %}">{{ user.username }}tttttttttttt</a></li>
+                    {% endfor %}
+                    {# Assurez-vous d'avoir une URL nommée 'signup' et une vue associée, si l'admin peut créer des comptes #}
+                    <li><a href="{% url 'signup'%}"><i class="fas fa-user-plus me-2"></i>Création de compte</a></li>
+
+                {# Menu spécifique pour les Propriétaires #}
+                {% elif request.user.type_utilisateur.nom == 'propriétaire' %}
+                    {# Ajoutez/modifiez ces URLs pour les vues accessibles par les propriétaires #}
+                    {# Vous aviez 'proprietaire_list_maison', vérifiez cette URL #}
+                    <li><a href="{% url 'proprietaire_list_maison'%}"><i class="fas fa-building me-2"></i>Mes biens</a></li>
+                    
+                    <li><a href="#"><i class="fas fa-chart-bar me-2"></i>Statistiques de mes biens</a></li>
+                {# Menu spécifique pour les Locataires #}
+                {% elif request.user.type_utilisateur.nom == 'locataire' %}
+                <li><a href="#"><i class="fas fa-sign-out-alt me-2"></i>Déconnexion</a></li>
+                    <li><a href="#"><i class="fas fa-envelope me-2"></i>Messages</a></li>
+                    <li><a href="{% url 'message-list' %}">tttttttttttt</a></li>
+                    
+                {% else %}
+                    {# Menu par défaut pour type non spécifié (peut être vide ou contenir des liens très basiques) #}
+                    {# <li><a href="#">Service Client</a></li> #}
+                {% endif %}
+                {# Liens communs pour tous les utilisateurs CONNECTÉS (après la partie spécifique du type) #}
+                {# Assurez-vous d'avoir ces URLs nommées, par exemple 'profile' et 'logout' #}
+                <li><a href="#"><i class="fas fa-user me-2"></i>Mon Profil</a></li>
+                <li><a href="#"><i class="fas fa-cog me-2"></i>Paramètres</a></li>{# Lien générique, remplacez par une URL réelle si nécessaire #}
+                <li><a href="#"><i class="fas fa-sign-out-alt me-2"></i>Déconnexion</a></li>
+            {# Menu pour les utilisateurs NON CONNECTÉS ou connectés SANS type_utilisateur défini #}
+            {% else %}
+                {# Assurez-vous d'avoir une URL nommée 'login' #}
+                <li><a href="{% url 'login' %}"><i class="fas fa-sign-in-alt me-2"></i>Connexion</a></li>
+                {# Si la page de signup est publique, sinon elle reste réservée à l'admin via la condition ci-dessus #}
+                {# <li><a href="{% url 'signup'%}">Inscription</a></li> #}
+            {% endif %}
+        </ul>
+    </div>
+    <div class="main-content">
+        <div class="header">
+            {# Affichage de l'en-tête dynamique #}
+            {% if request.user.is_authenticated and request.user.type_utilisateur %}
+                 {# Utilise le filtre 'capfirst' pour mettre la première lettre en majuscule #}
+                 <h1>Tableau de Bord {{ request.user.type_utilisateur.nom|capfirst }}</h1>
+            {% else %}
+                 <h1>Tableau de Bord</h1>{# En-tête par défaut si non connecté #}
+            {% endif %}
+        </div>
+        <div class="content">
+            {% block content %}
+            <div class="mb-4 row">
+                <div class="col-md-12">
+                    <div class="card">
+                        <div class="text-center card-body">
+                            {# Message de bienvenue dynamique #}
+                            {% if request.user.is_authenticated and request.user.type_utilisateur %}
+                                <h2 class="mb-3">Bienvenue, {{ request.user.type_utilisateur.nom|capfirst }} !</h2>
+                                {% if request.user.type_utilisateur.nom == 'admin' %}
+                                    <p class="lead">Cette section affiche les statistiques et les outils d'administration globaux.</p>
+                                {% elif request.user.type_utilisateur.nom == 'propriétaire' %}
+                                <p class="lead">Gérez vos biens et suivez vos réservations ici.</p>
+                                {% if request.user.is_authenticated %}
+                                        <li><a href="{% url 'Pdashboard' %}">Voir le tableau de bord</a></li>
+                                        {% endif %} 
+                                        {% elif request.user.type_utilisateur.nom == 'locataire' %}
+                                        <p class="lead">Consultez vos réservations et trouvez votre prochain logement.</p>
+                                        {% if request.user.is_authenticated %}
+                                        <li><a href="{% url 'locataire_dashboard' request.user.id %}">Voir le tableau de bord</a></li>
+                                        <li><a href="{% url 'Pdashboard' %}">Voir le tableau de bord</a></li>
+                                        {% endif %} 
+                                        {% else %}
+                                        <p class="lead">Bienvenue sur votre tableau de bord.</p>{# Message par défaut pour un type non géré spécifiquement #}
+                                        {% endif %}
+                                        {% else %}
+                                        <h2 class="mb-3">Bienvenue</h2>
+                                        <p class="lead">Veuillez vous connecter pour accéder à votre tableau de bord.</p>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% if request.user.is_authenticated and request.user.type_utilisateur and request.user.type_utilisateur.nom == 'admin' %}
+                        <div class="mt-4 container-fluid">
+                            <h2 class="mb-4 text-center">📊 Tableau de Bord - Gestion Immobilière</h2>
+                            <div class="row g-4">
+                                <!-- Maisons -->
+                                <div class="col-md-4">
+                                    <div class="text-white shadow card bg-primary h-100">
+                                        <div class="card-body d-flex justify-content-between align-items-center">
+                                            <div><h5>Maisons</h5><h2>{{ maisons_count }}</h2></div>
+                                            <i class="fas fa-home fa-2x"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- Locataires -->
+                                <div class="col-md-4">
+                                    <div class="text-white shadow card bg-info h-100">
+                                        <div class="card-body d-flex justify-content-between align-items-center">
+                                            <div><h5>Locataires</h5><h2>{{ locataires_count }}</h2></div>
+                                            <i class="fas fa-users fa-2x"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- Quartiers -->
+                                <div class="col-md-4">
+                                    <div class="text-white shadow card bg-success h-100">
+                                        <div class="card-body d-flex justify-content-between align-items-center">
+                                            <div><h5>Quartiers</h5><h2>{{ quartiers_count }}</h2></div>
+                                            <i class="fas fa-map-marker-alt fa-2x"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- Villes -->
+                                <div class="col-md-4">
+                                    <div class="text-white shadow card bg-secondary h-100">
+                                        <div class="card-body d-flex justify-content-between align-items-center">
+                                            <div><h5>Villes</h5><h2>{{ villes_count }}</h2></div>
+                                            <i class="fas fa-city fa-2x"></i>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Propriétaires -->
+                                <div class="col-md-4">
+                                    <div class="text-white shadow card bg-warning h-100">
+                                        <div class="card-body d-flex justify-content-between align-items-center">
+                                            <div><h5>Propriétaires</h5><h2>{{ proprietaires_count }}</h2></div>
+                                            <i class="fas fa-user-tie fa-2x"></i>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Chambres Libres -->
+                                <div class="col-md-4">
+                                    <div class="text-white shadow card bg-danger h-100">
+                                        <div class="card-body d-flex justify-content-between align-items-center">
+                                            <div><h5>Chambres Disponibles</h5><h2>{{ chambres_libres_count }}</h2></div>
+                                            <i class="fas fa-bed fa-2x"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- 📊 Graphique chambres -->
+                            <div class="mt-5 shadow card">
+                                <div class="card-body">
+                                    <h5 class="card-title">📈 Répartition des Chambres</h5>
+                                    <canvas id="chambresChart" style="max-height: 350px;"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                        {# Note : Les scripts pour les animations et graphiques sont placés en bas de la page pour de meilleures performances #}
+                        {% endif %} {# Fin de la condition pour les statistiques et graphiques admin #}
+                        {% endblock %}
+                    </div>
+                </div>
+    <!-- Scripts -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+    // Animation des compteurs
+    document.querySelectorAll(".counter").forEach(counter => {
+      const target = +counter.getAttribute("data-target");
+      let count = 0;
+      const step = target / 50;
+      const interval = setInterval(() => {
+        count += step;
+        if(count >= target) { counter.textContent = target; clearInterval(interval); }
+        else { counter.textContent = Math.floor(count); }
+      }, 40);
+    });
+
+    // Graphique Chambres
+    new Chart(document.getElementById('chambresChart'), {
+      type: 'pie',
+      data: {
+        labels: {{ chambres_labels|safe }},
+        datasets: [{data: {{ chambres_data|safe }}, backgroundColor:['#28a745','#dc3545']}]
+      }
+    });
+
+    // Graphique Locations
+    new Chart(document.getElementById('locationsChart'), {
+      type: 'bar',
+      data: {
+        labels: {{ locations_labels|safe }},
+        datasets: [{
+          label: 'Nombre de locations',
+          data: {{ locations_data|safe }},
+          backgroundColor:'rgba(54,62,235,0.7)',
+          borderColor:'rgba(54,162,235,1)',
+          borderWidth:1
+        }]
+      },
+      options:{ scales:{ y:{ beginAtZero:true } } }
+    });
+  </script>
+</body>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+{% comment %} <!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Tableau de Bord{% endblock %}</title>{# Rendre ce titre dynamique est une bonne pratique #}
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
+    <style>
+        /* Styles généraux */
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f8f9fa;
+            margin: 0;
+            padding: 0;
+            color: #333;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            background: linear-gradient(135deg, #2c3e50, #4ca1af);
+            color: white;
+            padding: 20px;
+            min-height: 100vh;
+            transition: all 0.3s ease;
+            position: fixed;
+            width: 250px;
+            box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .sidebar h2 {
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 1.5rem;
+            font-weight: 600;
+            padding-bottom: 10px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .sidebar ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .sidebar li {
+            margin-bottom: 15px;
+            transition: transform 0.3s ease;
+        }
+
+        .sidebar li:hover {
+            transform: translateX(5px);
+        }
+
+        .sidebar a {
+            color: white;
+            text-decoration: none;
+            font-size: 1.1rem;
+            display: block;
+            padding: 10px 15px;
+            border-radius: 5px;
+            transition: all 0.3s ease;
+            background-color: rgba(255, 255, 255, 0.05);
+        }
+
+        .sidebar a:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+            transform: scale(1.02);
+        }
+
+        /* Main Content */
+        .main-content {
+            margin-left: 250px;
+            padding: 20px;
+            transition: margin-left 0.3s ease;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 20px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            margin-bottom: 30px;
+            border-radius: 10px;
+            transition: all 0.3s ease;
+        }
+
+        .header:hover {
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+        }
+
+        .header h1 {
+            margin: 0;
+            font-size: 2.2rem;
+            font-weight: 700;
+            text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Cartes */
+        .card {
+            border: none;
+            border-radius: 12px;
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+            margin-bottom: 25px;
+            overflow: hidden;
+        }
+
+        .card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 12px 25px rgba(0, 0, 0, 0.15);
+        }
+
+        .card-body {
+            padding: 25px;
+        }
+
+        .card-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: #333;
+        }
+
+        /* Cartes statistiques */
+        .stat-card {
+            transition: all 0.4s ease;
+            border: none;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        .bg-gradient-primary {
+            background: linear-gradient(45deg, #0d6efd, #0a58ca);
+        }
+
+        .bg-gradient-success {
+            background: linear-gradient(45deg, #198754, #146c43);
+        }
+
+        .bg-gradient-info {
+            background: linear-gradient(45deg, #0dcaf0, #0997b3);
+        }
+
+        .bg-gradient-warning {
+            background: linear-gradient(45deg, #ffc107, #e0a800);
+        }
+
+        .icon-circle {
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+
+        .stat-card:hover .icon-circle {
+            transform: rotate(20deg) scale(1.1);
+        }
+
+        .display-6 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            animation: countUp 0.8s ease-out forwards;
+            margin: 0;
+        }
+
+        /* Animation pour les nombres */
+        @keyframes countUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Graphiques */
+        .chart-container {
+            position: relative;
+            height: 350px;
+            width: 100%;
+            margin-top: 20px;
+        }
+
+        /* Boutons et interactions */
+        .btn-custom {
+            border-radius: 8px;
+            padding: 10px 20px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .btn-custom:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 100%;
+                min-height: auto;
+                position: relative;
+                margin-bottom: 20px;
+            }
+            .main-content {
+                margin-left: 0;
+            }
+            .header h1 {
+                font-size: 1.8rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="sidebar">
+        <h2>{{ user.username }}</h2>
+        <ul>
+            {% if request.user.is_authenticated and request.user.type_utilisateur %}
+                {% if request.user.type_utilisateur.nom == 'admin' %}
+                    {# Assurez-vous que ces URLs nommées sont définies dans votre urls.py pour les vues accessibles par l'admin #}
+                    <li><a href="{% url 'maison_liste' %}"><i class="fas fa-home me-2"></i>Listes des Maisons</a></li>
+                    {# Attention à l'orthographe 'Quatiers_list' vs 'Quartiers_list' dans votre urls.py également #}
+                    <li><a href="{% url 'Quatiers_list' %}"><i class="fas fa-map-marker-alt me-2"></i>Listes des Quartiers</a></li>
+                    <li><a href="{% url 'ville_list' %}"><i class="fas fa-city me-2"></i>Listes des villes</a></li>
+                    <li><a href="{% url 'liste_typechambres' %}"><i class="fas fa-bed me-2"></i>Type de chambre</a></li>
+                    <li><a href="{% url 'liste_chambres' %}"><i class="fas fa-door-open me-2"></i>Chambre</a></li>
+                    <li><a href="{% url 'liste_proprietaire' %}"><i class="fas fa-user-tie me-2"></i>Listes des Propriétaires</a></li>
+                    <li><a href="{% url 'liste_paiements' %}"><i class="fas fa-money-bill-wave me-2"></i>Paiement</a></li>
+                    <li><a href="{% url 'liste_locations' %}"><i class="fas fa-key me-2"></i>Liste de location</a></li>
+                    <li><a href="{% url 'utilisateurs_parchambre'%}"> Fin location </a></li>
+                    <li><a href="{% url 'liste_utilisateurs'%}">Voir les utilisateur</a></li>
+
+                    <li><a href="{% url 'message-list' %}">tttttttttttt</a></li>
+                    liste_chambres
+                    {% for user in users %}
+                        <li><a href="{% url 'send_message   chat_page' receiver_id=user.id %}">{{ user.username }}tttttttttttt</a></li>
+                    {% endfor %}
+                    {# Assurez-vous d'avoir une URL nommée 'signup' et une vue associée, si l'admin peut créer des comptes #}
+                    <li><a href="{% url 'signup'%}"><i class="fas fa-user-plus me-2"></i>Création de compte</a></li>
+
+                {# Menu spécifique pour les Propriétaires #}
+                {% elif request.user.type_utilisateur.nom == 'propriétaire' %}
+                    {# Ajoutez/modifiez ces URLs pour les vues accessibles par les propriétaires #}
+                    {# Vous aviez 'proprietaire_list_maison', vérifiez cette URL #}
+                    <li><a href="{% url 'proprietaire_list_maison'%}"><i class="fas fa-building me-2"></i>Mes biens</a></li>
+                    
+                    <li><a href="#"><i class="fas fa-chart-bar me-2"></i>Statistiques de mes biens</a></li>
+                {# Menu spécifique pour les Locataires #}
+                {% elif request.user.type_utilisateur.nom == 'locataire' %}
+                <li><a href="#"><i class="fas fa-sign-out-alt me-2"></i>Déconnexion</a></li>
+                    <li><a href="#"><i class="fas fa-envelope me-2"></i>Messages</a></li>
+                    <li><a href="{% url 'message-list' %}">tttttttttttt</a></li>
+                    
+                {% else %}
+                    {# Menu par défaut pour type non spécifié (peut être vide ou contenir des liens très basiques) #}
+                    {# <li><a href="#">Service Client</a></li> #}
+                {% endif %}
+                {# Liens communs pour tous les utilisateurs CONNECTÉS (après la partie spécifique du type) #}
+                {# Assurez-vous d'avoir ces URLs nommées, par exemple 'profile' et 'logout' #}
+                <li><a href="#"><i class="fas fa-user me-2"></i>Mon Profil</a></li>
+                <li><a href="#"><i class="fas fa-cog me-2"></i>Paramètres</a></li>{# Lien générique, remplacez par une URL réelle si nécessaire #}
+                <li><a href="#"><i class="fas fa-sign-out-alt me-2"></i>Déconnexion</a></li>
+            {# Menu pour les utilisateurs NON CONNECTÉS ou connectés SANS type_utilisateur défini #}
+            {% else %}
+                {# Assurez-vous d'avoir une URL nommée 'login' #}
+                <li><a href="{% url 'login' %}"><i class="fas fa-sign-in-alt me-2"></i>Connexion</a></li>
+                {# Si la page de signup est publique, sinon elle reste réservée à l'admin via la condition ci-dessus #}
+                {# <li><a href="{% url 'signup'%}">Inscription</a></li> #}
+            {% endif %}
+        </ul>
+    </div>
+    <div class="main-content">
+        <div class="header">
+            {# Affichage de l'en-tête dynamique #}
+            {% if request.user.is_authenticated and request.user.type_utilisateur %}
+                 {# Utilise le filtre 'capfirst' pour mettre la première lettre en majuscule #}
+                 <h1>Tableau de Bord {{ request.user.type_utilisateur.nom|capfirst }}</h1>
+            {% else %}
+                 <h1>Tableau de Bord</h1>{# En-tête par défaut si non connecté #}
+            {% endif %}
+        </div>
+        <div class="content">
+            {% block content %}
+            <div class="mb-4 row">
+                <div class="col-md-12">
+                    <div class="card">
+                        <div class="text-center card-body">
+                            {# Message de bienvenue dynamique #}
+                            {% if request.user.is_authenticated and request.user.type_utilisateur %}
+                                <h2 class="mb-3">Bienvenue, {{ request.user.type_utilisateur.nom|capfirst }} !</h2>
+                                {% if request.user.type_utilisateur.nom == 'admin' %}
+                                    <p class="lead">Cette section affiche les statistiques et les outils d'administration globaux.</p>
+                                {% elif request.user.type_utilisateur.nom == 'propriétaire' %}
+                                <p class="lead">Gérez vos biens et suivez vos réservations ici.</p>
+                                {% if request.user.is_authenticated %}
+                                        <li><a href="{% url 'Pdashboard' %}">Voir le tableau de bord</a></li>
+                                        {% endif %} 
+                                        {% elif request.user.type_utilisateur.nom == 'locataire' %}
+                                        <p class="lead">Consultez vos réservations et trouvez votre prochain logement.</p>
+                                        {% if request.user.is_authenticated %}
+                                        <li><a href="{% url 'locataire_dashboard' request.user.id %}">Voir le tableau de bord</a></li>
+                                        <li><a href="{% url 'Pdashboard' %}">Voir le tableau de bord</a></li>
+                                        {% endif %} 
+                                        {% else %}
+                                        <p class="lead">Bienvenue sur votre tableau de bord.</p>{# Message par défaut pour un type non géré spécifiquement #}
+                                        {% endif %}
+                                        {% else %}
+                                        <h2 class="mb-3">Bienvenue</h2>
+                                        <p class="lead">Veuillez vous connecter pour accéder à votre tableau de bord.</p>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% if request.user.is_authenticated and request.user.type_utilisateur and request.user.type_utilisateur.nom == 'admin' %}
+                        <div class="mt-4 container-fluid">
+                            <h2 class="mb-4 text-center">📊 Tableau de Bord - Gestion Immobilière</h2>
+                            <div class="row g-4">
+                                <!-- Maisons -->
+                                <div class="col-md-4">
+                                    <div class="text-white shadow card bg-primary h-100">
+                                        <div class="card-body d-flex justify-content-between align-items-center">
+                                            <div><h5>Maisons</h5><h2>{{ maisons_count }}</h2></div>
+                                            <i class="fas fa-home fa-2x"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- Locataires -->
+                                <div class="col-md-4">
+                                    <div class="text-white shadow card bg-info h-100">
+                                        <div class="card-body d-flex justify-content-between align-items-center">
+                                            <div><h5>Locataires</h5><h2>{{ locataires_count }}</h2></div>
+                                            <i class="fas fa-users fa-2x"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- Quartiers -->
+                                <div class="col-md-4">
+                                    <div class="text-white shadow card bg-success h-100">
+                                        <div class="card-body d-flex justify-content-between align-items-center">
+                                            <div><h5>Quartiers</h5><h2>{{ quartiers_count }}</h2></div>
+                                            <i class="fas fa-map-marker-alt fa-2x"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- Villes -->
+                                <div class="col-md-4">
+                                    <div class="text-white shadow card bg-secondary h-100">
+                                        <div class="card-body d-flex justify-content-between align-items-center">
+                                            <div><h5>Villes</h5><h2>{{ villes_count }}</h2></div>
+                                            <i class="fas fa-city fa-2x"></i>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Propriétaires -->
+                                <div class="col-md-4">
+                                    <div class="text-white shadow card bg-warning h-100">
+                                        <div class="card-body d-flex justify-content-between align-items-center">
+                                            <div><h5>Propriétaires</h5><h2>{{ proprietaires_count }}</h2></div>
+                                            <i class="fas fa-user-tie fa-2x"></i>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Chambres Libres -->
+                                <div class="col-md-4">
+                                    <div class="text-white shadow card bg-danger h-100">
+                                        <div class="card-body d-flex justify-content-between align-items-center">
+                                            <div><h5>Chambres Disponibles</h5><h2>{{ chambres_libres_count }}</h2></div>
+                                            <i class="fas fa-bed fa-2x"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- 📊 Graphique chambres -->
+                            <div class="mt-5 shadow card">
+                                <div class="card-body">
+                                    <h5 class="card-title">📈 Répartition des Chambres</h5>
+                                    <canvas id="chambresChart" style="max-height: 350px;"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                        {# Note : Les scripts pour les animations et graphiques sont placés en bas de la page pour de meilleures performances #}
+                        {% endif %} {# Fin de la condition pour les statistiques et graphiques admin #}
+                        {% endblock %}
+                    </div>
+                </div>
+    <!-- Scripts -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+    // Animation des compteurs
+    document.querySelectorAll(".counter").forEach(counter => {
+      const target = +counter.getAttribute("data-target");
+      let count = 0;
+      const step = target / 50;
+      const interval = setInterval(() => {
+        count += step;
+        if(count >= target) { counter.textContent = target; clearInterval(interval); }
+        else { counter.textContent = Math.floor(count); }
+      }, 40);
+    });
+
+    // Graphique Chambres
+    new Chart(document.getElementById('chambresChart'), {
+      type: 'pie',
+      data: {
+        labels: {{ chambres_labels|safe }},
+        datasets: [{data: {{ chambres_data|safe }}, backgroundColor:['#28a745','#dc3545']}]
+      }
+    });
+
+    // Graphique Locations
+    new Chart(document.getElementById('locationsChart'), {
+      type: 'bar',
+      data: {
+        labels: {{ locations_labels|safe }},
+        datasets: [{
+          label: 'Nombre de locations',
+          data: {{ locations_data|safe }},
+          backgroundColor:'rgba(54,62,235,0.7)',
+          borderColor:'rgba(54,162,235,1)',
+          borderWidth:1
+        }]
+      },
+      options:{ scales:{ y:{ beginAtZero:true } } }
+    });
+  </script>
+</body>
+</html>
+ {% endcomment %}

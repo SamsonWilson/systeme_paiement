@@ -1,0 +1,656 @@
+{% extends "accuiel/base.html" %}
+{% block content %}
+ <style>
+    /* VARIABLES (unchanged - they are good!) */
+    :root {
+    --primary-color: #007bff;
+    --secondary-color: #6c757d;
+    --light-gray: #f8f9fa;
+    --medium-gray: #e9ecef;
+    --dark-gray: #495057;
+    --text-color: #343a40;
+    --white: #ffffff;
+    --success-color: #25c36f;
+    --danger-color: #dc3545;
+    --info-color: #17a2b8;
+    --warning-color: #ffc107;
+    --border-radius: 0.6rem;
+    --box-shadow-light: 0 4px 12px rgba(0, 0, 0, 0.08); /* Lighter shadow */
+    --box-shadow-focus: 0 0 0 0.25rem rgba(0, 123, 255, .35); /* Slightly stronger focus shadow */
+    }
+
+    /* GENERAL BODY & PAGE CONTAINER */
+    body {
+        font-family: 'Inter', Arial, 'Segoe UI', Verdana, sans-serif;
+        background-color: var(--light-gray);
+        color: var(--text-color);
+        line-height: 1.6; /* Slightly adjusted line-height for better readability */
+        margin: 0;
+        padding: 20px; /* Add some padding around the page */
+    }
+    .page-container.form-page {
+        margin: 35px auto; /* Centered with vertical margin */
+        padding: 40px; /* Increased padding inside the form container */
+        background-color: var(--white);
+        border-radius: var(--border-radius);
+        box-shadow: var(--box-shadow-light); /* Using the new lighter shadow variable */
+        max-width: 800px; /* Slightly reduced max-width for a more compact look on large screens */
+        border: 1px solid var(--medium-gray); /* Subtle border for definition */
+    }
+
+    /* FORM TITLE */
+    .form-title {
+        color: var(--primary-color);
+        font-size: 2.2em; /* Slightly larger title */
+        font-weight: 700;
+        margin-bottom: 1.2em; /* Adjusted margin */
+        text-align: center;
+        letter-spacing: -.02em; /* Tighter letter-spacing for titles */
+        position: relative;
+        padding-bottom: 0.5em; /* Space for an underline effect */
+    }
+    .form-title::after { /* Decorative underline */
+        content: '';
+        position: absolute;
+        left: 50%;
+        bottom: 0;
+        transform: translateX(-50%);
+        width: 60px;
+        height: 4px;
+        background-color: var(--primary-color);
+        border-radius: 2px;
+    }
+
+    /* FORM SECTIONS */
+    .elegant-form .form-section {
+        margin-bottom: 2.5em; /* Increased space between sections */
+        padding-bottom: 1.8em; /* Increased padding inside section */
+        border-bottom: 1px dashed var(--medium-gray); /* Dashed border for a softer look */
+    }
+    .elegant-form .form-section:last-child {
+        border-bottom: none;
+        margin-bottom: 1.5em; /* Adjusted last section margin */
+        padding-bottom: 0;
+    }
+
+    /* SECTION HEADING */
+    .elegant-form .section-heading {
+        color: var(--dark-gray);
+        font-size: 1.5em; /* Slightly larger section headings */
+        font-weight: 600; /* Slightly less bold for harmony */
+        margin-top: 0;
+        margin-bottom: 1.5em; /* Increased bottom margin */
+        display: flex;
+        align-items: center;
+        gap: .8em; /* Increased gap for icons */
+        padding-bottom: 0.3em; /* Padding for potential bottom border */
+        border-bottom: 1px solid rgba(0, 123, 255, 0.1); /* Subtle border under heading */
+    }
+    .elegant-form .section-heading i {
+        color: var(--primary-color);
+        font-size: 1.2em; /* Slightly smaller icon relative to text */
+        background-color: rgba(0, 123, 255, 0.1); /* Light background for icon */
+        padding: 6px 9px;
+        border-radius: var(--border-radius);
+    }
+
+    /* FORM GRID & GROUP */
+    .elegant-form .form-row {
+        display: flex;
+        flex-wrap: wrap;
+        margin-right: -10px; /* Adjusted margins */
+        margin-left: -10px;
+    }
+    .elegant-form .form-group {
+        margin-bottom: 1.6em; /* Increased bottom margin for form groups */
+        padding-right: 10px; /* Adjusted padding for better spacing */
+        padding-left: 10px;
+        flex: 1; /* Allow flex items to grow and shrink */
+        min-width: 280px; /* Minimum width before wrapping */
+    }
+    .elegant-form .col-md-6 {
+        flex: 0 0 50%;
+        max-width: 50%;
+        /* padding-right: 15px; */ /* Removed redundant padding due to form-group padding */
+        /* padding-left: 15px; */
+    }
+
+    /* LABEL & INPUT */
+    .elegant-form label {
+        display: block; /* Make labels block level */
+        margin-bottom: 0.6rem; /* Increased margin for labels */
+        font-weight: 600; /* Slightly bolder labels */
+        color: var(--dark-gray); /* Darker label color */
+        font-size: 0.95em;
+    }
+    .elegant-form .form-control {
+        display: block;
+        width: 100%;
+        padding: 0.85rem 1rem; /* Increased padding for inputs */
+        font-size: 1rem;
+        font-weight: 400;
+        line-height: 1.5;
+        color: var(--text-color);
+        background-color: var(--white);
+        background-clip: padding-box;
+        border: 1px solid var(--medium-gray);
+        border-radius: var(--border-radius);
+        transition: border-color .2s ease-in-out, box-shadow .2s ease-in-out, background-color .2s ease-in-out; /* Smoother transitions */
+    }
+    .elegant-form .form-control:focus {
+        border-color: var(--primary-color);
+        outline: 0;
+        box-shadow: var(--box-shadow-focus); /* Using new focus shadow variable */
+        background-color: var(--light-gray); /* Subtle background change on focus */
+    }
+    .elegant-form .form-control::placeholder { /* Placeholder styling */
+        color: var(--secondary-color);
+        opacity: 0.7;
+    }
+
+    .elegant-form select.form-control {
+        /* Custom arrow for select - ensures consistent look across browsers */
+        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23343a40' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M2 5l6 6 6-6'/%3e%3c/svg%3e");
+        background-repeat: no-repeat;
+        background-position: right 1rem center; /* Adjusted arrow position */
+        background-size: 18px 14px; /* Slightly larger arrow */
+        padding-right: 2.5rem; /* Ensure text doesn't overlap arrow */
+    }
+    .elegant-form textarea.form-control {
+        min-height: 120px; /* Increased min-height for text areas */
+        resize: vertical; /* Allow vertical resizing */
+    }
+    .elegant-form .form-error {
+        font-size: 0.88em; /* Slightly smaller error text */
+        color: var(--danger-color);
+        margin-top: 0.5rem; /* Increased margin for errors */
+        font-weight: 500;
+    }
+    .elegant-form .alert-danger { /* Style for non-field errors */
+        background-color: #f8d7da;
+        color: #721c24;
+        border: 1px solid #f5c6cb;
+        padding: 1rem 1.25rem;
+        margin-bottom: 1.5rem;
+        border-radius: var(--border-radius);
+        font-weight: 500;
+    }
+
+    /* ACTIONS & BUTTON */
+    .elegant-form .form-actions {
+        padding-top: 2.2em; /* More padding above the button */
+        text-align: center; /* Center the button */
+    }
+    .elegant-form .btn.btn-primary {
+        color: #fff;
+        background-color: var(--primary-color);
+        border-color: var(--primary-color);
+        font-weight: 600; /* Bolder button text */
+        padding: 0.9rem 1.8rem; /* Larger button padding */
+        font-size: 1.05rem; /* Slightly larger font size */
+        border-radius: var(--border-radius);
+        box-shadow: 0 4px 10px rgba(0, 123, 255, 0.2); /* Subtle shadow for the button */
+        transition: all .25s ease-in-out; /* All transitions for a smoother hover */
+    }
+    .elegant-form .btn.btn-primary:hover {
+        background-color: #0056b3;
+        border-color: #004f9a;
+        transform: translateY(-2px); /* Lift effect on hover */
+        box-shadow: 0 6px 15px rgba(0, 123, 255, 0.3); /* Enhanced shadow on hover */
+    }
+    .elegant-form .btn.btn-primary:focus {
+        box-shadow: 0 0 0 0.25rem rgba(0, 123, 255, .5), 0 4px 10px rgba(0, 123, 255, 0.2); /* Combine focus and shadow */
+    }
+    .elegant-form .btn.btn-primary i {
+        margin-right: .6em; /* Increased space for icon */
+        font-size: 1.1em;
+    }
+
+    /* === RESPONSIVE DESIGN === */
+    @media (max-width: 992px) { /* Adjust for medium screens */
+        .page-container.form-page {
+            max-width: 700px;
+            padding: 30px;
+        }
+        .elegant-form .form-title { font-size: 2em; }
+        .elegant-form .section-heading { font-size: 1.35em; }
+    }
+
+    @media (max-width: 768px) { /* Adjust for small screens (tablets & mobiles) */
+        .elegant-form .col-md-6 {
+            flex: 0 0 100%; /* Full width for columns on mobile */
+            max-width: 100%;
+            padding-right: 0;
+            padding-left: 0;
+        }
+        .elegant-form .form-row {
+            margin-right: 0;
+            margin-left: 0;
+        }
+        .elegant-form .form-group {
+            padding-right: 0;
+            padding-left: 0;
+            margin-bottom: 1.2em; /* Slightly less margin on mobile */
+        }
+        .page-container.form-page {
+            padding: 25px 20px; /* Reduced padding on mobile */
+            margin: 20px auto;
+            box-shadow: none; /* No shadow on mobile for a cleaner look */
+            border: none; /* No border on mobile */
+        }
+        body {
+            padding: 10px;
+        }
+        .form-title { font-size: 1.8em; margin-bottom: 1em; }
+        .form-title::after { width: 40px; height: 3px; }
+        .elegant-form .section-heading { font-size: 1.25em; margin-bottom: 1em; gap: .6em; }
+        .elegant-form .section-heading i { padding: 4px 7px; font-size: 1.1em; }
+        .elegant-form .btn.btn-primary {
+            padding: 0.8rem 1.5rem;
+            font-size: 0.95rem;
+            width: 100%; /* Full width button on mobile */
+            box-shadow: none;
+        }
+        .elegant-form .btn.btn-primary:hover {
+            transform: none; /* Remove lift effect on mobile for consistency */
+            box-shadow: none;
+        }
+    }
+</style>
+
+
+<div class="page-container form-page">
+  <h1 class="form-title">Formulaire Fin de Location</h1>
+
+  <form method="post" enctype="multipart/form-data" class="elegant-form">
+    {% csrf_token %}
+    {{ form.media }}
+    {% if form.non_field_errors %}
+      <div class="alert alert-danger">{{ form.non_field_errors }}</div>
+    {% endif %}
+
+    <!-- Section 1 : Informations Location -->
+    <div class="form-section">
+      <h2 class="section-heading">
+        <i class="fa-solid fa-location-dot"></i> Informations Location <!-- Changed icon to a more relevant one -->
+      </h2>
+      <div class="form-row">
+        <div class="form-group col-md-6">
+          <label for="id_location_display">Location</label>
+          <input type="text" id="id_location_display" class="form-control" value="{{ location }}" readonly>
+        </div>
+        <div class="form-group col-md-6">
+          {{ form.date_fin_location.label_tag }}
+          {{ form.date_fin_location|add_class:"form-control" }}
+          {% if form.date_fin_location.errors %}
+            <div class="form-error">{{ form.date_fin_location.errors|striptags }}</div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <!-- Section 2 : Détails de Fin -->
+    <div class="form-section">
+      <h2 class="section-heading">
+        <i class="fa-solid fa-receipt"></i> Détails de Fin <!-- Changed icon to a more relevant one -->
+      </h2>
+      <div class="form-group">
+        {{ form.raison_fin.label_tag }}
+        {{ form.raison_fin|add_class:"form-control" }}
+        {% if form.raison_fin.errors %}
+          <div class="form-error">{{ form.raison_fin.errors|striptags }}</div>
+        {% endif %}
+      </div>
+      <div class="form-row">
+        <div class="form-group col-md-6">
+          {{ form.montant_restant.label_tag }}
+          {{ form.montant_restant|add_class:"form-control" }}
+          {% if form.montant_restant.errors %}
+            <div class="form-error">{{ form.montant_restant.errors|striptags }}</div>
+          {% endif %}
+        </div>
+        <div class="form-group col-md-6">
+          {{ form.montant_remboursement_caution.label_tag }}
+          {{ form.montant_remboursement_caution|add_class:"form-control" }}
+          {% if form.montant_remboursement_caution.errors %}
+            <div class="form-error">{{ form.montant_remboursement_caution.errors|striptags }}</div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <!-- Section 3 : Pièces Jointes -->
+    <div class="form-section">
+      <h2 class="section-heading">
+        <i class="fa-solid fa-file-upload"></i> Pièces Jointes <!-- Changed icon for upload -->
+      </h2>
+      <div class="form-group">
+        {{ form.image_contrat.label_tag }}
+        {{ form.image_contrat|add_class:"form-control-file" }} <!-- Custom class for file input if needed -->
+        {% if form.image_contrat.errors %}
+          <div class="form-error">{{ form.image_contrat.errors|striptags }}</div>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Bouton Soumettre -->
+    <div class="form-actions">
+      <button type="submit" class="btn btn-primary">
+        <i class="fa-solid fa-save"></i> Enregistrer Fin Location <!-- Changed icon to save -->
+      </button>
+    </div>
+  </form>
+</div>
+
+<!-- === SCRIPT JAVASCRIPT === -->
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const montantRestantInput = document.querySelector("#id_montant_restant");
+    const montantRemboursementInput = document.querySelector("#id_montant_remboursement_caution");
+
+    // Utilisez la valeur passée par le contexte si elle est disponible
+    const caution = parseFloat("{{ montant_caution|default:'0' }}");
+
+    if (montantRemboursementInput) {
+        // Définir la valeur initiale seulement si le champ est vide ou non défini par l'utilisateur
+        if (!montantRemboursementInput.value || parseFloat(montantRemboursementInput.value) === 0) {
+             montantRemboursementInput.value = caution.toFixed(2);
+        }
+    }
+
+    if (montantRestantInput && montantRemboursementInput) { // S'assurer que les deux éléments existent
+        montantRestantInput.addEventListener("input", function () {
+            const restant = parseFloat(montantRestantInput.value) || 0;
+            // La somme remboursée est la caution initiale moins ce qui reste dû
+            const remboursement = (caution - restant);
+            // Assurez-vous que le remboursement ne soit pas négatif
+            montantRemboursementInput.value = (remboursement >= 0 ? remboursement : 0).toFixed(2);
+        });
+    }
+});
+</script>
+{% endblock %}
+
+
+{% comment %} {% extends "accuiel/base.html" %}
+{% block content %}
+ <style>
+    /* ... votre CSS reste inchangé ... */
+    :root {
+    --primary-color: #007bff;
+    --secondary-color: #6c757d;
+    --light-gray: #f8f9fa;
+    --medium-gray: #e9ecef;
+    --dark-gray: #495057;
+    --text-color: #343a40;
+    --white: #ffffff;
+    --success-color: #25c36f;
+    --danger-color: #dc3545;
+    --info-color: #17a2b8;
+    --warning-color: #ffc107;
+    --border-radius: 0.6rem;
+    }
+    body {
+    font-family: 'Inter', Arial, 'Segoe UI', Verdana, sans-serif;
+    background-color: var(--light-gray);
+    color: var(--text-color);
+    line-height: 1.64;
+    }
+    .page-container.form-page {
+    margin: 35px auto 20px auto;
+    padding: 32px 28px;
+    background-color: var(--white);
+    border-radius: var(--border-radius);
+    box-shadow: 0 7px 24px 0 rgba(60,80,100,0.11);
+    max-width: 940px; /* Ajuste largeur max du form */
+    }
+    .form-title {
+    color: var(--primary-color);
+    font-size: 2.1em;
+    font-weight: 700;
+    margin-bottom: 1.1em;
+    text-align: center;
+    letter-spacing: -.01em;
+    }
+    .elegant-form .form-section {
+    margin-bottom: 2.1em;
+    padding-bottom: 1.4em;
+    border-bottom: 1.5px solid var(--medium-gray);
+    }
+    .elegant-form .form-section:last-child {
+    border-bottom: none;
+    margin-bottom: 1.4em;
+    padding-bottom: 0;
+    }
+    .elegant-form .section-heading {
+    color: var(--dark-gray);
+    font-size: 1.4em;
+    font-weight: 700;
+    margin-top: 0;
+    margin-bottom: 1.2em;
+    display: flex;
+    align-items: center;
+    gap: .5em;
+    }
+    .elegant-form .section-heading i {
+    color: var(--primary-color);
+    font-size: 1.4em;
+    }
+    /* Form Grid & Group */
+    .elegant-form .form-row {
+    display: flex;
+    flex-wrap: wrap;
+    margin-right: -15px;
+    margin-left: -15px;
+    }
+    .elegant-form .form-group {
+    margin-bottom: 1.4em;
+    }
+    .elegant-form .col-md-6 {
+    flex: 0 0 50%;
+    max-width: 50%;
+    padding-right: 15px;
+    padding-left: 15px;
+    }
+    /* Label & Input */
+    .elegant-form label {
+    display: inline-block;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+    color: var(--secondary-color);
+    }
+    .elegant-form .form-control {
+    display: block;
+    width: 100%;
+    padding: 0.7rem 0.8rem;
+    font-size: 1rem;
+    font-weight: 400;
+    line-height: 1.5;
+    color: var(--text-color);
+    background-color: var(--white);
+    background-clip: padding-box;
+    border: 1px solid var(--medium-gray);
+    appearance: none;
+    border-radius: var(--border-radius);
+    transition: border-color .15s ease-in-out, box-shadow .15s ease-in-out;
+    }
+    .elegant-form .form-control:focus {
+    color: var(--text-color);
+    background-color: var(--white);
+    border-color: var(--primary-color);
+    outline: 0;
+    box-shadow: 0 0 0 0.25rem rgba(0, 123, 255, .25);
+    }
+    .elegant-form select.form-control {
+    padding-right: 2.25rem;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23343a40' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M2 5l6 6 6-6'/%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right 0.75rem center;
+    background-size: 16px 12px;
+    }
+    .elegant-form textarea.form-control {
+    min-height: 90px;
+    }
+    .elegant-form .form-error {
+    font-size: 0.9em;
+    color: var(--danger-color);
+    margin-top: 0.4rem;
+    }
+    /* Actions & Button */
+    .elegant-form .form-actions {
+    padding-top: 1.8em;
+    text-align: right; /* Aligne bouton à droite */
+    }
+    .elegant-form .btn.btn-primary {
+    color: #fff;
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
+    display: inline-block;
+    font-weight: 500;
+    line-height: 1.5;
+    text-align: center;
+    text-decoration: none;
+    vertical-align: middle;
+    cursor: pointer;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    user-select: none;
+    background-color: transparent;
+    border: 1px solid transparent;
+    padding: 0.75rem 1.25rem;
+    font-size: 1rem;
+    border-radius: var(--border-radius);
+    transition: color .15s ease-in-out, background-color .15s ease-in-out, border-color .15s ease-in-out, box-shadow .15s ease-in-out;
+    }
+    .elegant-form .btn.btn-primary:hover {
+    color: #fff;
+    background-color: #0056b3;
+    border-color: #004f9a;
+    }
+    .elegant-form .btn.btn-primary:focus {
+    box-shadow: 0 0 0 0.25rem rgba(0, 123, 255, .5);
+    }
+    .elegant-form .btn.btn-primary i { margin-right: .4em; }
+    @media (max-width: 768px) {
+    .elegant-form .col-md-6 { flex: 0 0 100%; max-width: 100%; } /* 1 colonne sur mobile */
+    .page-container.form-page { padding: 22px 15px; }
+    .form-title { font-size: 1.8em; }
+    .elegant-form .section-heading { font-size: 1.25em; margin-bottom: 1em; }
+    }
+</style>
+
+
+<div class="page-container form-page">
+  <h1 class="form-title">Formulaire Fin de Location</h1>
+
+  <form method="post" enctype="multipart/form-data" class="elegant-form">
+    {% csrf_token %}
+    {{ form.media }} 
+    {% if form.non_field_errors %}
+      <div class="alert alert-danger">{{ form.non_field_errors }}</div>
+    {% endif %}
+
+    <!-- Section 1 : Informations Location -->
+    <div class="form-section">
+      <h2 class="section-heading">
+        <i class="fa-solid fa-location-pin"></i> Informations Location
+      </h2>
+      <div class="form-row">
+        <div class="form-group col-md-6">
+          <label for="id_location_display">Location</label>
+          <input type="text" id="id_location_display" class="form-control" value="{{ location }}" readonly>
+        </div>
+        <div class="form-group col-md-6">
+          {{ form.date_fin_location.label_tag }}
+          {{ form.date_fin_location }}
+          {% if form.date_fin_location.errors %}
+            <div class="form-error">{{ form.date_fin_location.errors|striptags }}</div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <!-- Section 2 : Détails de Fin -->
+    <div class="form-section">
+      <h2 class="section-heading">
+        <i class="fa-solid fa-file-alt"></i> Détails de Fin
+      </h2>
+      <div class="form-group">
+        {{ form.raison_fin.label_tag }}
+        {{ form.raison_fin }}
+        {% if form.raison_fin.errors %}
+          <div class="form-error">{{ form.raison_fin.errors|striptags }}</div>
+        {% endif %}
+      </div>
+      <div class="form-row">
+        <div class="form-group col-md-6">
+          {{ form.montant_restant.label_tag }}
+          {{ form.montant_restant }}
+          {% if form.montant_restant.errors %}
+            <div class="form-error">{{ form.montant_restant.errors|striptags }}</div>
+          {% endif %}
+        </div>
+        <div class="form-group col-md-6">
+          {{ form.montant_remboursement_caution.label_tag }}
+          {{ form.montant_remboursement_caution }}
+          {% if form.montant_remboursement_caution.errors %}
+            <div class="form-error">{{ form.montant_remboursement_caution.errors|striptags }}</div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <!-- Section 3 : Pièces Jointes -->
+    <div class="form-section">
+      <h2 class="section-heading">
+        <i class="fa-solid fa-paperclip"></i> Pièces Jointes
+      </h2>
+      <div class="form-group">
+        {{ form.image_contrat.label_tag }}
+        {{ form.image_contrat }}
+        {% if form.image_contrat.errors %}
+          <div class="form-error">{{ form.image_contrat.errors|striptags }}</div>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Bouton Soumettre -->
+    <div class="form-actions">
+      <button type="submit" class="btn btn-primary">
+        <i class="fa-solid fa-check-circle"></i> Enregistrer Fin Location
+      </button>
+    </div>
+  </form>
+</div>
+
+<!-- === SCRIPT JAVASCRIPT === -->
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const montantRestantInput = document.querySelector("#id_montant_restant");
+    const montantRemboursementInput = document.querySelector("#id_montant_remboursement_caution");
+
+    // Utilisez la valeur passée par le contexte si elle est disponible
+    const caution = parseFloat("{{ montant_caution|default:'0' }}");
+
+    if (montantRemboursementInput) {
+        // Définir la valeur initiale seulement si le champ est vide ou non défini par l'utilisateur
+        if (!montantRemboursementInput.value || parseFloat(montantRemboursementInput.value) === 0) {
+             montantRemboursementInput.value = caution.toFixed(2);
+        }
+    }
+
+    if (montantRestantInput && montantRemboursementInput) { // S'assurer que les deux éléments existent
+        montantRestantInput.addEventListener("input", function () {
+            const restant = parseFloat(montantRestantInput.value) || 0;
+            // La somme remboursée est la caution initiale moins ce qui reste dû
+            const remboursement = (caution - restant);
+            // Assurez-vous que le remboursement ne soit pas négatif
+            montantRemboursementInput.value = (remboursement >= 0 ? remboursement : 0).toFixed(2);
+        });
+    }
+});
+</script>
+{% endblock %} {% endcomment %}

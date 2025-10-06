@@ -1,0 +1,29 @@
+{% extends "accuiel/Base.html" %}
+{% load static %}
+
+{% block title %}Modifier utilisateur{% endblock %}
+
+{% block content %}
+<h2>Modifier l'utilisateur</h2>
+
+<form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    {{ form.as_p }}
+
+    <button type="submit" style="
+        background-color: #f39c12;
+        border: none;
+        padding: 10px 20px;
+        color: white;
+        border-radius: 5px;
+        cursor: pointer;
+        font-size: 16px;
+    ">Enregistrer</button>
+</form>
+
+<br>
+<a href="{% url 'liste_utilisateurs' %}" style="
+    color: #3498db;
+    text-decoration: none;
+">← Retour à la liste</a>
+{% endblock %}

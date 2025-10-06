@@ -1,0 +1,54 @@
+{% extends 'accuiel/base.html' %}
+
+{% block content %}
+<style>
+    .locataires-container {
+        max-width: 800px;
+        margin: 2rem auto;
+        padding: 2rem;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        background-color: #ffffff;
+        border-radius: 12px;
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.07);
+    }
+    .locataires-header {
+        border-bottom: 1px solid #e9ecef;
+        padding-bottom: 1rem;
+        margin-bottom: 1.5rem;
+    }
+    .locataires-header h1 { margin: 0; }
+    .locataires-header a { text-decoration: none; }
+
+    .locataire-card {
+        display: flex;
+        align-items: center;
+        padding: 1rem;
+        border: 1px solid #dee2e6;
+        border-radius: 8px;
+        margin-bottom: 1rem;
+    }
+    .locataire-info h5 { margin: 0; }
+    .locataire-info p { margin: 5px 0 0; color: #6c757d; }
+</style>
+
+<div class="locataires-container">
+    <div class="locataires-header">
+        {% comment %} <a href="{% url 'message_inbox' %}">&larr; Retour à la boîte de réception</a> {% endcomment %}
+        <h1>Locataires de la maison "{{ maison.nom }}"</h1>
+    </div>
+
+    {% for locataire in locataires %}
+        <div class="locataire-card">
+            <div class="locataire-info">
+                <h5>{{ locataire.get_full_name|default:locataire.username }}</h5>
+                <p>Email: {{ locataire.email }}</p>
+                <!-- Ajoutez d'autres infos si nécessaire, comme le téléphone -->
+                 <p>Telephone: {{ locataire.telephone }}</p>
+
+            </div>
+        </div>
+    {% empty %}
+        <p>Il n'y a aucun locataire assigné à cette maison pour le moment.</p>
+    {% endfor %}
+</div>
+{% endblock %}

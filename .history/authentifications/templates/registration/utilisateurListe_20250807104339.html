@@ -1,0 +1,49 @@
+{% extends "accuiel/Base.html" %}
+{% block title %}Liste des utilisateurs{% endblock %}
+
+{% block content %}
+<h1>Liste des utilisateurs</h1>
+
+<table>
+    <thead>
+        <tr>
+            <th>Nom</th>
+            <th>Prénom</th>
+            <th>Nom d'utilisateur</th>
+            <th>Téléphone</th>
+            <th>Type d'utilisateur</th>
+            <th>Genre</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for user in utilisateurs %}
+        <tr>
+            <td>{{ user.nom }}</td>
+            <td>{{ user.prenom }}</td>
+            <td>{{ user.username }}</td>
+            <td>{{ user.tel }}</td>
+            <td>{{ user.type_utilisateur.nom }}</td>
+            <td>{{ user.get_gender_display }}</td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="6">Aucun utilisateur trouvé.</td></tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+{% if is_paginated %}
+  <div class="pagination">
+    {% if page_obj.has_previous %}
+      <a href="?page=1">Début</a>
+      <a href="?page={{ page_obj.previous_page_number }}">Précédent</a>
+    {% endif %}
+
+    <span>Page {{ page_obj.number }} sur {{ page_obj.paginator.num_pages }}</span>
+
+    {% if page_obj.has_next %}
+      <a href="?page={{ page_obj.next_page_number }}">Suivant</a>
+      <a href="?page={{ page_obj.paginator.num_pages }}">Fin</a>
+    {% endif %}
+  </div>
+{% endif %}
+{% endblock %}

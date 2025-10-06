@@ -1,0 +1,188 @@
+{% extends "accuiel/base.html" %}
+
+{% block content %}
+<style>
+    :root {
+        --primary-color: #6366f1;
+        --success-color: #10b981;
+        --warning-color: #f59e42;
+        --danger-color: #ef4444;
+        --info-color: #0ea5e9;
+        --sidebar-bg: #111827;
+        --main-bg: #f9fafb;
+        --text-light: #f3f4f6;
+        --text-dark: #374151;
+        --card-bg: rgba(255,255,255,0.85);
+        --border-color: #e5e7eb;
+        --shadow-color: rgba(99,102,241,0.08);
+    }
+    body {
+        font-family: 'Poppins', 'Inter', sans-serif;
+        background: linear-gradient(120deg, #f8f9fa 60%, #e0eafc 100%);
+        color: var(--text-dark);
+    }
+    .main-content {
+        margin-left: 260px;
+        width: calc(100% - 260px);
+        padding: 40px 20px;
+        min-height: 100vh;
+        background: transparent;
+    }
+    .main-content header h1 {
+        font-size: 2.3rem;
+        font-weight: 800;
+        color: var(--primary-color);
+        margin-bottom: 30px;
+        letter-spacing: 1px;
+        text-shadow: 0 2px 8px rgba(99,102,241,0.07);
+        animation: fadeInDown 0.7s;
+    }
+    @keyframes fadeInDown {
+        from { opacity: 0; transform: translateY(-30px);}
+        to { opacity: 1; transform: translateY(0);}
+    }
+    .widgets-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 18px;
+    margin-bottom: 30px;
+    justify-content: center;
+    align-items: flex-start;
+}
+.card {
+    width: 150px;              /* Largeur fixe */
+    min-width: 300px;
+    max-width: 300px;
+    height: 100px;             /* Hauteur fixe */
+    background: var(--card-bg);
+    border-radius: 16px;
+    border: 1px solid var(--border-color);
+    box-shadow: 0 8px 32px var(--shadow-color);
+    padding: 20px 10px;
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.25s, box-shadow 0.25s;
+    animation: fadeInUp 0.8s;
+    margin-bottom: 10px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    cursor: pointer;
+    text-decoration: none;
+    justify-content: center;   /* Centre verticalement le contenu */
+}
+    .card.bg-gradient-primary {
+        background: linear-gradient(135deg, #6366f1 60%, #4338ca 100%);
+        color: #fff;
+    }
+    .card.bg-gradient-success {
+        background: linear-gradient(135deg, #10b981 60%, #059669 100%);
+        color: #fff;
+    }
+    .card.bg-gradient-warning {
+        background: linear-gradient(135deg, #f59e42 60%, #fbbf24 100%);
+        color: #fff;
+    }
+    .card.bg-gradient-danger {
+        background: linear-gradient(135deg, #ef4444 60%, #b91c1c 100%);
+        color: #fff;
+    }
+    .card.bg-gradient-info {
+        background: linear-gradient(135deg, #0ea5e9 60%, #0369a1 100%);
+        color: #fff;
+    }
+    .card h3 {
+        font-size: 1rem;
+        font-weight: 600;
+        margin: 12px 0 0 0;
+        color: #fff;
+    }
+    .card .icon-bg {
+        font-size: 2.5rem;
+        color: #fff;
+        opacity: 0.18;
+        margin-bottom: 8px;
+        margin-top: 2px;
+        pointer-events: none;
+        transition: transform 0.2s;
+    }
+    .card:hover {
+        transform: translateY(-6px) scale(1.04);
+        box-shadow: 0 16px 40px rgba(99,102,241,0.14);
+    }
+    /* Responsive */
+    @media (max-width: 991px) {
+        .main-content { margin-left: 0; width: 100%; padding: 20px 8px;}
+        .widgets-grid { gap: 10px;}
+    }
+    @media (max-width: 600px) {
+        .main-content { padding: 10px 2px;}
+        .card { padding: 12px 6px; min-width: 110px; max-width: 100%;}
+        .widgets-grid { flex-direction: column; align-items: center;}
+    }
+</style>
+<main class="main-content">
+    <header>
+        <h1>Vue d'ensemble</h1>
+    </header>
+    <section class="widgets-grid">
+        <a href="{% url 'liste_utilisateurs' %}" class="card bg-gradient-info animate__animated animate__fadeInUp">
+            <span class="icon-bg"><i class="fas fa-users"></i></span>
+            <h3>Utilisateurs</h3>
+        </a>
+        <a href="{% url 'maison_liste' %}" class="card bg-gradient-primary animate__animated animate__fadeInUp">
+            <span class="icon-bg"><i class="fas fa-home"></i></span>
+            <h3>Maisons</h3>
+        </a>
+        <a href="{% url 'Quatiers_list' %}" class="card bg-gradient-success animate__animated animate__fadeInUp">
+            <span class="icon-bg"><i class="fas fa-map-marker-alt"></i></span>
+            <h3>Quartiers</h3>
+        </a>
+        <a href="{% url 'ville_list' %}" class="card bg-gradient-warning animate__animated animate__fadeInUp">
+            <span class="icon-bg"><i class="fas fa-city"></i></span>
+            <h3>Villes</h3>
+        </a>
+        <a href="{% url 'liste_chambres' %}" class="card bg-gradient-danger animate__animated animate__fadeInUp">
+            <span class="icon-bg"><i class="fas fa-bed"></i></span>
+            <h3>Chambres</h3>
+        </a>
+        <a href="{% url 'liste_locations' %}" class="card bg-gradient-info animate__animated animate__fadeInUp">
+            <span class="icon-bg"><i class="fas fa-key"></i></span>
+            <h3>Locations</h3>
+        </a>
+        <a href="{% url 'liste_paiements' %}" class="card bg-gradient-success animate__animated animate__fadeInUp">
+            <span class="icon-bg"><i class="fas fa-money-bill-wave"></i></span>
+            <h3>Paiements</h3>
+        </a>
+        <a href="{% url 'liste_proprietaire' %}" class="card bg-gradient-primary animate__animated animate__fadeInUp">
+            <span class="icon-bg"><i class="fas fa-user-tie"></i></span>
+            <h3>Propriétaires</h3>
+        </a>
+        <a href="{% url 'liste_typechambres' %}" class="card bg-gradient-warning animate__animated animate__fadeInUp">
+            <span class="icon-bg"><i class="fas fa-th-large"></i></span>
+            <h3>Types de chambre</h3>
+        </a>
+    </section>
+</main>
+{% endblock %}
+
+
+{% comment %} {% extends "base.html" %}
+
+{% block title %}
+    Tableau de Bord Administrateur
+{% endblock %}
+
+{% block header %}
+    Tableau de Bord Administrateur
+{% endblock %}
+
+{% block content %}
+    <h2>Bienvenue, {{ user.username }} !</h2>
+    <h2>{{ user.username }}</h2>
+    <p>Voici la section pour afficher des statistiques spécifiques au tableau de bord.</p>
+    <!-- Ajoutez ici le contenu spécifique au tableau de bord de l'administrateur -->
+{% endblock %} {% endcomment %}
+
+

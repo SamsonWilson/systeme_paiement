@@ -1,0 +1,149 @@
+{% extends "accuiel/base.html" %}
+
+{% block content %}
+<style>
+    /* --- Variables et Initialisation --- */
+    :root {
+        --primary-color: #4f46e5;
+        --primary-hover: #4338ca;
+        --sidebar-bg: #111827;
+        --main-bg: #f9fafb;
+        --text-light: #f3f4f6;
+        --text-dark: #374151;
+        --card-bg: #ffffff;
+        --border-color: #e5e7eb;
+        --shadow-color: rgba(0, 0, 0, 0.05);
+    }
+
+    /* ... (le reste de votre CSS initial reste identique) ... */
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Poppins', sans-serif; display: flex; background-color: var(--main-bg); color: var(--text-dark); }
+    .sidebar { width: 260px; background-color: var(--sidebar-bg); color: var(--text-light); display: flex; flex-direction: column; height: 100vh; position: fixed; left: 0; top: 0; padding: 20px; }
+    .sidebar-header { margin-bottom: 30px; text-align: center; }
+    .sidebar-header h2 { font-weight: 600; }
+    .sidebar-nav { flex-grow: 1; }  
+    .nav-item { display: flex; align-items: center; padding: 12px 15px; margin-bottom: 8px; border-radius: 8px; text-decoration: none; color: var(--text-light); font-weight: 500; border-left: 4px solid transparent; /* Bordure transparente par défaut */ transition: all 0.2s ease-in-out; }
+    .nav-item svg { width: 24px; height: 24px; margin-right: 15px; }
+
+    /* --- NOUVEAUX STYLES AMÉLIORÉS --- */
+    .nav-item:hover {
+        background-color: #374151;
+        transform: translateX(5px);
+    }
+    .nav-item.active {
+        background-color: rgba(79, 70, 229, 0.2);
+        color: white;
+        border-left: 4px solid var(--primary-color);
+        padding-left: 11px;
+    }
+
+    .main-content { margin-left: 260px; width: calc(100% - 260px); padding: 40px; }
+    .main-content header h1 { font-size: 2.2rem; font-weight: 700; }
+    .widgets-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 25px; }  
+    .card { background-color: var(--card-bg); padding: 25px; border-radius: 12px; border: 1px solid var(--border-color); box-shadow: 0 4px 6px var(--shadow-color); }
+    .card h3 { font-size: 1rem; font-weight: 600; margin-bottom: 15px; color: #6b7280; }
+    .card .stat { font-size: 2rem; font-weight: 700; margin-bottom: 10px; }
+    .card .trend { color: #10b981; font-weight: 500; }
+    .card .trend-down { color: #ef4444; font-weight: 500; }
+
+    /* --- NOUVEAUX BOUTONS D'ACTION --- */
+    .main-content header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 30px;
+    }
+    .btn {
+        padding: 10px 20px;
+        border: none;
+        border-radius: 8px;
+        font-size: 1rem;
+        font-weight: 600;
+        font-family: 'Poppins', sans-serif;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+    }
+    .btn-primary {
+        background-color: var(--primary-color);
+        color: white;
+        box-shadow: 0 4px 14px 0 rgba(79, 70, 229, 0.3);
+    }
+    .btn-primary:hover {
+        background-color: var(--primary-hover);
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px 0 rgba(79, 70, 229, 0.4);
+    }
+    .btn-secondary {
+        background-color: transparent;
+        color: var(--primary-color);
+        border: 2px solid var(--primary-color);
+    }
+    .btn-secondary:hover {
+        background-color: rgba(79, 70, 229, 0.1);
+    }
+</style>
+
+<!-- Contenu principal -->
+<main class="main-content">
+    <header>
+        <h1>Vue d'ensemble</h1>
+        <div class="header-actions">
+            <button class="btn btn-secondary">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                Exporter
+            </button>
+            <button class="btn btn-primary">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                Ajouter un Rapport
+            </button>
+        </div>
+    </header>
+
+    <!-- Grille pour les widgets -->
+    <section class="widgets-grid">
+        <div class="card">
+            <h3>Ventes du jour</h3>
+            <p class="stat">1,250 €</p>
+            <span class="trend">+5% vs hier</span>
+        </div>
+        <div class="card">
+            <h3>Nouveaux Inscrits</h3>
+            <p class="stat">84</p>
+            <span class="trend">+12% vs semaine passée</span>
+        </div>
+        <div class="card">
+            <h3>Taux de Conversion</h3>
+            <p class="stat">3.4%</p>
+            <span class="trend-down">-0.2% vs hier</span>
+        </div>
+        <div class="card">
+            <h3>Visiteurs Actifs</h3>
+            <p class="stat">2,305</p>
+            <span class="trend">En temps réel</span>
+        </div>
+    </section>
+</main>
+{% endblock %}
+
+
+{% comment %} {% extends "base.html" %}
+
+{% block title %}
+    Tableau de Bord Administrateur
+{% endblock %}
+
+{% block header %}
+    Tableau de Bord Administrateur
+{% endblock %}
+
+{% block content %}
+    <h2>Bienvenue, {{ user.username }} !</h2>
+    <h2>{{ user.username }}</h2>
+    <p>Voici la section pour afficher des statistiques spécifiques au tableau de bord.</p>
+    <!-- Ajoutez ici le contenu spécifique au tableau de bord de l'administrateur -->
+{% endblock %} {% endcomment %}
+
+

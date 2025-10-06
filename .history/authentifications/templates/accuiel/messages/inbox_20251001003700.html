@@ -1,0 +1,268 @@
+{% extends 'accuiel/base.html' %} {# Assurez-vous d'hériter de votre template de base #}  
+  
+  
+{% block content %}  
+<style>  
+    /* Style général pour le conteneur de la boîte de réception */  
+    .inbox-container {  
+        max-width: 900px;  
+        margin: 2rem auto;  
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;  
+        background-color: #ffffff;  
+        border-radius: 12px;  
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.07);  
+        overflow: hidden;  
+    }  
+  
+  
+    /* En-tête */  
+    .inbox-header {  
+        padding: 1.5rem 2rem;  
+        background-color: #f7f9fc;  
+        border-bottom: 1px solid #e9ecef;  
+    }  
+    .inbox-header h1 {  
+        margin: 0;  
+        font-size: 1.75rem;  
+        color: #212529;  
+    }  
+  
+  
+    /* Liste des conversations */  
+    .conversation-list a {  
+        display: flex;  
+        align-items: center;  
+        padding: 1.25rem 2rem;  
+        text-decoration: none;  
+        color: #343a40;  
+        border-bottom: 1px solid #e9ecef;  
+        transition: background-color 0.2s ease-in-out;  
+    }  
+    .conversation-list a:last-child {  
+        border-bottom: none;  
+    }  
+    .conversation-list a:hover {  
+        background-color: #f8f9fa;  
+    }  
+  
+  
+    /* Style pour les messages non lus */  
+    .conversation-list a.unread {  
+        background-color: #fffaf0;  
+        font-weight: 500;  
+    }  
+  
+  
+    /* Avatar avec la première lettre du nom de la maison */  
+    .avatar {  
+        width: 50px;  
+        height: 50px;  
+        border-radius: 50%;  
+        background-color: #007bff;  
+        color: white;  
+        display: flex;  
+        align-items: center;  
+        justify-content: center;  
+        font-size: 1.6rem;  
+        font-weight: bold;  
+        margin-right: 1.5rem;  
+        flex-shrink: 0;  
+    }  
+  
+  
+    /* Section centrale avec nom, participants et aperçu */  
+    .conversation-details {  
+        flex-grow: 1;  
+        overflow: hidden;  
+    }  
+    .conversation-details h3 {  
+        margin: 0;  
+        font-size: 1.1rem;  
+        color: #000;  
+    }  
+    .participants {  
+        font-size: 0.85rem;  
+        color: #6c757d;  
+        margin-top: 4px;  
+        white-space: nowrap;  
+        overflow: hidden;  
+        text-overflow: ellipsis;  
+    }  
+    .preview {  
+        margin: 5px 0 0 0;  
+        font-size: 0.9rem;  
+        color: #495057;  
+        white-space: nowrap;  
+        overflow: hidden;  
+        text-overflow: ellipsis;  
+    }  
+    .preview strong { color: #212529; }  
+      
+    /* Section de droite avec timestamp et badge non lu */  
+    .conversation-meta {  
+        text-align: right;  
+        flex-shrink: 0;  
+        padding-left: 1rem;  
+    }  
+    .timestamp {  
+        font-size: 0.8rem;  
+        color: #adb5bd;  
+        margin-bottom: 0.5rem;  
+    }  
+    .unread-badge {  
+        background-color: #dc3545;  
+        color: white;  
+        border-radius: 12px;  
+        font-size: 0.75rem;  
+        font-weight: bold;  
+        padding: 0.25rem 0.6rem;  
+    }  
+    .empty-inbox {  
+        padding: 3rem;  
+        text-align: center;  
+        color: #6c757d;  
+    }  
+</style>  
+  
+  
+<div class="inbox-container">  
+    <div class="inbox-header">  
+        <h1>Boîte de réception</h1>  
+    </div>  
+  
+  
+    <div class="conversation-list">  
+        {% for conv in conversations %}  
+            <!-- Chaque ligne est un lien vers la conversation de la maison -->  
+            <a href="{% url 'maison_messages' conv.maison.id %}" class="conversation-item {% if conv.unread_count > 0 %}unread{% endif %}">  
+                  
+                <div class="avatar">{{ conv.maison.nom|first }}</div>  
+                  
+                <div class="conversation-details">  
+                    <h3>{{ conv.maison.nom }}</h3>  
+  
+  
+                    <!-- Affiche les participants uniquement pour l'admin -->  
+                    {% if user.is_staff and conv.locataires %}  
+                        <div class="participants">  
+                            Avec :   
+                            {% for locataire in conv.locataires %}  
+                                {{ locataire.get_full_name|default:locataire.username }}{% if not forloop.last %}, {% endif %}  
+                            {% endfor %}  
+                        </div>  
+                    {% endif %}  
+                      
+                    <p class="preview">  
+                        <strong>{{ conv.last_message.sender.get_full_name|default:conv.last_message.sender.username }}:</strong>  
+                        {% if conv.last_message.message %}  
+                            {{ conv.last_message.message|truncatewords:10 }}  
+                        {% else %}  
+                            <i>Image envoyée</i>  
+                        {% endif %}  
+                    </p>  
+                </div>  
+                  
+                <div class="conversation-meta">  
+                    <div class="timestamp">{{ conv.last_message.timestamp|timesince }}</div>  
+                    {% if conv.unread_count > 0 %}  
+                        <span class="unread-badge">{{ conv.unread_count }}</span>  
+                    {% endif %}  
+                </div>  
+            </a>  
+        {% empty %}  
+            <div class="empty-inbox">  
+                <p>Aucune conversation pour le moment.</p>  
+            </div>  
+        {% endfor %}  
+    </div>  
+</div>  
+{% endblock %} sa ne ma'affiche pas les maison
+
+
+
+{% comment %} <!-- dans accuiel/templates/accuiel/messages/inbox.html -->
+
+<div class="conversation-list">
+    {% for conv in conversations %}
+        <!-- Le lien principal mène toujours au chat -->
+        <a href="{% url 'maison_messages' conv.maison.id %}" class="conversation-item {% if conv.unread_count > 0 %}unread{% endif %}">
+            
+            <div class="avatar">{{ conv.maison.nom|first }}</div>
+            
+            <div class="conversation-details">
+                <h3>{{ conv.maison.nom }}</h3>
+
+                {% if user.is_staff and conv.locataires %}
+                    <div class="participants">
+                        Avec : 
+                        {% for locataire in conv.locataires %}
+                            {{ locataire.get_full_name|default:locataire.username }}{% if not forloop.last %}, {% endif %}
+                        {% empty %}
+                            <i>Aucun locataire assigné</i>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+                
+                <!-- MODIFIÉ : On gère le cas où il n'y a pas encore de message -->
+                {% if conv.last_message %}
+                    <p class="preview">
+                        <strong>{{ conv.last_message.sender.get_full_name|default:conv.last_message.sender.username }}:</strong>
+                        {% if conv.last_message.message %}
+                            {{ conv.last_message.message|truncatewords:10 }}
+                        {% else %}
+                            <i>Image envoyée</i>
+                        {% endif %}
+                    </p>
+                {% else %}
+                    <p class="preview">
+                        <i>Aucun message. Cliquez pour démarrer la conversation.</i>
+                    </p>
+                {% endif %}
+            </div>
+            
+            <div class="conversation-meta">
+                <!-- NOUVEAU : Bouton pour voir les locataires (uniquement pour l'admin) -->
+                {% if user.is_staff %}
+                    <a href="{% url 'maison_locataires' conv.maison.id %}" class="btn-locataires">Voir locataires</a>
+                {% endif %}
+
+                {% if conv.last_message %}
+                    <div class="timestamp">{{ conv.last_message.timestamp|timesince }} ago</div>
+                {% endif %}
+
+                {% if conv.unread_count > 0 %}
+                    <span class="unread-badge">{{ conv.unread_count }}</span>
+                {% endif %}
+            </div>
+        </a>
+    {% empty %}
+        <div class="empty-inbox">
+            <p>Aucune conversation pour le moment.</p>
+        </div>
+    {% endfor %}
+</div>
+
+<!-- NOUVEAU : Ajoutez ce style pour le bouton dans votre balise <style> -->
+<style>
+    /* ... (tous vos autres styles) ... */
+    .btn-locataires {
+        background-color: #6c757d;
+        color: white !important;
+        padding: 5px 10px;
+        font-size: 0.75rem;
+        border-radius: 5px;
+        text-decoration: none;
+        margin-bottom: 8px; /* Espace entre le bouton et la date */
+        display: inline-block;
+        transition: background-color 0.2s;
+    }
+    .btn-locataires:hover {
+        background-color: #5a6268;
+    }
+    /* Adaptez la mise en page de la meta-colonne pour le bouton */
+    .conversation-meta {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+    }
+</style> {% endcomment %}

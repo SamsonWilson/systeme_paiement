@@ -1,0 +1,56 @@
+{% extends "accuiel/Base.html" %}
+{% load static %}
+
+{% block title %}Détail de l'utilisateur{% endblock %}
+
+{% block content %}
+<h2 style="text-align: center; margin-bottom: 30px;">Détail de l'utilisateur</h2>
+
+<div style="
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 30px;
+    border-radius: 10px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    background-color: #f9f9f9;
+    display: flex;
+    gap: 30px;
+    align-items: center;
+">
+
+    {% if utilisateur.image %}
+        <img src="{{ utilisateur.image.url }}" alt="Photo de profil"
+             style="width: 150px; height: 150px; border-radius: 50%; object-fit: cover; border: 3px solid #3498db;">
+    {% else %}
+        <img src="{% static 'image/employee.png' %}" alt="Photo par défaut"
+             style="width: 150px; height: 150px; border-radius: 50%; object-fit: cover; border: 3px solid #ccc;">
+    {% endif %}
+
+    <ul style="list-style: none; padding: 0; font-size: 16px;">
+        <li><strong>Nom :</strong> {{ utilisateur.nom }}</li>
+        <li><strong>Prénom :</strong> {{ utilisateur.prenom }}</li>
+        <li><strong>Nom d'utilisateur :</strong> {{ utilisateur.username }}</li>
+        <li><strong>Téléphone :</strong> {{ utilisateur.tel }}</li>
+        <li><strong>Type :</strong> {{ utilisateur.type_utilisateur.nom }}</li>
+        <li><strong>Genre :</strong> {{ utilisateur.get_gender_display }}</li>
+        <li><strong>Personne à prévenir :</strong><br>
+            {{ utilisateur.nom_personne_prevenir }} {{ utilisateur.prenom_personne_prevenir }}<br>
+            ({{ utilisateur.telephone_personne_prevenir }})
+        </li>
+    </ul>
+</div>
+
+<br>
+<div style="text-align: center;">
+    <a href="{% url 'liste_utilisateurs' %}" style="
+        text-decoration: none;
+        color: #fff;
+        background-color: #3498db;
+        padding: 10px 20px;
+        border-radius: 5px;
+        transition: background-color 0.3s ease;
+    " onmouseover="this.style.backgroundColor='#2980b9'" onmouseout="this.style.backgroundColor='#3498db'">
+        ← Retour à la liste
+    </a>
+</div>
+{% endblock %}

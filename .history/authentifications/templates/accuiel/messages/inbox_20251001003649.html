@@ -1,0 +1,86 @@
+{% comment %} <!-- dans accuiel/templates/accuiel/messages/inbox.html -->
+
+<div class="conversation-list">
+    {% for conv in conversations %}
+        <!-- Le lien principal mène toujours au chat -->
+        <a href="{% url 'maison_messages' conv.maison.id %}" class="conversation-item {% if conv.unread_count > 0 %}unread{% endif %}">
+            
+            <div class="avatar">{{ conv.maison.nom|first }}</div>
+            
+            <div class="conversation-details">
+                <h3>{{ conv.maison.nom }}</h3>
+
+                {% if user.is_staff and conv.locataires %}
+                    <div class="participants">
+                        Avec : 
+                        {% for locataire in conv.locataires %}
+                            {{ locataire.get_full_name|default:locataire.username }}{% if not forloop.last %}, {% endif %}
+                        {% empty %}
+                            <i>Aucun locataire assigné</i>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+                
+                <!-- MODIFIÉ : On gère le cas où il n'y a pas encore de message -->
+                {% if conv.last_message %}
+                    <p class="preview">
+                        <strong>{{ conv.last_message.sender.get_full_name|default:conv.last_message.sender.username }}:</strong>
+                        {% if conv.last_message.message %}
+                            {{ conv.last_message.message|truncatewords:10 }}
+                        {% else %}
+                            <i>Image envoyée</i>
+                        {% endif %}
+                    </p>
+                {% else %}
+                    <p class="preview">
+                        <i>Aucun message. Cliquez pour démarrer la conversation.</i>
+                    </p>
+                {% endif %}
+            </div>
+            
+            <div class="conversation-meta">
+                <!-- NOUVEAU : Bouton pour voir les locataires (uniquement pour l'admin) -->
+                {% if user.is_staff %}
+                    <a href="{% url 'maison_locataires' conv.maison.id %}" class="btn-locataires">Voir locataires</a>
+                {% endif %}
+
+                {% if conv.last_message %}
+                    <div class="timestamp">{{ conv.last_message.timestamp|timesince }} ago</div>
+                {% endif %}
+
+                {% if conv.unread_count > 0 %}
+                    <span class="unread-badge">{{ conv.unread_count }}</span>
+                {% endif %}
+            </div>
+        </a>
+    {% empty %}
+        <div class="empty-inbox">
+            <p>Aucune conversation pour le moment.</p>
+        </div>
+    {% endfor %}
+</div>
+
+<!-- NOUVEAU : Ajoutez ce style pour le bouton dans votre balise <style> -->
+<style>
+    /* ... (tous vos autres styles) ... */
+    .btn-locataires {
+        background-color: #6c757d;
+        color: white !important;
+        padding: 5px 10px;
+        font-size: 0.75rem;
+        border-radius: 5px;
+        text-decoration: none;
+        margin-bottom: 8px; /* Espace entre le bouton et la date */
+        display: inline-block;
+        transition: background-color 0.2s;
+    }
+    .btn-locataires:hover {
+        background-color: #5a6268;
+    }
+    /* Adaptez la mise en page de la meta-colonne pour le bouton */
+    .conversation-meta {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+    }
+</style> {% endcomment %}

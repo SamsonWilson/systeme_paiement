@@ -1,0 +1,240 @@
+{% extends 'accuiel/base.html' %}
+{% block content %}
+
+<div class="inbox-wrapper">
+  <div class="inbox-header">
+    <h1><i class="fas fa-envelope-open-text me-2"></i> Boîte de réception</h1>
+    <p class="subtitle">Gérez vos conversations par maison</p>
+  </div>
+
+  <div class="conversation-list">
+    {% for maison in maisons %}
+      <a href="{% url 'maison_messages' maison.id %}" class="conversation-card-link">
+        <div class="conversation-card">
+          <!-- Avatar -->
+          <div class="avatar-circle">
+            <span>{{ maison.nom|first }}</span>
+          </div>
+
+          <!-- Contenu principal -->
+          <div class="conversation-info">
+            <div class="header-row">
+              <h3>{{ maison.nom }}</h3>
+            </div>
+
+            {% if user.type_utilisateur.nom == "admin" or user.type_utilisateur.nom == "propriétaire" %}
+              <p class="adresse"><i class="fas fa-map-marker-alt me-2"></i>{{ maison.adresse|default:"Adresse non renseignée" }}</p>
+            {% endif %}
+
+            <div class="actions">
+              <a href="#" class="btn-discussion">
+                💬 Discuter avec l’Admin
+              </a>
+            </div>
+          </div>
+
+          <!-- Meta -->
+          <div class="conversation-meta">
+            {% if user.type_utilisateur.nom in "admin, locataire, propriétaire" %}
+              <a href="{% url 'maison_locataires' maison.id %}" class="btn-locataires">
+                <i class="fas fa-users me-1"></i> Utilisateur
+              </a>
+            {% endif %}
+          </div>
+        </div>
+      </a>
+    {% empty %}
+      <div class="empty-state">
+        <i class="fas fa-inbox fa-3x"></i>
+        <p>Aucune maison à afficher.</p>
+      </div>
+    {% endfor %}
+  </div>
+</div>
+
+<!-- === STYLE === -->
+<style>
+  
+</style>
+
+<!-- === FontAwesome === -->
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+
+{% endblock %}
+
+
+{% comment %} {% extends 'accuiel/base.html' %}
+{% block content %}
+<div class="inbox-container">
+    <div class="inbox-header"><h1>Boîte de réception</h1></div>
+    <div class="conversation-list">
+        {% for maison in maisons %}
+            <a href="{% url 'maison_messages' maison.id %}" class="conversation-item-link">
+                <div class="conversation-item">
+                    
+                    <div class="avatar"><span>{{ maison.nom|first }}</span></div>
+
+                    <div class="conversation-content">
+                        <div class="content-header">
+                            <h3>{{ maison.nom }}</h3>
+                        </div>
+
+                        {% if user.type_utilisateur.nom == "admin" or user.type_utilisateur.nom == "propriétaire" %}
+                            <div class="participants">
+                                Adresse : {{ maison.adresse|default:"Non renseignée" }}
+                            </div>
+                        {% endif %}
+
+                        <div class="preview">
+                            <div class="my-4 text-center">
+                                <a href="" class="btn-discussion">
+                                    💬 Discuter avec l’Admin
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="conversation-meta">
+                        {% if user.type_utilisateur.nom == "admin" or user.type_utilisateur.nom == "locataire" or user.type_utilisateur.nom == "propriétaire" %}
+                            <a href="{% url 'maison_locataires' maison.id %}" class="btn-locataires">Utilisateur</a>
+                        {% endif %}
+                    </div>
+                </div>
+            </a>
+        {% empty %}
+            <div class="empty-inbox"><p>Aucune maison à afficher.</p></div>
+        {% endfor %}
+    </div>
+</div>
+
+
+<style>
+    .btn-discussion {
+    display: inline-block;
+    background-color: #007bff;
+    color: white;
+    padding: 10px 20px;
+    border-radius: 30px;
+    text-decoration: none;
+    font-weight: bold;
+    transition: background 0.2s ease;
+}
+.btn-discussion:hover {
+    background-color: #0056b3;
+}
+
+:root {
+    --primary-color: #007bff;
+    --background-light: #f8f9fa;
+    --border-color: #dee2e6;
+    --card-background: #ffffff;
+    --text-color: #212529;
+    --text-muted: #6c757d;
+    --unread-color: #dc3545;
+    --font-family: system-ui, sans-serif;
+}
+
+.inbox-container {
+    max-width: 900px;
+    margin: 2rem auto;
+    font-family: var(--font-family);
+    background-color: var(--background-light);
+    border-radius: 12px;
+}
+
+.inbox-header {
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid var(--border-color);
+}
+.inbox-header h1 { margin: 0; }
+
+.conversation-list { padding: 1rem; }
+.conversation-item-link {
+    text-decoration: none;
+    color: inherit;
+    display: block;
+}
+.conversation-item {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 1.25rem;
+    background-color: var(--card-background);
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    margin-bottom: 1rem;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.conversation-item:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.07);
+}
+.avatar {
+    flex-shrink: 0;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background-color: var(--primary-color);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+}
+.conversation-content { flex-grow: 1; min-width: 0; }
+.content-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 4px;
+}
+.content-header h3 { margin: 0; font-size: 1.1rem; }
+.participants {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+}
+.preview p {
+    margin: 4px 0 0;
+    font-size: 0.9rem;
+    color: var(--text-muted);
+}
+.conversation-meta {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 8px;
+}
+.btn-locataires {
+    background-color: #e9ecef;
+    color: var(--text-muted);
+    padding: 5px 12px;
+    font-size: 0.75rem;
+    border-radius: 20px;
+    transition: all 0.2s;
+    text-decoration: none;
+}
+.conversation-item-link:hover .btn-locataires {
+    background-color: #6c757d;
+    color: white;
+}
+.timestamp { font-size: 0.8rem; color: var(--text-muted); }
+.unread-badge {
+    background-color: var(--unread-color);
+    color: white;
+    font-weight: bold;
+    border-radius: 50%;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.empty-inbox {
+    text-align: center;
+    padding: 4rem 2rem;
+    color: var(--text-muted);
+}
+</style>
+{% endblock %}
+
+ {% endcomment %}

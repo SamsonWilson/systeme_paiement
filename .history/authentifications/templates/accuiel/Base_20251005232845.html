@@ -1,0 +1,2224 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Tableau de Bord{% endblock %}</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+       <style>
+        :root {
+            --sidebar-width: 260px;
+            --main-bg: #f8f9fa;
+            --sidebar-bg-start: #2c3e50;
+            --sidebar-bg-end: #4ca1af;
+            --header-bg-start: #667eea;
+            --header-bg-end: #764ba2;
+            --text-dark: #333;
+            --text-light: #f8f9fa;
+            --card-shadow: 0 8px 24px rgba(44,62,80,0.09);
+            --card-hover-shadow: 0 16px 32px rgba(44,62,80,0.13);
+            --border-radius-lg: 18px;
+            --border-radius-md: 12px;
+            --border-radius-sm: 8px;
+        }
+
+        body {
+            font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(120deg, var(--main-bg) 60%, #e0eafc 100%);
+            color: var(--text-dark);
+            overflow-x: hidden; /* Prevent horizontal scroll on mobile */
+        }
+
+        /* Sidebar */
+        .sidebar {
+            background: linear-gradient(135deg, var(--sidebar-bg-start) 70%, var(--sidebar-bg-end) 100%);
+            color: var(--text-light);
+            padding: 25px 15px;
+            min-height: 100vh;
+            position: fixed;
+            width: var(--sidebar-width);
+            box-shadow: 2px 0 18px rgba(44, 62, 80, 0.12);
+            border-top-right-radius: var(--border-radius-lg);
+            border-bottom-right-radius: var(--border-radius-lg);
+            transition: all 0.3s ease-in-out; /* Smooth transition for sidebar movement */
+            z-index: 1050; /* Above main content */
+        }
+        .sidebar.hide-sidebar { /* Class to hide sidebar on mobile */
+            transform: translateX(-100%);
+        }
+
+        .sidebar h2 {
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 1.7rem;
+            font-weight: 700;
+            letter-spacing: 1px;
+            border-bottom: 1px solid rgba(255,255,255,0.15);
+            padding-bottom: 15px;
+        }
+        .sidebar ul {
+            list-style: none;
+            padding: 0;
+            margin-top: 30px;
+        }
+        .sidebar li {
+            margin-bottom: 18px;
+        }
+        .sidebar a {
+            color: var(--text-light);
+            text-decoration: none;
+            font-size: 1.13rem;
+            display: flex;
+            align-items: center;
+            gap: 12px; /* Increased gap */
+            padding: 12px 18px;
+            border-radius: var(--border-radius-sm);
+            transition: background 0.2s ease, transform 0.2s ease;
+            background: rgba(255,255,255,0.06); /* Slightly more opaque default background */
+            position: relative;
+            overflow: hidden; /* For hover effect */
+        }
+        .sidebar a::before { /* Underline/fill effect on hover */
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background-color: var(--sidebar-bg-end); /* Matching accent color */
+            transform: scaleX(0);
+            transform-origin: bottom right;
+            transition: transform 0.3s ease-out;
+        }
+        .sidebar a:hover::before {
+            transform: scaleX(1);
+            transform-origin: bottom left;
+        }
+
+        .sidebar a:hover {
+            background: rgba(255,255,255,0.15); /* Stronger hover background */
+            transform: translateX(8px); /* More pronounced slide */
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        .sidebar a i {
+            font-size: 1.25rem; /* Larger icons */
+        }
+
+        /* Main Content */
+        .main-content {
+            margin-left: var(--sidebar-width);
+            padding: 30px 20px;
+            min-height: 100vh;
+            transition: margin-left 0.3s ease-in-out;
+        }
+        .main-content.content-full-width { /* For mobile when sidebar is hidden */
+            margin-left: 0;
+        }
+
+        /* Header */
+        .header {
+            background: linear-gradient(135deg, var(--header-bg-start) 70%, var(--header-bg-end) 100%);
+            color: var(--text-light);
+            padding: 28px 30px;
+            box-shadow: 0 6px 24px rgba(102,126,234,0.13);
+            margin-bottom: 35px;
+            border-radius: var(--border-radius-lg);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap; /* Allow header content to wrap */
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 2.3rem;
+            font-weight: 800;
+            text-shadow: 1px 2px 8px rgba(0,0,0,0.1);
+            letter-spacing: 1px;
+        }
+        .menu-toggle { /* Hamburger icon for mobile */
+            display: none; /* Hidden by default on desktop */
+            background: none;
+            border: none;
+            color: var(--text-light);
+            font-size: 1.8rem;
+            cursor: pointer;
+            padding: 5px 10px;
+            border-radius: var(--border-radius-sm);
+            transition: background 0.2s ease;
+        }
+        .menu-toggle:hover {
+            background: rgba(255,255,255,0.1);
+        }
+
+        /* Cards */
+        .card {
+            border: none;
+            border-radius: var(--border-radius-md);
+            box-shadow: var(--card-shadow);
+            transition: all 0.3s ease;
+            margin-bottom: 28px;
+            overflow: hidden;
+            background: var(--white);
+        }
+        .card:hover {
+            transform: translateY(-7px) scale(1.005); /* Subtle scale for cards */
+            box-shadow: var(--card-hover-shadow);
+        }
+        .card-body {
+            padding: 28px;
+        }
+        .card-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 12px;
+            color: #34495e;
+        }
+
+        /* Stat Cards */
+        .stat-card {
+            border-radius: var(--border-radius-md);
+            overflow: hidden;
+            box-shadow: var(--card-shadow);
+            transition: all 0.3s ease;
+            background-color: white; /* Ensure consistent background for gradients */
+        }
+        .stat-card:hover {
+            transform: translateY(-7px) scale(1.02); /* More pronounced lift for stats */
+            box-shadow: var(--card-hover-shadow);
+        }
+        /* Custom gradient backgrounds for stat cards (ensure text is white) */
+        .stat-card.bg-gradient-primary { background: linear-gradient(135deg, #0d6efd 10%, #0a58ca 90%); color: white; }
+        .stat-card.bg-gradient-success { background: linear-gradient(135deg, #198754 10%, #146c43 90%); color: white; }
+        .stat-card.bg-gradient-info { background: linear-gradient(135deg, #0dcaf0 10%, #0997b3 90%); color: white; }
+        .stat-card.bg-gradient-warning { background: linear-gradient(135deg, #ffc107 10%, #e0a800 90%); color: white; }
+        .stat-card.bg-gradient-secondary { background: linear-gradient(135deg, #6c757d 10%, #5c636a 90%); color: white; }
+        .stat-card.bg-gradient-danger { background: linear-gradient(135deg, #dc3545 10%, #bb2d3b 90%); color: white; }
+
+
+        .icon-circle {
+            width: 65px; /* Slightly larger icon circle */
+            height: 65px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(255,255,255,0.25); /* Slightly more opaque background */
+            transition: all 0.3s ease;
+            font-size: 1.8rem; /* Icon size */
+        }
+        .stat-card:hover .icon-circle {
+            transform: rotate(18deg) scale(1.15); /* More dynamic rotation and scale */
+            box-shadow: 0 0 15px rgba(255,255,255,0.3);
+        }
+        .display-6 {
+            font-size: 2.5rem; /* Larger stat numbers */
+            font-weight: 700;
+            animation: countUp 0.8s ease-out forwards;
+            margin: 0;
+        }
+        @keyframes countUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .chart-container {
+            position: relative;
+            height: 400px; /* Slightly taller charts */
+            width: 100%;
+            margin-top: 30px; /* More space above charts */
+        }
+        .btn-custom {
+            border-radius: var(--border-radius-sm);
+            padding: 12px 25px; /* Larger button padding */
+            font-weight: 600;
+            transition: all 0.3s ease;
+            background: linear-gradient(90deg, var(--header-bg-start) 60%, var(--header-bg-end) 100%);
+            color: var(--text-light);
+            border: none;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+        .btn-custom:hover {
+            transform: translateY(-4px); /* More pronounced lift */
+            box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+            background: linear-gradient(90deg, var(--header-bg-end) 60%, var(--header-bg-start) 100%); /* Reverse gradient */
+        }
+
+        /* --- Responsive Adjustments --- */
+        /* Extra large screens (e.g., desktops, larger tablets) - adjust if needed */
+        @media (min-width: 1400px) {
+            .main-content {
+                margin-left: calc(var(--sidebar-width) + 30px); /* Add a bit more space */
+            }
+            .sidebar {
+                width: calc(var(--sidebar-width) + 20px);
+            }
+        }
+
+        /* Medium screens (e.g., tablets) */
+        @media (max-width: 991.98px) {
+            .sidebar {
+                width: 250px; /* Default sidebar width on smaller screens before collapsing */
+                min-height: 100vh;
+                position: fixed; /* Keep it fixed */
+                left: 0;
+                top: 0;
+                transform: translateX(-100%); /* Start hidden */
+                border-radius: 0; /* No rounded corners when collapsed */
+                padding-top: 80px; /* Space for the top bar/menu button */
+            }
+            .sidebar.show-sidebar {
+                transform: translateX(0%); /* Slide in */
+                box-shadow: 6px 0 20px rgba(0, 0, 0, 0.25);
+            }
+
+            .main-content {
+                margin-left: 0; /* Main content always takes full width */
+                padding: 20px 15px;
+            }
+
+            .header {
+                padding: 18px 20px;
+                margin-bottom: 25px;
+                border-radius: var(--border-radius-md);
+                justify-content: space-between; /* Ensure button and title are spaced */
+            }
+            .header h1 {
+                font-size: 1.8rem;
+            }
+            .menu-toggle {
+                display: block; /* Show menu toggle button */
+                order: -1; /* Place it before the title */
+            }
+
+            /* Overlay when sidebar is open */
+            .overlay {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background-color: rgba(0, 0, 0, 0.5);
+                z-index: 1040;
+                display: none;
+            }
+            .overlay.show {
+                display: block;
+            }
+
+            /* Adjust columns for stat cards to stack better */
+            .row.g-4 .col-md-4 {
+                flex: 0 0 50%; /* Two columns per row */
+                max-width: 50%;
+            }
+            .row.g-4 .col-md-4:nth-child(odd) {
+                padding-left: 10px;
+                padding-right: 10px;
+            }
+            .row.g-4 .col-md-4:nth-child(even) {
+                padding-left: 10px;
+                padding-right: 10px;
+            }
+            .chart-container {
+                height: 300px; /* Adjust chart height for smaller screens */
+            }
+        }
+
+        /* Small screens (e.g., mobile phones) */
+        @media (max-width: 575.98px) {
+            .sidebar {
+                width: 280px; /* Slightly wider sidebar for mobile */
+            }
+            .header h1 {
+                font-size: 1.5rem;
+                text-align: center;
+                flex-grow: 1; /* Allow title to take available space */
+            }
+            .header .menu-toggle {
+                margin-right: 10px;
+            }
+            .header {
+                padding: 15px 10px;
+            }
+
+            .card-body {
+                padding: 20px;
+            }
+            .display-6 {
+                font-size: 2rem;
+            }
+            .icon-circle {
+                width: 55px;
+                height: 55px;
+                font-size: 1.5rem;
+            }
+
+            .row.g-4 .col-md-4 { /* Stat cards stack vertically on very small screens */
+                flex: 0 0 100%;
+                max-width: 100%;
+                padding-left: var(--bs-gutter-x, 0.75rem); /* Bootstrap default gutter */
+                padding-right: var(--bs-gutter-x, 0.75rem);
+            }
+            .chart-container {
+                height: 250px;
+            }
+        }
+        .menu-btn {
+    background: linear-gradient(135deg, #6366f1 0%, #4338ca 100%);
+    color: white;
+    padding: 0.8rem 1.5rem;
+    border-radius: 12px;
+    border: none;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(99, 102, 241, 0.2);
+}
+
+.menu-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(99, 102, 241, 0.3);
+}
+
+/* Title */
+.dashboard-title {
+    font-size: 1.8rem;
+    font-weight: 800;
+    background: linear-gradient(135deg, #2c3e50 0%, #3498db 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin: 0;
+    letter-spacing: 0.5px;
+}
+
+/* Navigation links */
+.nav-links {
+    display: flex;
+    gap: 15px;
+}
+
+.nav-link {
+    padding: 0.8rem 1.5rem;
+    border-radius: 12px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.3s ease;
+}
+
+.nav-link-primary {
+    background: linear-gradient(135deg, #0ea5e9 0%, #0369a1 100%);
+    color: white;
+    border: none;
+    box-shadow: 0 4px 15px rgba(14, 165, 233, 0.2);
+}
+
+.nav-link-secondary {
+    background: white;
+    color: #64748b;
+    border: 2px solid #e2e8f0;
+}
+
+.nav-link:hover {
+    transform: translateY(-2px);
+}
+
+.nav-link-primary:hover {
+    box-shadow: 0 6px 20px rgba(14, 165, 233, 0.3);
+}
+
+.nav-link-secondary:hover {
+    background: #f8fafc;
+    border-color: #cbd5e1;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .header {
+        padding: 1rem;
+        flex-direction: column;
+        gap: 15px;
+    }
+    
+    .nav-links {
+        width: 100%;
+        justify-content: center;
+    }
+    
+    .dashboard-title {
+        font-size: 1.5rem;
+        text-align: center;
+    }
+}
+    </style>
+</head>
+<body>
+    {% comment %} <div class="sidebar">
+        <h2>{{ user.username }}</h2>
+        <ul>
+            {% if request.user.is_authenticated and request.user.type_utilisateur %}
+                {% if request.user.type_utilisateur.nom == 'admin' %}
+                    <li>
+                        <a href="{% url 'maison_liste' %}">
+                            <i class="fas fa-home me-2"></i> Liste des Maisons
+                        </a>
+                    </li>
+
+                    <!-- Quartiers -->
+                    <li>
+                        <a href="{% url 'Quatiers_list' %}">
+                            <i class="fas fa-map-marker-alt me-2"></i> Liste des Quartiers
+                        </a>
+                    </li>
+
+                    <!-- Villes -->
+                    <li>
+                        <a href="{% url 'ville_list' %}">
+                            <i class="fas fa-city me-2"></i> Liste des Villes
+                        </a>
+                    </li>
+
+                    <!-- Types de chambres -->
+                    <li>
+                        <a href="{% url 'liste_typechambres' %}">
+                            <i class="fas fa-bed me-2"></i> Types de Chambres
+                        </a>
+                    </li>
+
+                    <!-- Chambres -->
+                    <li>
+                        <a href="{% url 'liste_chambres' %}">
+                            <i class="fas fa-door-open me-2"></i> Chambres
+                        </a>
+                    </li>
+
+                    <!-- Propriétaires -->
+                    <li>
+                        <a href="{% url 'liste_proprietaire' %}">
+                            <i class="fas fa-user-tie me-2"></i> Liste des Propriétaires
+                        </a>
+                    </li>
+
+                    <!-- Paiements -->
+                    <li>
+                        <a href="{% url 'liste_paiements' %}">
+                            <i class="fas fa-money-bill-wave me-2"></i> Paiements
+                        </a>
+                    </li>
+
+                    <!-- Locations -->
+                    <li>
+                        <a href="{% url 'liste_locations' %}">
+                            <i class="fas fa-key me-2"></i> Liste des Locations
+                        </a>
+                    </li>
+
+                    <!-- Fin de Location -->
+                    <li>
+                        <a href="{% url 'utilisateurs_parchambre' %}">
+                            <i class="fas fa-door-closed me-2"></i> Fin de Location
+                        </a>
+                    </li>
+
+                    <!-- Utilisateurs -->
+                    <li>
+                        <a href="{% url 'liste_utilisateurs' %}">
+                            <i class="fas fa-users me-2"></i> Voir les Utilisateurs
+                        </a>
+                    </li>
+
+                    <!-- Messagerie -->
+                    <li>
+                        <a href="{% url 'message_inbox' %}">
+                            <i class="fas fa-envelope me-2"></i> Messagerie
+                        </a>
+                    </li>
+
+                    {% for user in users %}
+                    <li>
+                        <a href="{% url 'chat_page' receiver_id=user.id %}">
+                            <i class="fas fa-comment me-2"></i> Envoyer un message à {{ user.username }}
+                        </a>
+                    </li>
+                {% endfor %}
+
+    <!-- Création de compte -->
+    <li>
+        <a href="{% url 'signup' %}">
+            <i class="fas fa-user-plus me-2"></i> Création de Compte
+        </a>
+    </li>
+                    liste_chambres
+                    {% for user in users %}
+                        <li><a href="{% url 'send_message   chat_page' receiver_id=user.id %}">{{ user.username }}tttttttttttt</a></li>
+                    {% endfor %}
+                    {# Assurez-vous d'avoir une URL nommée 'signup' et une vue associée, si l'admin peut créer des comptes #}
+                    <li><a href="{% url 'signup'%}"><i class="fas fa-user-plus me-2"></i>Création de compte</a></li>
+
+                {# Menu spécifique pour les Propriétaires #}
+                {% elif request.user.type_utilisateur.nom == 'propriétaire' %}
+                    {# Ajoutez/modifiez ces URLs pour les vues accessibles par les propriétaires #}
+                    {# Vous aviez 'proprietaire_list_maison', vérifiez cette URL #}
+                    <li><a href="{% url 'proprietaire_list_maison'%}"><i class="fas fa-building me-2"></i>Mes biens</a></li>
+                    
+                    <li><a href="#"><i class="fas fa-chart-bar me-2"></i>Statistiques de mes biens</a></li>
+                {# Menu spécifique pour les Locataires #}
+                {% elif request.user.type_utilisateur.nom == 'locataire' %}
+                <li><a href="#"><i class="fas fa-sign-out-alt me-2"></i>Déconnexion</a></li>
+                    <li><a href="#"><i class="fas fa-envelope me-2"></i>Messages</a></li>
+                    <li><a href="{% url 'message_inbox' %}">tttttttttttt</a></li>
+                {% else %}
+                    {# Menu par défaut pour type non spécifié (peut être vide ou contenir des liens très basiques) #}
+                    {# <li><a href="#">Service Client</a></li> #}
+                {% endif %}
+                {# Liens communs pour tous les utilisateurs CONNECTÉS (après la partie spécifique du type) #}
+                {# Assurez-vous d'avoir ces URLs nommées, par exemple 'profile' et 'logout' #}
+                <li><a href="#"><i class="fas fa-user me-2"></i>Mon Profil</a></li>
+                <li><a href="#"><i class="fas fa-cog me-2"></i>Paramètres</a></li>{# Lien générique, remplacez par une URL réelle si nécessaire #}
+                <li><a href="#"><i class="fas fa-sign-out-alt me-2"></i>Déconnexion</a></li>
+            {# Menu pour les utilisateurs NON CONNECTÉS ou connectés SANS type_utilisateur défini #}
+            {% else %}
+                {# Assurez-vous d'avoir une URL nommée 'login' #}
+                <li><a href="{% url 'login' %}"><i class="fas fa-sign-in-alt me-2"></i>Connexion</a></li>
+                {# Si la page de signup est publique, sinon elle reste réservée à l'admin via la condition ci-dessus #}
+                {# <li><a href="{% url 'signup'%}">Inscription</a></li> #}
+            {% endif %}
+        </ul>
+    </div>
+    <div class="main-content">
+        <div class="header">
+            {# Affichage de l'en-tête dynamique #}
+            {% if request.user.is_authenticated and request.user.type_utilisateur %}
+                 {# Utilise le filtre 'capfirst' pour mettre la première lettre en majuscule #}
+                 <h1>Tableau de Bord {{ request.user.type_utilisateur.nom|capfirst }}</h1>
+            {% else %}
+                 <h1>Tableau de Bord</h1>{# En-tête par défaut si non connecté #}
+            {% endif %}
+        </div>
+        <div class="content">
+            {% block content %}
+            <div class="mb-4 row">
+                <div class="col-md-12">
+                    <div class="card">
+                        <div class="text-center card-body">
+                            {# Message de bienvenue dynamique #}
+                            {% if request.user.is_authenticated and request.user.type_utilisateur %}
+                                <h2 class="mb-3">Bienvenue, {{ request.user.type_utilisateur.nom|capfirst }} !</h2>
+                                {% if request.user.type_utilisateur.nom == 'admin' %}
+                                    <p class="lead">Cette section affiche les statistiques et les outils d'administration globaux.</p>
+                                {% elif request.user.type_utilisateur.nom == 'propriétaire' %}
+                                <p class="lead">Gérez vos biens et suivez vos réservations ici.</p>
+                                {% if request.user.is_authenticated %}
+                                        <li><a href="{% url 'Pdashboard' %}">Voir le tableau de bord</a></li>
+                                        {% endif %} 
+                                        {% elif request.user.type_utilisateur.nom == 'locataire' %}
+                                        <p class="lead">Consultez vos réservations et trouvez votre prochain logement.</p>
+                                        {% if request.user.is_authenticated %}
+                                        <li><a href="{% url 'locataire_dashboard' request.user.id %}">Voir le tableau de bord</a></li>
+                                        <li><a href="{% url 'Pdashboard' %}">Voir le tableau de bord</a></li>
+                                        {% endif %} 
+                                        {% else %}
+                                        <p class="lead">Bienvenue sur votre tableau de bord.</p>{# Message par défaut pour un type non géré spécifiquement #}
+                                        {% endif %}
+                                        {% else %}
+                                        <h2 class="mb-3">Bienvenue</h2>
+                                        <p class="lead">Veuillez vous connecter pour accéder à votre tableau de bord.</p>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% if request.user.is_authenticated and request.user.type_utilisateur and request.user.type_utilisateur.nom == 'admin' %}
+                        <div class="mt-4 container-fluid">
+                            <h2 class="mb-4 text-center">📊 Tableau de Bord - Gestion Immobilière</h2>
+                            <div class="row g-4">
+                                <!-- Maisons -->
+                                <div class="col-md-4">
+                                    <div class="text-white shadow card bg-primary h-100">
+                                        <div class="card-body d-flex justify-content-between align-items-center">
+                                            <div><h5>Maisons</h5><h2>{{ maisons_count }}</h2></div>
+                                            <i class="fas fa-home fa-2x"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- Locataires -->
+                                <div class="col-md-4">
+                                    <div class="text-white shadow card bg-info h-100">
+                                        <div class="card-body d-flex justify-content-between align-items-center">
+                                            <div><h5>Locataires</h5><h2>{{ locataires_count }}</h2></div>
+                                            <i class="fas fa-users fa-2x"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- Quartiers -->
+                                <div class="col-md-4">
+                                    <div class="text-white shadow card bg-success h-100">
+                                        <div class="card-body d-flex justify-content-between align-items-center">
+                                            <div><h5>Quartiers</h5><h2>{{ quartiers_count }}</h2></div>
+                                            <i class="fas fa-map-marker-alt fa-2x"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- Villes -->
+                                <div class="col-md-4">
+                                    <div class="text-white shadow card bg-secondary h-100">
+                                        <div class="card-body d-flex justify-content-between align-items-center">
+                                            <div><h5>Villes</h5><h2>{{ villes_count }}</h2></div>
+                                            <i class="fas fa-city fa-2x"></i>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Propriétaires -->
+                                <div class="col-md-4">
+                                    <div class="text-white shadow card bg-warning h-100">
+                                        <div class="card-body d-flex justify-content-between align-items-center">
+                                            <div><h5>Propriétaires</h5><h2>{{ proprietaires_count }}</h2></div>
+                                            <i class="fas fa-user-tie fa-2x"></i>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Chambres Libres -->
+                                <div class="col-md-4">
+                                    <div class="text-white shadow card bg-danger h-100">
+                                        <div class="card-body d-flex justify-content-between align-items-center">
+                                            <div><h5>Chambres Disponibles</h5><h2>{{ chambres_libres_count }}</h2></div>
+                                            <i class="fas fa-bed fa-2x"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- 📊 Graphique chambres -->
+                            <div class="mt-5 shadow card">
+                                <div class="card-body">
+                                    <h5 class="card-title">📈 Répartition des Chambres</h5>
+                                    <canvas id="chambresChart" style="max-height: 350px;"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                        {# Note : Les scripts pour les animations et graphiques sont placés en bas de la page pour de meilleures performances #}
+                        {% endif %} {# Fin de la condition pour les statistiques et graphiques admin #}
+                        {% endblock %}
+                    </div>
+                </div> {% endcomment %}
+                <div class="sidebar" id="sidebar">
+        <h2>{{ user.username }}</h2>
+        <ul>
+            {% if request.user.is_authenticated and request.user.type_utilisateur %}
+                {% if request.user.type_utilisateur.nom == 'admin' %}
+                    <li>
+                        <a href="{% url 'maison_liste' %}">
+                            <i class="fas fa-home me-2"></i> Liste des Maisons
+                        </a>
+                    </li>
+                     <li>
+                        <a href="{% url 'tableau_bord' %}">
+                            <i class="fas fa-home me-2"></i> gggggggggggggggggggg
+                        </a>
+                    </li>
+                   
+                    <li>
+                        <a href="{% url 'Quatiers_list' %}">
+                            <i class="fas fa-map-marker-alt me-2"></i> Liste des Quartiers
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{% url 'ville_list' %}">
+                            <i class="fas fa-city me-2"></i> Liste des Villes
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{% url 'liste_typechambres' %}">
+                            <i class="fas fa-bed me-2"></i> Types de Chambres
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{% url 'liste_chambres' %}">
+                            <i class="fas fa-door-open me-2"></i> Chambres
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{% url 'liste_proprietaire' %}">
+                            <i class="fas fa-user-tie me-2"></i> Liste des Propriétaires
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{% url 'liste_paiements' %}">
+                            <i class="fas fa-money-bill-wave me-2"></i> Paiements
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{% url 'liste_locations' %}">
+                            <i class="fas fa-key me-2"></i> Liste des Locations
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{% url 'utilisateurs_parchambre' %}">
+                            <i class="fas fa-door-closed me-2"></i> Fin de Location
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{% url 'liste_utilisateurs' %}">
+                            <i class="fas fa-users me-2"></i> Voir les Utilisateurs
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{% url 'message_inbox' %}">
+                            <i class="fas fa-envelope me-2"></i> Messagerie
+                        </a>
+                    </li>
+
+                    {% for user in users %}
+                        <li>
+                            <a href="{% url 'chat_page' receiver_id=user.id %}">
+                                <i class="fas fa-comment me-2"></i> Envoyer un message à {{ user.username }}
+                            </a>
+                        </li>
+                    {% endfor %}
+
+                    <li>
+                        <a href="{% url 'signup' %}">
+                            <i class="fas fa-user-plus me-2"></i> Création de Compte
+                        </a>
+                    </li>
+
+                {% elif request.user.type_utilisateur.nom == 'propriétaire' %}
+                    <li><a href="{% url 'proprietaire_list_maison'%}"><i class="fas fa-building me-2"></i>Mes biens</a></li>
+                    <li><a href="#"><i class="fas fa-chart-bar me-2"></i>Statistiques de mes biens</a></li>
+
+                {% elif request.user.type_utilisateur.nom == 'locataire' %}
+                    <li><a href="{% url 'message_inbox' %}"><i class="fas fa-envelope me-2"></i>Messages</a></li>
+                    {% if request.user.is_authenticated %}
+                        <li><a href="{% url 'locataire_dashboard' request.user.id %}"><i class="fas fa-tachometer-alt me-2"></i>Voir le tableau de bord</a></li>
+                    {% endif %}
+
+                {% endif %}
+                <!-- Liens communs pour tous les utilisateurs connectés -->
+                <li><a href="#"><i class="fas fa-user me-2"></i>Mon Profil</a></li>
+                <li><a href="#"><i class="fas fa-cog me-2"></i>Paramètres</a></li>
+            {% else %}
+                <!-- Menu pour les utilisateurs non connectés -->
+                <li><a href="{% url 'login' %}"><i class="fas fa-sign-in-alt me-2"></i>Connexion</a></li>
+            {% endif %}
+        </ul>
+    </div>
+    <div class="overlay" id="sidebar-overlay"></div> <!-- Overlay for mobile sidebar -->
+
+    <div class="main-content" id="main-content">
+        <div class="header d-flex align-items-center justify-content-between">
+    <!-- Menu Button -->
+    <button class="menu-btn" id="menu-toggle" aria-label="Toggle navigation">
+        <i class="fas fa-bars"></i>
+        <span>Menu</span>
+    </button>
+
+    <!-- Title -->
+    {% if request.user.is_authenticated and request.user.type_utilisateur %}
+        <h1 class="dashboard-title">
+            Tableau de Bord {{ request.user.type_utilisateur.nom|capfirst }}
+        </h1>
+    {% else %}
+        <h1 class="dashboard-title">Tableau de Bord</h1>
+    {% endif %}
+
+    <!-- Navigation Links -->
+    <div class="nav-links">
+        <a href="{% url 'tableau_bord' %}" class="nav-link nav-link-primary">
+            <i class="fas fa-home"></i>
+            <span>Accueil</span>
+        </a>
+        <a href="{% url 'tableau_de_bord' %}" class="nav-link nav-link-secondary">
+            <i class="fas fa-tachometer-alt"></i>
+            <span>Tableau de bord</span>
+        </a>
+    </div>
+</div>
+
+        {% comment %} <div class="header">
+            <button class="menu-toggle" id="menu-toggle" aria-label="Toggle navigation">
+                <i class="fas fa-bars"></i>
+            </button>
+            {% if request.user.is_authenticated and request.user.type_utilisateur %}
+                 <h1>Tableau de Bord {{ request.user.type_utilisateur.nom|capfirst }}</h1>
+                  
+                        <a href="{% url 'tableau_bord' %}">
+                            <i class="fas fa-home me-2"></i> Accuil
+                        </a>
+                         <a href="{% url 'tableau_de_bord' %}">
+                            <i class="fas fa-home me-2"></i> Tableau de bord
+                        </a>
+                    
+            {% else %}
+                 <h1>Tableau de Bord</h1>
+            {% endif %}
+        </div> {% endcomment %}
+        <div class="content">
+            {% block content %}
+            <div class="mb-4 row">
+                <div class="col-md-12">
+                    <div class="card">
+                        <div class="text-center card-body">
+                            {% if request.user.is_authenticated and request.user.type_utilisateur %}
+                                <h2 class="mb-3">Bienvenue, {{ request.user.type_utilisateur.nom|capfirst }} !</h2>
+                                {% if request.user.type_utilisateur.nom == 'admin' %}
+                                    <p class="lead">Cette section affiche les statistiques et les outils d'administration globaux.</p>
+                                {% elif request.user.type_utilisateur.nom == 'propriétaire' %}
+                                    <p class="lead">Gérez vos biens et suivez vos réservations ici.</p>
+                                    {% if request.user.is_authenticated %}
+                                        <li><a href="{% url 'Pdashboard' %}" class="mt-3 btn btn-custom">Voir le tableau de bord</a></li>
+                                    {% endif %}
+                                {% elif request.user.type_utilisateur.nom == 'locataire' %}
+                                    <p class="lead">Consultez vos réservations et trouvez votre prochain logement.</p>
+                                    {% if request.user.is_authenticated %}
+                                        <li><a href="{% url 'locataire_dashboard' request.user.id %}" class="mt-3 btn btn-custom">Voir le tableau de bord</a></li>
+                                    {% endif %}
+                                {% else %}
+                                    <p class="lead">Bienvenue sur votre tableau de bord.</p>
+                                {% endif %}
+                            {% else %}
+                                <h2 class="mb-3">Bienvenue</h2>
+                                <p class="lead">Veuillez vous connecter pour accéder à votre tableau de bord.</p>
+                                <a href="{% url 'login' %}" class="mt-3 btn btn-custom">Se connecter</a>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% if request.user.is_authenticated and request.user.type_utilisateur and request.user.type_utilisateur.nom == 'admin' %}
+            <div class="mt-4 container-fluid">
+                <h2 class="mb-4 text-center">📊 Tableau de Bord - Gestion Immobilière</h2>
+                <div class="row g-4">
+                    <!-- Maisons -->
+                    <div class="col-md-4 col-sm-6">
+                        <div class="p-4 text-white stat-card bg-gradient-primary h-100 d-flex flex-column justify-content-between">
+                            <div class="mb-3 d-flex justify-content-between align-items-center">
+                                <div><h5 class="mb-0 opacity-75 text-uppercase">Maisons</h5><h2 class="mt-1 display-6">{{ maisons_count }}</h2></div>
+                                <div class="icon-circle"><i class="fas fa-home"></i></div>
+                            </div>
+                            <small class="text-white-50">Total des propriétés en gestion</small>
+                        </div>
+                    </div>
+                    <!-- Locataires -->
+                    <div class="col-md-4 col-sm-6">
+                        <div class="p-4 text-white stat-card bg-gradient-info h-100 d-flex flex-column justify-content-between">
+                            <div class="mb-3 d-flex justify-content-between align-items-center">
+                                <div><h5 class="mb-0 opacity-75 text-uppercase">Locataires</h5><h2 class="mt-1 display-6">{{ locataires_count }}</h2></div>
+                                <div class="icon-circle"><i class="fas fa-users"></i></div>
+                            </div>
+                             <small class="text-white-50">Utilisateurs ayant loué un bien</small>
+                        </div>
+                    </div>
+                    <!-- Quartiers -->
+                    <div class="col-md-4 col-sm-6">
+                        <div class="p-4 text-white stat-card bg-gradient-success h-100 d-flex flex-column justify-content-between">
+                            <div class="mb-3 d-flex justify-content-between align-items-center">
+                                <div><h5 class="mb-0 opacity-75 text-uppercase">Quartiers</h5><h2 class="mt-1 display-6">{{ quartiers_count }}</h2></div>
+                                <div class="icon-circle"><i class="fas fa-map-marker-alt"></i></div>
+                            </div>
+                            <small class="text-white-50">Nombre de quartiers gérés</small>
+                        </div>
+                    </div>
+                    <!-- Villes -->
+                    <div class="col-md-4 col-sm-6">
+                        <div class="p-4 text-white stat-card bg-gradient-secondary h-100 d-flex flex-column justify-content-between">
+                            <div class="mb-3 d-flex justify-content-between align-items-center">
+                                <div><h5 class="mb-0 opacity-75 text-uppercase">Villes</h5><h2 class="mt-1 display-6">{{ villes_count }}</h2></div>
+                                <div class="icon-circle"><i class="fas fa-city"></i></div>
+                            </div>
+                            <small class="text-white-50">Nombre de villes couvertes</small>
+                        </div>
+                    </div>
+
+                    <!-- Propriétaires -->
+                    <div class="col-md-4 col-sm-6">
+                        <div class="p-4 text-white stat-card bg-gradient-warning h-100 d-flex flex-column justify-content-between">
+                            <div class="mb-3 d-flex justify-content-between align-items-center">
+                                <div><h5 class="mb-0 opacity-75 text-uppercase">Propriétaires</h5><h2 class="mt-1 display-6">{{ proprietaires_count }}</h2></div>
+                                <div class="icon-circle"><i class="fas fa-user-tie"></i></div>
+                            </div>
+                            <small class="text-white-50">Total des propriétaires inscrits</small>
+                        </div>
+                    </div>
+
+                    <!-- Chambres Libres -->
+                    <div class="col-md-4 col-sm-6">
+                        <div class="p-4 text-white stat-card bg-gradient-danger h-100 d-flex flex-column justify-content-between">
+                            <div class="mb-3 d-flex justify-content-between align-items-center">
+                                <div><h5 class="mb-0 opacity-75 text-uppercase">Chambres Dispo.</h5><h2 class="mt-1 display-6">{{ chambres_libres_count }}</h2></div>
+                                <div class="icon-circle"><i class="fas fa-bed"></i></div>
+                            </div>
+                            <small class="text-white-50">Chambres actuellement libres</small>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 📊 Graphique répartition chambres -->
+                <div class="mt-5 card">
+                    <div class="card-body">
+                        <h5 class="mb-4 text-center card-title">📈 Répartition des Chambres (Occupées vs Libres)</h5>
+                       <div class="chart-container d-flex justify-content-center">
+                            <canvas id="chambresChart"></canvas>
+                        </div>
+
+                    </div>
+                </div>
+
+            </div>
+            {% endif %}
+            {% endblock %}
+        </div>
+    </div>
+    <!-- Scripts -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+    // Animation des compteurs
+    document.querySelectorAll(".counter").forEach(counter => {
+      const target = +counter.getAttribute("data-target");
+      let count = 0;
+      const step = target / 50;
+      const interval = setInterval(() => {
+        count += step;
+        if(count >= target) { counter.textContent = target; clearInterval(interval); }
+        else { counter.textContent = Math.floor(count); }
+      }, 40);
+    });
+
+    // Graphique Chambres
+    new Chart(document.getElementById('chambresChart'), {
+      type: 'pie',
+      data: {
+        labels: {{ chambres_labels|safe }},
+        datasets: [{data: {{ chambres_data|safe }}, backgroundColor:['#28a745','#dc3545']}]
+      }
+    });
+
+    // Graphique Locations
+    new Chart(document.getElementById('locationsChart'), {
+      type: 'bar',
+      data: {
+        labels: {{ locations_labels|safe }},
+        datasets: [{
+          label: 'Nombre de locations',
+          data: {{ locations_data|safe }},
+          backgroundColor:'rgba(54,62,235,0.7)',
+          borderColor:'rgba(54,162,235,1)',
+          borderWidth:1
+        }]
+      },
+      options:{ scales:{ y:{ beginAtZero:true } } }
+    });
+  </script>
+  // Ajoute ce script à la fin de ton fichier, juste avant </body>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const menuBtn = document.getElementById('menu-toggle');
+    const sidebar = document.getElementById('sidebar');
+    const overlay = document.getElementById('sidebar-overlay');
+    const mainContent = document.getElementById('main-content');
+
+    function toggleMenu() {
+        sidebar.classList.toggle('show-sidebar');
+        overlay.classList.toggle('show');
+        document.body.classList.toggle('sidebar-open');
+    }
+
+    menuBtn.addEventListener('click', toggleMenu);
+    overlay.addEventListener('click', toggleMenu);
+
+    // Fermer le menu si l'écran est redimensionné en mode desktop
+    window.addEventListener('resize', function() {
+        if (window.innerWidth > 991.98 && sidebar.classList.contains('show-sidebar')) {
+            toggleMenu();
+        }
+    });
+});
+</script>
+</body> 
+
+
+{% comment %} <!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Tableau de Bord{% endblock %}</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome (version 6.x est plus récente et inclut plus d'icônes) -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --sidebar-width: 260px;
+            --main-bg: #f8f9fa;
+            --sidebar-bg-start: #2c3e50;
+            --sidebar-bg-end: #4ca1af;
+            --header-bg-start: #667eea;
+            --header-bg-end: #764ba2;
+            --text-dark: #333;
+            --text-light: #f8f9fa;
+            --card-shadow: 0 8px 24px rgba(44,62,80,0.09);
+            --card-hover-shadow: 0 16px 32px rgba(44,62,80,0.13);
+            --border-radius-lg: 18px;
+            --border-radius-md: 12px;
+            --border-radius-sm: 8px;
+        }
+
+        body {
+            font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(120deg, var(--main-bg) 60%, #e0eafc 100%);
+            color: var(--text-dark);
+            overflow-x: hidden; /* Prevent horizontal scroll on mobile */
+        }
+
+        /* Sidebar */
+        .sidebar {
+            background: linear-gradient(135deg, var(--sidebar-bg-start) 70%, var(--sidebar-bg-end) 100%);
+            color: var(--text-light);
+            padding: 25px 15px;
+            min-height: 100vh;
+            position: fixed;
+            width: var(--sidebar-width);
+            box-shadow: 2px 0 18px rgba(44, 62, 80, 0.12);
+            border-top-right-radius: var(--border-radius-lg);
+            border-bottom-right-radius: var(--border-radius-lg);
+            transition: all 0.3s ease-in-out; /* Smooth transition for sidebar movement */
+            z-index: 1050; /* Above main content */
+        }
+        .sidebar.hide-sidebar { /* Class to hide sidebar on mobile */
+            transform: translateX(-100%);
+        }
+
+        .sidebar h2 {
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 1.7rem;
+            font-weight: 700;
+            letter-spacing: 1px;
+            border-bottom: 1px solid rgba(255,255,255,0.15);
+            padding-bottom: 15px;
+        }
+        .sidebar ul {
+            list-style: none;
+            padding: 0;
+            margin-top: 30px;
+        }
+        .sidebar li {
+            margin-bottom: 18px;
+        }
+        .sidebar a {
+            color: var(--text-light);
+            text-decoration: none;
+            font-size: 1.13rem;
+            display: flex;
+            align-items: center;
+            gap: 12px; /* Increased gap */
+            padding: 12px 18px;
+            border-radius: var(--border-radius-sm);
+            transition: background 0.2s ease, transform 0.2s ease;
+            background: rgba(255,255,255,0.06); /* Slightly more opaque default background */
+            position: relative;
+            overflow: hidden; /* For hover effect */
+        }
+        .sidebar a::before { /* Underline/fill effect on hover */
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background-color: var(--sidebar-bg-end); /* Matching accent color */
+            transform: scaleX(0);
+            transform-origin: bottom right;
+            transition: transform 0.3s ease-out;
+        }
+        .sidebar a:hover::before {
+            transform: scaleX(1);
+            transform-origin: bottom left;
+        }
+
+        .sidebar a:hover {
+            background: rgba(255,255,255,0.15); /* Stronger hover background */
+            transform: translateX(8px); /* More pronounced slide */
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        .sidebar a i {
+            font-size: 1.25rem; /* Larger icons */
+        }
+
+        /* Main Content */
+        .main-content {
+            margin-left: var(--sidebar-width);
+            padding: 30px 20px;
+            min-height: 100vh;
+            transition: margin-left 0.3s ease-in-out;
+        }
+        .main-content.content-full-width { /* For mobile when sidebar is hidden */
+            margin-left: 0;
+        }
+
+        /* Header */
+        .header {
+            background: linear-gradient(135deg, var(--header-bg-start) 70%, var(--header-bg-end) 100%);
+            color: var(--text-light);
+            padding: 28px 30px;
+            box-shadow: 0 6px 24px rgba(102,126,234,0.13);
+            margin-bottom: 35px;
+            border-radius: var(--border-radius-lg);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap; /* Allow header content to wrap */
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 2.3rem;
+            font-weight: 800;
+            text-shadow: 1px 2px 8px rgba(0,0,0,0.1);
+            letter-spacing: 1px;
+        }
+        .menu-toggle { /* Hamburger icon for mobile */
+            display: none; /* Hidden by default on desktop */
+            background: none;
+            border: none;
+            color: var(--text-light);
+            font-size: 1.8rem;
+            cursor: pointer;
+            padding: 5px 10px;
+            border-radius: var(--border-radius-sm);
+            transition: background 0.2s ease;
+        }
+        .menu-toggle:hover {
+            background: rgba(255,255,255,0.1);
+        }
+
+        /* Cards */
+        .card {
+            border: none;
+            border-radius: var(--border-radius-md);
+            box-shadow: var(--card-shadow);
+            transition: all 0.3s ease;
+            margin-bottom: 28px;
+            overflow: hidden;
+            background: var(--white);
+        }
+        .card:hover {
+            transform: translateY(-7px) scale(1.005); /* Subtle scale for cards */
+            box-shadow: var(--card-hover-shadow);
+        }
+        .card-body {
+            padding: 28px;
+        }
+        .card-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 12px;
+            color: #34495e;
+        }
+
+        /* Stat Cards */
+        .stat-card {
+            border-radius: var(--border-radius-md);
+            overflow: hidden;
+            box-shadow: var(--card-shadow);
+            transition: all 0.3s ease;
+            background-color: white; /* Ensure consistent background for gradients */
+        }
+        .stat-card:hover {
+            transform: translateY(-7px) scale(1.02); /* More pronounced lift for stats */
+            box-shadow: var(--card-hover-shadow);
+        }
+        /* Custom gradient backgrounds for stat cards (ensure text is white) */
+        .stat-card.bg-gradient-primary { background: linear-gradient(135deg, #0d6efd 10%, #0a58ca 90%); color: white; }
+        .stat-card.bg-gradient-success { background: linear-gradient(135deg, #198754 10%, #146c43 90%); color: white; }
+        .stat-card.bg-gradient-info { background: linear-gradient(135deg, #0dcaf0 10%, #0997b3 90%); color: white; }
+        .stat-card.bg-gradient-warning { background: linear-gradient(135deg, #ffc107 10%, #e0a800 90%); color: white; }
+        .stat-card.bg-gradient-secondary { background: linear-gradient(135deg, #6c757d 10%, #5c636a 90%); color: white; }
+        .stat-card.bg-gradient-danger { background: linear-gradient(135deg, #dc3545 10%, #bb2d3b 90%); color: white; }
+
+
+        .icon-circle {
+            width: 65px; /* Slightly larger icon circle */
+            height: 65px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(255,255,255,0.25); /* Slightly more opaque background */
+            transition: all 0.3s ease;
+            font-size: 1.8rem; /* Icon size */
+        }
+        .stat-card:hover .icon-circle {
+            transform: rotate(18deg) scale(1.15); /* More dynamic rotation and scale */
+            box-shadow: 0 0 15px rgba(255,255,255,0.3);
+        }
+        .display-6 {
+            font-size: 2.5rem; /* Larger stat numbers */
+            font-weight: 700;
+            animation: countUp 0.8s ease-out forwards;
+            margin: 0;
+        }
+        @keyframes countUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .chart-container {
+            position: relative;
+            height: 400px; /* Slightly taller charts */
+            width: 100%;
+            margin-top: 30px; /* More space above charts */
+        }
+        .btn-custom {
+            border-radius: var(--border-radius-sm);
+            padding: 12px 25px; /* Larger button padding */
+            font-weight: 600;
+            transition: all 0.3s ease;
+            background: linear-gradient(90deg, var(--header-bg-start) 60%, var(--header-bg-end) 100%);
+            color: var(--text-light);
+            border: none;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+        .btn-custom:hover {
+            transform: translateY(-4px); /* More pronounced lift */
+            box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+            background: linear-gradient(90deg, var(--header-bg-end) 60%, var(--header-bg-start) 100%); /* Reverse gradient */
+        }
+
+        /* --- Responsive Adjustments --- */
+        /* Extra large screens (e.g., desktops, larger tablets) - adjust if needed */
+        @media (min-width: 1400px) {
+            .main-content {
+                margin-left: calc(var(--sidebar-width) + 30px); /* Add a bit more space */
+            }
+            .sidebar {
+                width: calc(var(--sidebar-width) + 20px);
+            }
+        }
+
+        /* Medium screens (e.g., tablets) */
+        @media (max-width: 991.98px) {
+            .sidebar {
+                width: 250px; /* Default sidebar width on smaller screens before collapsing */
+                min-height: 100vh;
+                position: fixed; /* Keep it fixed */
+                left: 0;
+                top: 0;
+                transform: translateX(-100%); /* Start hidden */
+                border-radius: 0; /* No rounded corners when collapsed */
+                padding-top: 80px; /* Space for the top bar/menu button */
+            }
+            .sidebar.show-sidebar {
+                transform: translateX(0%); /* Slide in */
+                box-shadow: 6px 0 20px rgba(0, 0, 0, 0.25);
+            }
+
+            .main-content {
+                margin-left: 0; /* Main content always takes full width */
+                padding: 20px 15px;
+            }
+
+            .header {
+                padding: 18px 20px;
+                margin-bottom: 25px;
+                border-radius: var(--border-radius-md);
+                justify-content: space-between; /* Ensure button and title are spaced */
+            }
+            .header h1 {
+                font-size: 1.8rem;
+            }
+            .menu-toggle {
+                display: block; /* Show menu toggle button */
+                order: -1; /* Place it before the title */
+            }
+
+            /* Overlay when sidebar is open */
+            .overlay {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background-color: rgba(0, 0, 0, 0.5);
+                z-index: 1040;
+                display: none;
+            }
+            .overlay.show {
+                display: block;
+            }
+
+            /* Adjust columns for stat cards to stack better */
+            .row.g-4 .col-md-4 {
+                flex: 0 0 50%; /* Two columns per row */
+                max-width: 50%;
+            }
+            .row.g-4 .col-md-4:nth-child(odd) {
+                padding-left: 10px;
+                padding-right: 10px;
+            }
+            .row.g-4 .col-md-4:nth-child(even) {
+                padding-left: 10px;
+                padding-right: 10px;
+            }
+            .chart-container {
+                height: 300px; /* Adjust chart height for smaller screens */
+            }
+        }
+
+        /* Small screens (e.g., mobile phones) */
+        @media (max-width: 575.98px) {
+            .sidebar {
+                width: 280px; /* Slightly wider sidebar for mobile */
+            }
+            .header h1 {
+                font-size: 1.5rem;
+                text-align: center;
+                flex-grow: 1; /* Allow title to take available space */
+            }
+            .header .menu-toggle {
+                margin-right: 10px;
+            }
+            .header {
+                padding: 15px 10px;
+            }
+
+            .card-body {
+                padding: 20px;
+            }
+            .display-6 {
+                font-size: 2rem;
+            }
+            .icon-circle {
+                width: 55px;
+                height: 55px;
+                font-size: 1.5rem;
+            }
+
+            .row.g-4 .col-md-4 { /* Stat cards stack vertically on very small screens */
+                flex: 0 0 100%;
+                max-width: 100%;
+                padding-left: var(--bs-gutter-x, 0.75rem); /* Bootstrap default gutter */
+                padding-right: var(--bs-gutter-x, 0.75rem);
+            }
+            .chart-container {
+                height: 250px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="sidebar" id="sidebar">
+        <h2>{{ user.username }}</h2>
+        <ul>
+            {% if request.user.is_authenticated and request.user.type_utilisateur %}
+                {% if request.user.type_utilisateur.nom == 'admin' %}
+                    <li>
+                        <a href="{% url 'maison_liste' %}">
+                            <i class="fas fa-home me-2"></i> Liste des Maisons
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{% url 'Quatiers_list' %}">
+                            <i class="fas fa-map-marker-alt me-2"></i> Liste des Quartiers
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{% url 'ville_list' %}">
+                            <i class="fas fa-city me-2"></i> Liste des Villes
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{% url 'liste_typechambres' %}">
+                            <i class="fas fa-bed me-2"></i> Types de Chambres
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{% url 'liste_chambres' %}">
+                            <i class="fas fa-door-open me-2"></i> Chambres
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{% url 'liste_proprietaire' %}">
+                            <i class="fas fa-user-tie me-2"></i> Liste des Propriétaires
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{% url 'liste_paiements' %}">
+                            <i class="fas fa-money-bill-wave me-2"></i> Paiements
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{% url 'liste_locations' %}">
+                            <i class="fas fa-key me-2"></i> Liste des Locations
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{% url 'utilisateurs_parchambre' %}">
+                            <i class="fas fa-door-closed me-2"></i> Fin de Location
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{% url 'liste_utilisateurs' %}">
+                            <i class="fas fa-users me-2"></i> Voir les Utilisateurs
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{% url 'message_inbox' %}">
+                            <i class="fas fa-envelope me-2"></i> Messagerie
+                        </a>
+                    </li>
+
+                    {% for user in users %}
+                        <li>
+                            <a href="{% url 'chat_page' receiver_id=user.id %}">
+                                <i class="fas fa-comment me-2"></i> Envoyer un message à {{ user.username }}
+                            </a>
+                        </li>
+                    {% endfor %}
+
+                    <li>
+                        <a href="{% url 'signup' %}">
+                            <i class="fas fa-user-plus me-2"></i> Création de Compte
+                        </a>
+                    </li>
+
+                {% elif request.user.type_utilisateur.nom == 'propriétaire' %}
+                    <li><a href="{% url 'proprietaire_list_maison'%}"><i class="fas fa-building me-2"></i>Mes biens</a></li>
+                    <li><a href="#"><i class="fas fa-chart-bar me-2"></i>Statistiques de mes biens</a></li>
+
+                {% elif request.user.type_utilisateur.nom == 'locataire' %}
+                    <li><a href="{% url 'message_inbox' %}"><i class="fas fa-envelope me-2"></i>Messages</a></li>
+                    {% if request.user.is_authenticated %}
+                        <li><a href="{% url 'locataire_dashboard' request.user.id %}"><i class="fas fa-tachometer-alt me-2"></i>Voir le tableau de bord</a></li>
+                    {% endif %}
+
+                {% endif %}
+                <!-- Liens communs pour tous les utilisateurs connectés -->
+                <li><a href="#"><i class="fas fa-user me-2"></i>Mon Profil</a></li>
+                <li><a href="#"><i class="fas fa-cog me-2"></i>Paramètres</a></li>
+            {% else %}
+                <!-- Menu pour les utilisateurs non connectés -->
+                <li><a href="{% url 'login' %}"><i class="fas fa-sign-in-alt me-2"></i>Connexion</a></li>
+            {% endif %}
+        </ul>
+    </div>
+    <div class="overlay" id="sidebar-overlay"></div> <!-- Overlay for mobile sidebar -->
+
+    <div class="main-content" id="main-content">
+        <div class="header">
+            <button class="menu-toggle" id="menu-toggle" aria-label="Toggle navigation">
+                <i class="fas fa-bars"></i>
+            </button>
+            {% if request.user.is_authenticated and request.user.type_utilisateur %}
+                 <h1>Tableau de Bord {{ request.user.type_utilisateur.nom|capfirst }}</h1>
+            {% else %}
+                 <h1>Tableau de Bord</h1>
+            {% endif %}
+        </div>
+        <div class="content">
+            {% block content %}
+            <div class="mb-4 row">
+                <div class="col-md-12">
+                    <div class="card">
+                        <div class="text-center card-body">
+                            {% if request.user.is_authenticated and request.user.type_utilisateur %}
+                                <h2 class="mb-3">Bienvenue, {{ request.user.type_utilisateur.nom|capfirst }} !</h2>
+                                {% if request.user.type_utilisateur.nom == 'admin' %}
+                                    <p class="lead">Cette section affiche les statistiques et les outils d'administration globaux.</p>
+                                {% elif request.user.type_utilisateur.nom == 'propriétaire' %}
+                                    <p class="lead">Gérez vos biens et suivez vos réservations ici.</p>
+                                    {% if request.user.is_authenticated %}
+                                        <li><a href="{% url 'Pdashboard' %}" class="mt-3 btn btn-custom">Voir le tableau de bord</a></li>
+                                    {% endif %}
+                                {% elif request.user.type_utilisateur.nom == 'locataire' %}
+                                    <p class="lead">Consultez vos réservations et trouvez votre prochain logement.</p>
+                                    {% if request.user.is_authenticated %}
+                                        <li><a href="{% url 'locataire_dashboard' request.user.id %}" class="mt-3 btn btn-custom">Voir le tableau de bord</a></li>
+                                    {% endif %}
+                                {% else %}
+                                    <p class="lead">Bienvenue sur votre tableau de bord.</p>
+                                {% endif %}
+                            {% else %}
+                                <h2 class="mb-3">Bienvenue</h2>
+                                <p class="lead">Veuillez vous connecter pour accéder à votre tableau de bord.</p>
+                                <a href="{% url 'login' %}" class="mt-3 btn btn-custom">Se connecter</a>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% if request.user.is_authenticated and request.user.type_utilisateur and request.user.type_utilisateur.nom == 'admin' %}
+            <div class="mt-4 container-fluid">
+                <h2 class="mb-4 text-center">📊 Tableau de Bord - Gestion Immobilière</h2>
+                <div class="row g-4">
+                    <!-- Maisons -->
+                    <div class="col-md-4 col-sm-6">
+                        <div class="p-4 text-white stat-card bg-gradient-primary h-100 d-flex flex-column justify-content-between">
+                            <div class="mb-3 d-flex justify-content-between align-items-center">
+                                <div><h5 class="mb-0 opacity-75 text-uppercase">Maisons</h5><h2 class="mt-1 display-6">{{ maisons_count }}</h2></div>
+                                <div class="icon-circle"><i class="fas fa-home"></i></div>
+                            </div>
+                            <small class="text-white-50">Total des propriétés en gestion</small>
+                        </div>
+                    </div>
+                    <!-- Locataires -->
+                    <div class="col-md-4 col-sm-6">
+                        <div class="p-4 text-white stat-card bg-gradient-info h-100 d-flex flex-column justify-content-between">
+                            <div class="mb-3 d-flex justify-content-between align-items-center">
+                                <div><h5 class="mb-0 opacity-75 text-uppercase">Locataires</h5><h2 class="mt-1 display-6">{{ locataires_count }}</h2></div>
+                                <div class="icon-circle"><i class="fas fa-users"></i></div>
+                            </div>
+                             <small class="text-white-50">Utilisateurs ayant loué un bien</small>
+                        </div>
+                    </div>
+                    <!-- Quartiers -->
+                    <div class="col-md-4 col-sm-6">
+                        <div class="p-4 text-white stat-card bg-gradient-success h-100 d-flex flex-column justify-content-between">
+                            <div class="mb-3 d-flex justify-content-between align-items-center">
+                                <div><h5 class="mb-0 opacity-75 text-uppercase">Quartiers</h5><h2 class="mt-1 display-6">{{ quartiers_count }}</h2></div>
+                                <div class="icon-circle"><i class="fas fa-map-marker-alt"></i></div>
+                            </div>
+                            <small class="text-white-50">Nombre de quartiers gérés</small>
+                        </div>
+                    </div>
+                    <!-- Villes -->
+                    <div class="col-md-4 col-sm-6">
+                        <div class="p-4 text-white stat-card bg-gradient-secondary h-100 d-flex flex-column justify-content-between">
+                            <div class="mb-3 d-flex justify-content-between align-items-center">
+                                <div><h5 class="mb-0 opacity-75 text-uppercase">Villes</h5><h2 class="mt-1 display-6">{{ villes_count }}</h2></div>
+                                <div class="icon-circle"><i class="fas fa-city"></i></div>
+                            </div>
+                            <small class="text-white-50">Nombre de villes couvertes</small>
+                        </div>
+                    </div>
+
+                    <!-- Propriétaires -->
+                    <div class="col-md-4 col-sm-6">
+                        <div class="p-4 text-white stat-card bg-gradient-warning h-100 d-flex flex-column justify-content-between">
+                            <div class="mb-3 d-flex justify-content-between align-items-center">
+                                <div><h5 class="mb-0 opacity-75 text-uppercase">Propriétaires</h5><h2 class="mt-1 display-6">{{ proprietaires_count }}</h2></div>
+                                <div class="icon-circle"><i class="fas fa-user-tie"></i></div>
+                            </div>
+                            <small class="text-white-50">Total des propriétaires inscrits</small>
+                        </div>
+                    </div>
+
+                    <!-- Chambres Libres -->
+                    <div class="col-md-4 col-sm-6">
+                        <div class="p-4 text-white stat-card bg-gradient-danger h-100 d-flex flex-column justify-content-between">
+                            <div class="mb-3 d-flex justify-content-between align-items-center">
+                                <div><h5 class="mb-0 opacity-75 text-uppercase">Chambres Dispo.</h5><h2 class="mt-1 display-6">{{ chambres_libres_count }}</h2></div>
+                                <div class="icon-circle"><i class="fas fa-bed"></i></div>
+                            </div>
+                            <small class="text-white-50">Chambres actuellement libres</small>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 📊 Graphique répartition chambres -->
+                <div class="mt-5 card">
+                    <div class="card-body">
+                        <h5 class="mb-4 text-center card-title">📈 Répartition des Chambres (Occupées vs Libres)</h5>
+                        <div class="chart-container">
+                             <canvas id="chambresChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 📊 Graphique Locations (si vous avez les données pour le créer) -->
+                <div class="mt-5 card">
+                    <div class="card-body">
+                        <h5 class="mb-4 text-center card-title">📊 Activité des Locations</h5>
+                        <div class="chart-container">
+                            <canvas id="locationsChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+            {% endif %}
+            {% endblock %}
+        </div>
+    </div>
+
+    <!-- Bootstrap JS (bundle includes Popper.js) -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        // Sidebar toggle functionality
+        const sidebar = document.getElementById('sidebar');
+        const mainContent = document.getElementById('main-content');
+        const menuToggle = document.getElementById('menu-toggle');
+        const sidebarOverlay = document.getElementById('sidebar-overlay');
+
+        function toggleSidebar() {
+            sidebar.classList.toggle('show-sidebar');
+            sidebarOverlay.classList.toggle('show');
+            // For main content, we might not need to push it on mobile, just let it be full width
+            // mainContent.classList.toggle('content-full-width');
+        }
+
+        menuToggle.addEventListener('click', toggleSidebar);
+        sidebarOverlay.addEventListener('click', toggleSidebar); // Close sidebar when clicking outside
+
+        // Close sidebar if screen size changes from mobile to desktop
+        window.addEventListener('resize', function() {
+            if (window.innerWidth > 991.98 && sidebar.classList.contains('show-sidebar')) {
+                sidebar.classList.remove('show-sidebar');
+                sidebarOverlay.classList.remove('show');
+            }
+        });
+
+
+        // Animation des compteurs (assuming you're passing data and not fixed numbers)
+        // This function should be called after data is loaded for dynamic values
+        function animateCounters() {
+            document.querySelectorAll(".display-6").forEach(element => {
+                const target = parseInt(element.textContent); // Get the number from the element
+                if (isNaN(target)) return;
+
+                let count = 0;
+                const duration = 800; // ms
+                const start = performance.now();
+
+                function updateCount(currentTime) {
+                    const elapsed = currentTime - start;
+                    const progress = Math.min(elapsed / duration, 1);
+                    const currentValue = Math.floor(progress * target);
+                    element.textContent = currentValue;
+
+                    if (progress < 1) {
+                        requestAnimationFrame(updateCount);
+                    } else {
+                        element.textContent = target; // Ensure it ends on the exact target
+                    }
+                }
+                requestAnimationFrame(updateCount);
+            });
+        }
+        animateCounters(); // Call it on page load
+
+        // Graphique Chambres (Assurez-vous que les données 'chambres_labels' et 'chambres_data' sont bien disponibles)
+        {% if request.user.is_authenticated and request.user.type_utilisateur and request.user.type_utilisateur.nom == 'admin' %}
+        const chambresChartCtx = document.getElementById('chambresChart');
+        if (chambresChartCtx) {
+            new Chart(chambresChartCtx, {
+                type: 'pie',
+                data: {
+                    labels: {{ chambres_labels|safe }}, 
+                    datasets: [{data: {{ chambres_data|safe }}, backgroundColor:['#28a745','#dc3545']}]
+                }
+            });
+
+            // Graphique Locations
+            new Chart(document.getElementById('locationsChart'), {
+            type: 'bar',
+            data: {
+                labels: {{ locations_labels|safe }},
+                datasets: [{
+                label: 'Nombre de locations',
+                data: {{ locations_data|safe }},
+                backgroundColor:'rgba(54,62,235,0.7)',
+                borderColor:'rgba(54,162,235,1)',
+                borderWidth:1
+                }]
+            },
+            options:{ scales:{ y:{ beginAtZero:true } } }
+            });
+            }
+            {% endif %}
+  </script>
+  </body> {% endcomment %}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+{% comment %} <!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Tableau de Bord{% endblock %}</title>{# Rendre ce titre dynamique est une bonne pratique #}
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
+    <style>
+        /* Styles généraux */
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f8f9fa;
+            margin: 0;
+            padding: 0;
+            color: #333;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            background: linear-gradient(135deg, #2c3e50, #4ca1af);
+            color: white;
+            padding: 20px;
+            min-height: 100vh;
+            transition: all 0.3s ease;
+            position: fixed;
+            width: 250px;
+            box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .sidebar h2 {
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 1.5rem;
+            font-weight: 600;
+            padding-bottom: 10px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .sidebar ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .sidebar li {
+            margin-bottom: 15px;
+            transition: transform 0.3s ease;
+        }
+
+        .sidebar li:hover {
+            transform: translateX(5px);
+        }
+
+        .sidebar a {
+            color: white;
+            text-decoration: none;
+            font-size: 1.1rem;
+            display: block;
+            padding: 10px 15px;
+            border-radius: 5px;
+            transition: all 0.3s ease;
+            background-color: rgba(255, 255, 255, 0.05);
+        }
+
+        .sidebar a:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+            transform: scale(1.02);
+        }
+
+        /* Main Content */
+        .main-content {
+            margin-left: 250px;
+            padding: 20px;
+            transition: margin-left 0.3s ease;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 20px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            margin-bottom: 30px;
+            border-radius: 10px;
+            transition: all 0.3s ease;
+        }
+
+        .header:hover {
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+        }
+
+        .header h1 {
+            margin: 0;
+            font-size: 2.2rem;
+            font-weight: 700;
+            text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Cartes */
+        .card {
+            border: none;
+            border-radius: 12px;
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+            margin-bottom: 25px;
+            overflow: hidden;
+        }
+
+        .card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 12px 25px rgba(0, 0, 0, 0.15);
+        }
+
+        .card-body {
+            padding: 25px;
+        }
+
+        .card-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: #333;
+        }
+
+        /* Cartes statistiques */
+        .stat-card {
+            transition: all 0.4s ease;
+            border: none;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        .bg-gradient-primary {
+            background: linear-gradient(45deg, #0d6efd, #0a58ca);
+        }
+
+        .bg-gradient-success {
+            background: linear-gradient(45deg, #198754, #146c43);
+        }
+
+        .bg-gradient-info {
+            background: linear-gradient(45deg, #0dcaf0, #0997b3);
+        }
+
+        .bg-gradient-warning {
+            background: linear-gradient(45deg, #ffc107, #e0a800);
+        }
+
+        .icon-circle {
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+
+        .stat-card:hover .icon-circle {
+            transform: rotate(20deg) scale(1.1);
+        }
+
+        .display-6 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            animation: countUp 0.8s ease-out forwards;
+            margin: 0;
+        }
+
+        /* Animation pour les nombres */
+        @keyframes countUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Graphiques */
+        .chart-container {
+            position: relative;
+            height: 350px;
+            width: 100%;
+            margin-top: 20px;
+        }
+
+        /* Boutons et interactions */
+        .btn-custom {
+            border-radius: 8px;
+            padding: 10px 20px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .btn-custom:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 100%;
+                min-height: auto;
+                position: relative;
+                margin-bottom: 20px;
+            }
+            .main-content {
+                margin-left: 0;
+            }
+            .header h1 {
+                font-size: 1.8rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="sidebar">
+        <h2>{{ user.username }}</h2>
+        <ul>
+            {% if request.user.is_authenticated and request.user.type_utilisateur %}
+                {% if request.user.type_utilisateur.nom == 'admin' %}
+                    {# Assurez-vous que ces URLs nommées sont définies dans votre urls.py pour les vues accessibles par l'admin #}
+                    <li><a href="{% url 'maison_liste' %}"><i class="fas fa-home me-2"></i>Listes des Maisons</a></li>
+                    {# Attention à l'orthographe 'Quatiers_list' vs 'Quartiers_list' dans votre urls.py également #}
+                    <li><a href="{% url 'Quatiers_list' %}"><i class="fas fa-map-marker-alt me-2"></i>Listes des Quartiers</a></li>
+                    <li><a href="{% url 'ville_list' %}"><i class="fas fa-city me-2"></i>Listes des villes</a></li>
+                    <li><a href="{% url 'liste_typechambres' %}"><i class="fas fa-bed me-2"></i>Type de chambre</a></li>
+                    <li><a href="{% url 'liste_chambres' %}"><i class="fas fa-door-open me-2"></i>Chambre</a></li>
+                    <li><a href="{% url 'liste_proprietaire' %}"><i class="fas fa-user-tie me-2"></i>Listes des Propriétaires</a></li>
+                    <li><a href="{% url 'liste_paiements' %}"><i class="fas fa-money-bill-wave me-2"></i>Paiement</a></li>
+                    <li><a href="{% url 'liste_locations' %}"><i class="fas fa-key me-2"></i>Liste de location</a></li>
+                    <li><a href="{% url 'utilisateurs_parchambre'%}"> Fin location </a></li>
+                    <li><a href="{% url 'liste_utilisateurs'%}">Voir les utilisateur</a></li>
+
+                    <li><a href="{% url 'message-list' %}">tttttttttttt</a></li>
+                    liste_chambres
+                    {% for user in users %}
+                        <li><a href="{% url 'send_message   chat_page' receiver_id=user.id %}">{{ user.username }}tttttttttttt</a></li>
+                    {% endfor %}
+                    {# Assurez-vous d'avoir une URL nommée 'signup' et une vue associée, si l'admin peut créer des comptes #}
+                    <li><a href="{% url 'signup'%}"><i class="fas fa-user-plus me-2"></i>Création de compte</a></li>
+
+                {# Menu spécifique pour les Propriétaires #}
+                {% elif request.user.type_utilisateur.nom == 'propriétaire' %}
+                    {# Ajoutez/modifiez ces URLs pour les vues accessibles par les propriétaires #}
+                    {# Vous aviez 'proprietaire_list_maison', vérifiez cette URL #}
+                    <li><a href="{% url 'proprietaire_list_maison'%}"><i class="fas fa-building me-2"></i>Mes biens</a></li>
+                    
+                    <li><a href="#"><i class="fas fa-chart-bar me-2"></i>Statistiques de mes biens</a></li>
+                {# Menu spécifique pour les Locataires #}
+                {% elif request.user.type_utilisateur.nom == 'locataire' %}
+                <li><a href="#"><i class="fas fa-sign-out-alt me-2"></i>Déconnexion</a></li>
+                    <li><a href="#"><i class="fas fa-envelope me-2"></i>Messages</a></li>
+                    <li><a href="{% url 'message-list' %}">tttttttttttt</a></li>
+                    
+                {% else %}
+                    {# Menu par défaut pour type non spécifié (peut être vide ou contenir des liens très basiques) #}
+                    {# <li><a href="#">Service Client</a></li> #}
+                {% endif %}
+                {# Liens communs pour tous les utilisateurs CONNECTÉS (après la partie spécifique du type) #}
+                {# Assurez-vous d'avoir ces URLs nommées, par exemple 'profile' et 'logout' #}
+                <li><a href="#"><i class="fas fa-user me-2"></i>Mon Profil</a></li>
+                <li><a href="#"><i class="fas fa-cog me-2"></i>Paramètres</a></li>{# Lien générique, remplacez par une URL réelle si nécessaire #}
+                <li><a href="#"><i class="fas fa-sign-out-alt me-2"></i>Déconnexion</a></li>
+            {# Menu pour les utilisateurs NON CONNECTÉS ou connectés SANS type_utilisateur défini #}
+            {% else %}
+                {# Assurez-vous d'avoir une URL nommée 'login' #}
+                <li><a href="{% url 'login' %}"><i class="fas fa-sign-in-alt me-2"></i>Connexion</a></li>
+                {# Si la page de signup est publique, sinon elle reste réservée à l'admin via la condition ci-dessus #}
+                {# <li><a href="{% url 'signup'%}">Inscription</a></li> #}
+            {% endif %}
+        </ul>
+    </div>
+    <div class="main-content">
+        <div class="header">
+            {# Affichage de l'en-tête dynamique #}
+            {% if request.user.is_authenticated and request.user.type_utilisateur %}
+                 {# Utilise le filtre 'capfirst' pour mettre la première lettre en majuscule #}
+                 <h1>Tableau de Bord {{ request.user.type_utilisateur.nom|capfirst }}</h1>
+            {% else %}
+                 <h1>Tableau de Bord</h1>{# En-tête par défaut si non connecté #}
+            {% endif %}
+        </div>
+        <div class="content">
+            {% block content %}
+            <div class="mb-4 row">
+                <div class="col-md-12">
+                    <div class="card">
+                        <div class="text-center card-body">
+                            {# Message de bienvenue dynamique #}
+                            {% if request.user.is_authenticated and request.user.type_utilisateur %}
+                                <h2 class="mb-3">Bienvenue, {{ request.user.type_utilisateur.nom|capfirst }} !</h2>
+                                {% if request.user.type_utilisateur.nom == 'admin' %}
+                                    <p class="lead">Cette section affiche les statistiques et les outils d'administration globaux.</p>
+                                {% elif request.user.type_utilisateur.nom == 'propriétaire' %}
+                                <p class="lead">Gérez vos biens et suivez vos réservations ici.</p>
+                                {% if request.user.is_authenticated %}
+                                        <li><a href="{% url 'Pdashboard' %}">Voir le tableau de bord</a></li>
+                                        {% endif %} 
+                                        {% elif request.user.type_utilisateur.nom == 'locataire' %}
+                                        <p class="lead">Consultez vos réservations et trouvez votre prochain logement.</p>
+                                        {% if request.user.is_authenticated %}
+                                        <li><a href="{% url 'locataire_dashboard' request.user.id %}">Voir le tableau de bord</a></li>
+                                        <li><a href="{% url 'Pdashboard' %}">Voir le tableau de bord</a></li>
+                                        {% endif %} 
+                                        {% else %}
+                                        <p class="lead">Bienvenue sur votre tableau de bord.</p>{# Message par défaut pour un type non géré spécifiquement #}
+                                        {% endif %}
+                                        {% else %}
+                                        <h2 class="mb-3">Bienvenue</h2>
+                                        <p class="lead">Veuillez vous connecter pour accéder à votre tableau de bord.</p>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% if request.user.is_authenticated and request.user.type_utilisateur and request.user.type_utilisateur.nom == 'admin' %}
+                        <div class="mt-4 container-fluid">
+                            <h2 class="mb-4 text-center">📊 Tableau de Bord - Gestion Immobilière</h2>
+                            <div class="row g-4">
+                                <!-- Maisons -->
+                                <div class="col-md-4">
+                                    <div class="text-white shadow card bg-primary h-100">
+                                        <div class="card-body d-flex justify-content-between align-items-center">
+                                            <div><h5>Maisons</h5><h2>{{ maisons_count }}</h2></div>
+                                            <i class="fas fa-home fa-2x"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- Locataires -->
+                                <div class="col-md-4">
+                                    <div class="text-white shadow card bg-info h-100">
+                                        <div class="card-body d-flex justify-content-between align-items-center">
+                                            <div><h5>Locataires</h5><h2>{{ locataires_count }}</h2></div>
+                                            <i class="fas fa-users fa-2x"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- Quartiers -->
+                                <div class="col-md-4">
+                                    <div class="text-white shadow card bg-success h-100">
+                                        <div class="card-body d-flex justify-content-between align-items-center">
+                                            <div><h5>Quartiers</h5><h2>{{ quartiers_count }}</h2></div>
+                                            <i class="fas fa-map-marker-alt fa-2x"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- Villes -->
+                                <div class="col-md-4">
+                                    <div class="text-white shadow card bg-secondary h-100">
+                                        <div class="card-body d-flex justify-content-between align-items-center">
+                                            <div><h5>Villes</h5><h2>{{ villes_count }}</h2></div>
+                                            <i class="fas fa-city fa-2x"></i>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Propriétaires -->
+                                <div class="col-md-4">
+                                    <div class="text-white shadow card bg-warning h-100">
+                                        <div class="card-body d-flex justify-content-between align-items-center">
+                                            <div><h5>Propriétaires</h5><h2>{{ proprietaires_count }}</h2></div>
+                                            <i class="fas fa-user-tie fa-2x"></i>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Chambres Libres -->
+                                <div class="col-md-4">
+                                    <div class="text-white shadow card bg-danger h-100">
+                                        <div class="card-body d-flex justify-content-between align-items-center">
+                                            <div><h5>Chambres Disponibles</h5><h2>{{ chambres_libres_count }}</h2></div>
+                                            <i class="fas fa-bed fa-2x"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- 📊 Graphique chambres -->
+                            <div class="mt-5 shadow card">
+                                <div class="card-body">
+                                    <h5 class="card-title">📈 Répartition des Chambres</h5>
+                                    <canvas id="chambresChart" style="max-height: 350px;"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                        {# Note : Les scripts pour les animations et graphiques sont placés en bas de la page pour de meilleures performances #}
+                        {% endif %} {# Fin de la condition pour les statistiques et graphiques admin #}
+                        {% endblock %}
+                    </div>
+                </div>
+    <!-- Scripts -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+    // Animation des compteurs
+    document.querySelectorAll(".counter").forEach(counter => {
+      const target = +counter.getAttribute("data-target");
+      let count = 0;
+      const step = target / 50;
+      const interval = setInterval(() => {
+        count += step;
+        if(count >= target) { counter.textContent = target; clearInterval(interval); }
+        else { counter.textContent = Math.floor(count); }
+      }, 40);
+    });
+
+    // Graphique Chambres
+    new Chart(document.getElementById('chambresChart'), {
+      type: 'pie',
+      data: {
+        labels: {{ chambres_labels|safe }},
+        datasets: [{data: {{ chambres_data|safe }}, backgroundColor:['#28a745','#dc3545']}]
+      }
+    });
+
+    // Graphique Locations
+    new Chart(document.getElementById('locationsChart'), {
+      type: 'bar',
+      data: {
+        labels: {{ locations_labels|safe }},
+        datasets: [{
+          label: 'Nombre de locations',
+          data: {{ locations_data|safe }},
+          backgroundColor:'rgba(54,62,235,0.7)',
+          borderColor:'rgba(54,162,235,1)',
+          borderWidth:1
+        }]
+      },
+      options:{ scales:{ y:{ beginAtZero:true } } }
+    });
+  </script>
+</body>
+</html>
+ {% endcomment %}

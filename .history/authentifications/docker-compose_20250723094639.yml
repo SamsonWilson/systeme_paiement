@@ -1,0 +1,67 @@
+version: '3.8' # J'ai mis à jour la version à 3.8, une version plus moderne
+
+services:
+  web:
+    restart: always
+    build: .
+    command: "sh run.sh"
+    ports:
+      - "8000:8000"
+    volumes:
+      - .:/authentifications
+    env_file:
+      - ".env" # Attention, vous aviez .venv ici, mais .env dans le service celery. Assurez-vous d'utiliser le même.
+    depends_on:
+      db:
+        condition: service_healthy # Attend que la base de données soit prête
+      redis:
+        condition: service_started
+    networks:
+      - default
+
+  db:
+    image: mysql:8.0 # Utilisation de l'image MySQL
+    restart: always
+    volumes:
+      - ./data/db:/var/lib/mysql # Le chemin pour les données MySQL
+    environment:
+      MYSQL_ROOT_PASSWORD:  # Changez ce mot de passe
+      MYSQL_DATABASE: immobilier
+      MYSQL_USER: 
+      MYSQL_PASSWORD: my_password
+    ports:
+      - "3306:3306" # Le port par défaut de MySQL
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-p$${MYSQL_ROOT_PASSWORD}"] # Healthcheck pour MySQL
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - default
+
+  redis:
+    restart: always
+    image: "redis:6.2.2-alpine"
+    networks:
+      - default
+
+  celery:
+    restart: always
+    build: .
+    command: celery -A django_invoice worker -l info -B --scheduler django_celery_beat.schedulers:DatabaseScheduler
+    volumes:
+      - .:/authentifications
+    env_file:
+      - ".venv"
+    depends_on:
+      redis:
+        condition: service_started
+      db:
+        condition: service_healthy
+      web:
+        condition: service_started
+    networks:
+      - default
+
+networks:
+  default:

@@ -1,0 +1,546 @@
+{% comment %} {% extends 'accuiel/base.html' %}
+
+{% block content %}
+<div class="chat-container">
+
+    <!-- Sidebar avec bouton de toggle -->
+    <div class="sidebars" id="sidebar">
+        <h3>💬 Conversations</h3>
+        {% if all_users %}
+            <div class="user-list">
+                {% for user in all_users %}
+                    <div class="user-item">
+                        <a href="{% url 'chat_page' receiver_id=user.id %}" 
+                           class="{% if chat_user and chat_user.id == user.id %}active{% endif %}">
+                            <i class="fas fa-user-circle me-2"></i> {{ user.username }}
+                        </a>
+                    </div>
+                {% empty %}
+                    <p class="empty">Aucun utilisateur disponible.</p>
+                {% endfor %}
+            </div>
+        {% else %}
+            <p class="empty">Aucun utilisateur trouvé.</p>
+        {% endif %}
+    </div>
+
+    <!-- Zone principale -->
+    <div class="chat-box">
+        <div class="chat-header">
+            <button class="toggle-btn" onclick="toggleSidebar()">☰</button>
+            {% if chat_user %}
+                <h4>💌 Conversation avec <span>{{ chat_user.username }}</span></h4>
+            {% else %}
+                <h4>Sélectionnez un utilisateur</h4>
+            {% endif %}
+            <button class="dark-mode-btn" onclick="toggleDarkMode()">🌙</button>
+        </div>
+
+        <!-- Messages -->
+        <div class="messages" id="chat-box">
+            {% for msg in messages %}
+                <div class="message {% if msg.sender == user %}sent{% else %}received{% endif %}">
+                    <div class="message-content">
+                        <p>{{ msg.message }}</p>
+                        <span class="timestamp">{{ msg.timestamp|date:"H:i" }}</span>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+
+        <!-- Formulaire -->
+        <form id="message-form" class="message-form" method="post">
+            {% csrf_token %}
+            <input type="text" name="message" placeholder="Tapez un message..." required>
+            <button type="submit"><i class="fas fa-paper-plane"></i></button>
+        </form>
+    </div>
+</div>
+
+<script>
+    let receiverId = "{{ chat_user.id }}";
+    const messageForm = document.getElementById('message-form');
+    const messageInput = messageForm.querySelector('input[name="message"]');
+    const chatBox = document.getElementById('chat-box');
+
+    // Scroll automatique
+    function scrollToBottom() {
+        chatBox.scrollTop = chatBox.scrollHeight;
+    }
+
+    // Sidebar toggle
+    function toggleSidebar() {
+        document.getElementById('sidebar').classList.toggle('hidden');
+    }
+
+    // Mode sombre
+    function toggleDarkMode() {
+        document.body.classList.toggle('dark');
+    }
+
+    function loadMessages(userId) {
+        fetch(`/messagerie/messages/${userId}/`)
+            .then(response => response.json())
+            .then(data => {
+                chatBox.innerHTML = '';
+                data.messages.forEach(msg => {
+                    const newMessage = document.createElement('div');
+                    newMessage.className = `message ${msg.sender === "{{ user.username }}" ? 'sent' : 'received'}`;
+                    newMessage.innerHTML = `
+                        <div class="message-content">
+                            <p>${msg.message}</p>
+                            <span class="timestamp">${msg.timestamp}</span>
+                        </div>`;
+                    chatBox.appendChild(newMessage);
+                });
+                scrollToBottom();
+            })
+            .catch(err => console.error('Erreur:', err));
+    }
+
+    if (receiverId) loadMessages(receiverId);
+
+    messageForm.addEventListener('submit', function(event) {
+        event.preventDefault();
+
+        const message = messageInput.value.trim();
+        if (message !== '') {
+            const newMessage = document.createElement('div');
+            newMessage.className = 'message sent';
+            newMessage.innerHTML = `<div class="message-content"><p>${message}</p><span class="timestamp">Maintenant</span></div>`;
+            chatBox.appendChild(newMessage);
+            messageInput.value = '';
+            scrollToBottom();
+
+            fetch(`/messagerie/messages/${receiverId}/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'X-CSRFToken': '{{ csrf_token }}'
+                },
+                body: `message=${message}`
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.message === "Message envoyé avec succès") {
+                    loadMessages(receiverId);
+                }
+            })
+            .catch(err => console.error('Erreur:', err));
+        }
+    });
+</script>
+
+<style>
+/* --- Mise en page --- */
+.chat-container {
+    display: flex;
+    height: 90vh;
+    max-width: 1200px;
+    margin: 20px auto;
+    border-radius: 15px;
+    overflow: hidden;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.1);
+}
+
+/* --- Sidebar --- */
+.sidebars {
+    width: 260px;
+    background: linear-gradient(180deg, #A7CE90, #7BB672);
+    color: #fff;
+    padding: 20px;
+    transition: transform 0.3s ease;
+}
+.sidebars.hidden {
+    transform: translateX(-100%);
+}
+.user-list .user-item a {
+    display: block;
+    padding: 10px;
+    border-radius: 10px;
+    color: #fff;
+    text-decoration: none;
+    transition: background 0.3s ease;
+}
+.user-list .user-item a:hover,
+.user-list .user-item a.active {
+    background: rgba(255,255,255,0.2);
+    font-weight: bold;
+}
+
+/* --- Chat principal --- */
+.chat-box {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    background: #f7f7f7;
+}
+.chat-header {
+    background: #007bff;
+    color: #fff;
+    padding: 15px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.chat-header h4 {
+    margin: 0;
+}
+.toggle-btn,
+.dark-mode-btn {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 1.5rem;
+    cursor: pointer;
+}
+
+/* --- Messages --- */
+.messages {
+    flex: 1;
+    padding: 15px;
+    overflow-y: auto;
+    background: #eef1f5;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+.message {
+    max-width: 70%;
+    animation: popIn 0.2s ease-in;
+}
+.sent {
+    margin-left: auto;
+    background: #dcf8c6;
+    border-radius: 20px 20px 5px 20px;
+    padding: 10px 15px;
+}
+.received {
+    margin-right: auto;
+    background: #fff;
+    border-radius: 20px 20px 20px 5px;
+    padding: 10px 15px;
+}
+.message-content p {
+    margin: 0;
+}
+.timestamp {
+    display: block;
+    font-size: 0.7rem;
+    color: #666;
+    margin-top: 4px;
+    text-align: right;
+}
+
+/* --- Formulaire --- */
+.message-form {
+    display: flex;
+    padding: 10px;
+    background: #fff;
+    border-top: 1px solid #ddd;
+}
+.message-form input {
+    flex: 1;
+    padding: 12px;
+    border-radius: 20px;
+    border: 1px solid #ccc;
+    outline: none;
+    margin-right: 10px;
+}
+.message-form button {
+    background: #007bff;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 45px;
+    height: 45px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+}
+.message-form button:hover {
+    background: #0056b3;
+}
+
+/* --- Mode sombre --- */
+body.dark .chat-box {
+    background: #1e1e1e;
+}
+body.dark .messages {
+    background: #121212;
+}
+body.dark .sent {
+    background: #2b7fff;
+    color: white;
+}
+body.dark .received {
+    background: #2a2a2a;
+    color: white;
+}
+body.dark .chat-header {
+    background: #333;
+}
+
+/* Animation */
+@keyframes popIn {
+    from { opacity: 0; transform: translateY(5px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+</style>
+
+{% endblock %} {% endcomment %}
+
+
+
+
+
+
+{% comment %} {% extends 'accuiel/base.html' %}
+
+{% block content %}
+<div class="chat-container">
+    <div class="sidebars">
+        <h3>Conversations</h3>
+        {% if all_users %}
+            <div class="user-list">
+                {% for user in all_users %}
+                    <div class="user-item">
+                        <a href="{% url 'chat_page' receiver_id=user.id %}" class="{% if chat_user and chat_user.id == user.id %}active{% endif %}">
+                            {{ user.username }}
+                        </a>
+                    </div>
+                {% empty %}
+                    <p>Aucun utilisateur disponible.</p>
+                {% endfor %}
+            </div>
+        {% else %}
+            <p>Aucun utilisateur trouvé.</p>
+        {% endif %}
+    </div>
+
+    <div class="chat-box">
+        <div class="chat-header">
+            {% if chat_user %}
+                <h4>Conversation avec {{ chat_user.username }}</h4>
+            {% else %}
+                <h4>Sélectionnez un utilisateur pour commencer une conversation</h4>
+            {% endif %}
+        </div>
+
+        <div class="messages" id="chat-box">
+            {% for msg in messages %}
+                <div class="message {% if msg.sender == user %}sent{% else %}received{% endif %}">
+                    <div class="message-content">
+                        <p>{{ msg.message }}</p>
+                    </div>
+                    <div class="message-info">
+                        <span class="timestamp">{{ msg.timestamp|date:"H:i" }}</span>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+
+        <form id="message-form" class="message-form" method="post">
+            {% csrf_token %}
+            <input type="text" name="message" placeholder="Écrivez un message..." required>
+            <button type="submit">Envoyer</button>
+        </form>
+    </div>
+</div>
+
+
+<script>
+    let receiverId = "{{ chat_user.id }}";  // ID du destinataire
+    const messageForm = document.getElementById('message-form');
+    const messageInput = messageForm.querySelector('input[name="message"]');
+    const chatBox = document.getElementById('chat-box');
+    
+    // Charger les messages existants
+    function loadMessages(userId) {
+        fetch(`/messagerie/messages/${userId}/`)  // Appeler l'URL de la vue ChatView
+            .then(response => response.json())
+            .then(data => {
+                const chatMessages = document.getElementById('chat-box');
+                chatMessages.innerHTML = '';  // Réinitialiser les anciens messages
+
+                // Afficher chaque message
+                data.messages.forEach(msg => {
+                    const newMessage = document.createElement('div');
+                    newMessage.className = msg.sender === "{{ user.username }}" ? 'sent' : 'received';  // Appliquer la classe appropriée
+                    newMessage.innerHTML = `<p>${msg.message}</p><span class="timestamp">${msg.timestamp}</span>`;
+                    chatMessages.appendChild(newMessage);
+                });
+
+                chatMessages.scrollTop = chatMessages.scrollHeight;  // Déplacer vers le bas
+            })
+            .catch(err => console.error('Erreur de chargement des messages:', err));
+    }
+
+    // Charger les messages dès que la page se charge
+    loadMessages(receiverId);
+
+    // Envoi du message
+    messageForm.addEventListener('submit', function(event) {
+        event.preventDefault();
+
+        const message = messageInput.value.trim();
+        if (message !== '') {
+            // Afficher immédiatement le message envoyé dans la boîte de chat
+            const newMessage = document.createElement('div');
+            newMessage.className = 'sent';
+            newMessage.innerHTML = `<p>${message}</p><span class="timestamp">Maintenant</span>`;
+            chatBox.appendChild(newMessage);
+            messageInput.value = '';  // Effacer le champ
+
+            // Faire défiler la boîte de chat vers le bas
+            chatBox.scrollTop = chatBox.scrollHeight;
+
+            // Envoi du message au serveur
+            fetch(`/messagerie/messages/${receiverId}/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'X-CSRFToken': '{{ csrf_token }}'
+                },
+                body: `message=${message}`
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.message !== "Message envoyé avec succès") {
+                    console.error('Erreur:', data.message);
+                } else {
+                    // Si nécessaire, vous pouvez mettre à jour les messages à ce moment-là
+                    loadMessages(receiverId);
+                }
+            })
+            .catch(err => console.error('Erreur:', err));
+        }
+    });
+</script>
+
+
+<style>
+    /* Conteneur principal */
+    .chat-container {
+        display: flex;
+        width: 100%;
+        height: 100vh;
+        flex-direction: row;
+        max-width: 1200px;
+        margin: 0 auto;
+        border: 1px solid #ddd;
+        border-radius: 10px;
+        overflow: hidden;
+        background-color: #fff;
+    }
+    /* Liste des utilisateurs */
+    .sidebars {
+        width: 300px;
+        background: #A7CE90FF;
+        border-right: 1px solid #ddd;
+        padding: 20px;
+        overflow-y: auto;
+    }
+    .sidebars h3 {
+        margin: 0 0 20px;
+        font-size: 1.5em;
+        color: #333;
+    }
+    .sidebars div {
+        margin-bottom: 10px;
+        padding: 10px;
+        background-color: #e9ecef;
+        border-radius: 5px;
+        cursor: pointer;
+        transition: background-color 0.3s;
+    }
+
+    .sidebars div:hover {
+        background-color: #d6d8db;
+    }
+
+    /* Zone de chat */
+    .chat-box {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        background: #f1f1f1;
+    }
+
+    .chat-header {
+        background-color: #007bff;
+        color: white;
+        padding: 15px;
+        text-align: center;
+        font-size: 1.5em;
+    }
+
+    .messages {
+        flex: 1;
+        padding: 20px;
+        overflow-y: auto;
+        background: #e5ddd5;
+    }
+
+    .messages div {
+        margin-bottom: 15px;
+        max-width: 70%;
+        padding: 10px;
+        border-radius: 10px;
+        word-wrap: break-word;
+    }
+
+    .messages .sent {
+        margin-left: auto;
+        background: #dcf8c6;
+        text-align: right;
+    }
+
+    .messages .received {
+        margin-right: auto;
+        background: white;
+        text-align: left;
+    }
+
+    /* Formulaire d'envoi */
+    .message-form {
+        display: flex;
+        padding: 15px;
+        background: #f7f7f7;
+        border-top: 1px solid #ddd;
+    }
+
+    .message-form .input-container {
+        flex: 1;
+        margin-right: 10px;
+    }
+
+    .message-form input[type="text"] {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        font-size: 1em;
+    }
+
+    .message-form button {
+        padding: 10px 20px;
+        background-color: #007bff;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        transition: background-color 0.3s;
+    }
+
+    .message-form button:hover {
+        background-color: #0056b3;
+    }
+</style>
+
+{% endblock %}
+
+
+
+ {% endcomment %}

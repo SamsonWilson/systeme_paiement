@@ -1,0 +1,302 @@
+{% extends 'accuiel/base.html' %}
+{% block content %}
+<div class="chat-container">
+    <div class="chat-header">
+        <a href="{% url 'message_inbox' %}" class="back-button">&larr;</a>
+        <div class="header-info">
+            <div class="avatar-header">{{ other_user.prenom|first|upper }}</div>
+            <h2>{{ other_user.prenom|default:other_user.username }} {{ other_user.nom|default:'' }}</h2>
+            <p class="status">En ligne</p>
+        </div>
+    </div>
+
+    <div class="message-list" id="message-list">
+        {% for message in messages %}
+        <div class="message-wrapper {% if message.sender == user %}my-message{% else %}other-message{% endif %}">
+            {% if message.sender != user %}
+            <div class="avatar-message">{{ message.sender.prenom|first|upper }}</div>
+            {% endif %}
+            <div class="message-bubble {% if message.unread %}new-message{% endif %}">
+                {% if message.image %}
+                    <a href="{{ message.image.url }}" target="_blank">
+                        <img src="{{ message.image.url }}" class="message-image">
+                    </a>
+                {% endif %}
+                {% if message.message %}
+                    <p class="message-text">{{ message.message|linebreaksbr }}</p>
+                {% endif %}
+                <div class="timestamp">{{ message.timestamp|date:"d M, H:i" }}</div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <div class="message-form-container">
+        <form method="post" enctype="multipart/form-data" class="message-form">
+            {% csrf_token %}
+            <label for="id_image" class="image-upload-label">&#128247;</label>
+            <input type="file" name="image" id="id_image" accept="image/*" hidden>
+            {{ form.message }}
+            <button type="submit" class="send-button">&#10148;</button>
+        </form>
+    </div>
+</div>
+
+<style>
+:root {
+    --primary: #007bff;
+    --my-msg-bg: #dcf8c6;
+    --other-msg-bg: #ffffff;
+    --new-msg-bg: #ffeeba;
+    --chat-bg: #f8f9fa;
+    --header-bg: #ffffff;
+    --border-color: #dee2e6;
+    --text-color: #212529;
+    --text-muted: #6c757d;
+    --font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.chat-container {
+    display: flex;
+    flex-direction: column;
+    max-width: 75000000px; /* Largeur légèrement augmentée */
+    height: vh;
+    margin: 1rem auto;
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    background-color: var(--chat-bg);
+    overflow: hidden;
+    font-family: var(--font-family);
+}
+
+.chat-header {
+    display: flex;
+    align-items: center;
+    padding: 10px 14px;
+    background-color: var(--header-bg);
+    border-bottom: 1px solid var(--border-color);
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+.back-button {
+    font-size: 1.3rem;
+    margin-right: 12px;
+    color: var(--primary);
+    text-decoration: none;
+}
+.back-button:hover { color: darkblue; }
+
+.header-info {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+.avatar-header {
+    width: 40px;
+    height: 40px;
+    background-color: var(--primary);
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+}
+.header-info h2 {
+    font-size: 1.05rem;
+    margin: 0;
+}
+.status {
+    font-size: 0.7rem;
+    color: var(--text-muted);
+    margin: 0;
+}
+
+.message-list {
+    flex-grow: 1;
+    padding: 12px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    background-color: #f0f2f5;
+}
+
+.message-wrapper {
+    display: flex;
+    align-items: flex-end;
+    animation: fadeIn 0.3s ease-out;
+}
+
+.my-message { justify-content: flex-end; }
+.other-message { justify-content: flex-start; }
+
+.avatar-message {
+    width: 32px;
+    height: 32px;
+    background-color: var(--primary);
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 0.85rem;
+    margin-right: 6px;
+}
+
+.message-bubble {
+    max-width: 75%; /* Bulles légèrement plus larges */
+    padding: 8px 14px;
+    border-radius: 16px;
+    word-wrap: break-word;
+    transition: transform 0.2s;
+}
+
+.my-message .message-bubble { background-color: var(--my-msg-bg); border-bottom-right-radius: 4px; }
+.other-message .message-bubble { background-color: var(--other-msg-bg); border-bottom-left-radius: 4px; box-shadow: 0 1px 2px rgba(0,0,0,0.08); }
+
+.new-message { background-color: var(--new-msg-bg); border: 1px solid var(--primary); }
+
+.message-bubble:hover { transform: scale(1.02); }
+
+.message-text { margin: 0; font-size: 0.88rem; }
+
+.message-image { max-width: 100%; border-radius: 6px; margin-top: 4px; }
+
+.timestamp { font-size: 0.65rem; color: var(--text-muted); margin-top: 2px; text-align: right; }
+
+.message-form-container {
+    padding: 8px 10px;
+    background-color: #f0f2f5;
+    border-top: 1px solid var(--border-color);
+}
+
+.message-form {
+    display: flex;
+    gap: 8px;
+    align-items: flex-end;
+}
+
+.message-form textarea {
+    flex-grow: 1;
+    border-radius: 20px;
+    padding: 8px 12px;
+    border: 1px solid var(--border-color);
+    resize: none;
+    max-height: 80px;
+    font-size: 0.9rem;
+}
+
+.send-button {
+    background-color: var(--primary);
+    color: white;
+    border-radius: 50%;
+    width: 36px;
+    height: 36px;
+    font-size: 1.1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    cursor: pointer;
+}
+.send-button:hover { background-color: darkblue; }
+
+.image-upload-label {
+    font-size: 1.2rem;
+    cursor: pointer;
+    color: var(--primary);
+}
+.image-upload-label:hover { color: darkblue; }
+
+@keyframes fadeIn {
+    0% { opacity: 0; transform: translateY(4px); }
+    100% { opacity: 1; transform: translateY(0); }
+}
+
+@media (max-width: 768px) {
+    .chat-container { max-width: 95%; height: 65vh; }
+    .message-bubble { max-width: 85%; }
+}
+</style>
+
+<script>
+window.addEventListener('load', function() {
+    const messageList = document.getElementById('message-list');
+    messageList.scrollTop = messageList.scrollHeight;
+
+    const textarea = document.querySelector('.message-form textarea');
+    textarea.addEventListener('input', () => {
+        textarea.style.height = 'auto';
+        textarea.style.height = (textarea.scrollHeight) + 'px';
+    });
+});
+</script>
+{% endblock %}
+
+
+
+
+
+{% comment %} {% extends 'accuiel/base.html' %}
+{% block content %}
+<div class="chat-container">
+    <div class="chat-header">
+        <a href="{% url 'message_inbox' %}" class="back-button">&larr;</a>
+        <div class="header-info">
+            <h2>{{ other_user.prenom|default:other_user.username }} {{ other_user.nom|default:'' }}</h2>
+        </div>
+    </div>
+    <div class="message-list" id="message-list">
+        {% for message in messages %}
+            <div class="message-wrapper {% if message.sender == user %}my-message{% else %}other-message{% endif %}">
+                <div class="message-bubble">
+                    <!-- Affiche l'image si elle existe -->
+                    {% if message.image %}
+                        <a href="{{ message.image.url }}" target="_blank">
+                            <img src="{{ message.image.url }}" class="message-image">
+                        </a>
+                    {% endif %}
+                    
+                    <!-- Affiche le texte s'il existe -->
+                    {% if message.message %}
+                        <p class="message-text">{{ message.message|linebreaksbr }}</p>
+                    {% endif %}
+                    
+                    <div class="timestamp">{{ message.timestamp|date:"d M, H:i" }}</div>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+    <div class="message-form-container">
+        <!-- LA MODIFICATION EST ICI -->
+        <form method="post" enctype="multipart/form-data" class="message-form">
+            {% csrf_token %}
+            {{ form.message }} <!-- Assurez-vous que votre formulaire est bien utilisé -->
+            <label for="id_image" class="image-upload-label">&#128247;</label>
+            <input type="file" name="image" id="id_image" accept="image/*" style="display: none;">
+            <button type="submit">&#10148;</button>
+        </form>
+    </div>
+</div>
+
+<script>
+// Le même script que dans maison_messages.html est parfait ici
+window.addEventListener('load', function() {
+    const messageList = document.getElementById('message-list');
+    messageList.scrollTop = messageList.scrollHeight;
+    const textarea = document.querySelector('.message-form textarea');
+    textarea.addEventListener('input', () => {
+        textarea.style.height = 'auto';
+        textarea.style.height = (textarea.scrollHeight) + 'px';
+    });
+});
+</script>
+<style>
+/* Vous pouvez réutiliser exactement le même CSS que pour maison_messages.html */
+:root { --primary-color: #007bff; --my-message-bg: #dcf8c6; --other-message-bg: #ffffff; --font-family: system-ui, sans-serif; } .chat-container { display: flex; flex-direction: column; max-width: 800px; height: calc(100vh - 100px); margin: 1rem auto; border: 1px solid #e9ecef; border-radius: 8px; overflow: hidden; background-color: #f8f9fa; } .chat-header { display: flex; align-items: center; padding: 10px 15px; background-color: white; border-bottom: 1px solid #e9ecef; } .back-button { font-size: 1.5rem; text-decoration: none; color: var(--primary-color); margin-right: 15px; } .header-info h2 { font-size: 1.1rem; margin: 0; } .header-info p { font-size: 0.8rem; color: #6c757d; margin: 0; } .message-list { flex-grow: 1; padding: 20px; overflow-y: auto; background-color: #f0f2f5; } .message-wrapper { display: flex; margin-bottom: 15px; } .message-wrapper.my-message { justify-content: flex-end; } .message-wrapper.other-message { justify-content: flex-start; } .message-bubble { max-width: 70%; padding: 10px 15px; border-radius: 18px; } .my-message .message-bubble { background-color: var(--my-message-bg); border-bottom-right-radius: 4px; } .other-message .message-bubble { background-color: var(--other-message-bg); border-bottom-left-radius: 4px; box-shadow: 0 1px 1px rgba(0,0,0,0.05); } .sender-name { font-size: 0.8rem; font-weight: bold; color: var(--primary-color); margin-bottom: 5px; } .my-message .sender-name { display: none; } .message-image { max-width: 100%; border-radius: 10px; margin-top: 5px; } .message-text { margin: 0; white-space: pre-wrap; word-wrap: break-word; } .timestamp { font-size: 0.7rem; color: #6c757d; text-align: right; margin-top: 5px; } .message-form-container { padding: 10px; background-color: #f0f2f5; border-top: 1px solid #e9ecef; } .message-form { display: flex; align-items: flex-end; gap: 10px; } .message-form textarea { width: 100%; border: 1px solid #ccc; border-radius: 20px; padding: 10px 15px; font-size: 1rem; resize: none; max-height: 100px; } .image-upload-label, .message-form button { cursor: pointer; border: none; background: none; font-size: 24px; padding: 5px; }
+</style>
+{% endblock %} {% endcomment %}

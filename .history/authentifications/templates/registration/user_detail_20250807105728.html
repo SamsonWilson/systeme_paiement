@@ -1,0 +1,18 @@
+{% extends "accuiel/Base.html" %}
+{% block title %}Détail de l'utilisateur{% endblock %}
+
+{% block content %}
+<h2>Détail de l'utilisateur</h2>
+
+<ul>
+    <li><strong>Nom :</strong> {{ utilisateur.nom }}</li>
+    <li><strong>Prénom :</strong> {{ utilisateur.prenom }}</li>
+    <li><strong>Nom d'utilisateur :</strong> {{ utilisateur.username }}</li>
+    <li><strong>Téléphone :</strong> {{ utilisateur.tel }}</li>
+    <li><strong>Type :</strong> {{ utilisateur.type_utilisateur.nom }}</li>
+    <li><strong>Genre :</strong> {{ utilisateur.get_gender_display }}</li>
+    <li><strong>Personne à prévenir :</strong> {{ utilisateur.nom_personne_prevenir }} {{ utilisateur.prenom_personne_prevenir }} ({{ utilisateur.telephone_personne_prevenir }})</li>
+</ul>
+
+<a href="{% url 'liste_utilisateurs' %}">← Retour à la liste</a>
+{% endblock %}

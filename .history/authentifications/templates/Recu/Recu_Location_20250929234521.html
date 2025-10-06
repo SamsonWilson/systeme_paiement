@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Contrat de Location - N°{{ location.id }}</title>
+    <style>
+        /* ============================= */
+        /*   RÈGLES SPÉCIALES WEASYPRINT */
+        /* ============================= */
+        @page {
+            size: A4;
+            margin: 1cm;
+        }
+
+        body {
+            font-family: 'Helvetica', 'Arial', sans-serif;
+            color: #2c3e50;
+            line-height: 1.4;
+            margin: 0;
+            padding: 0;
+            background: #f8f9fa;
+            font-size: 10pt;
+        }
+
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+        }
+
+        /* ============================= */
+        /*   EN-TÊTE                     */
+        /* ============================= */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 3px solid #e74c3c;
+        }
+
+        .company-info {
+            flex: 1;
+        }
+
+        .company-name {
+            font-size: 20px;
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 5px;
+        }
+
+        .company-details {
+            font-size: 10px;
+            color: #7f8c8d;
+            line-height: 1.3;
+        }
+
+        .contract-info {
+            text-align: right;
+        }
+
+        .contract-title {
+            font-size: 22px;
+            font-weight: 600;
+            color: #e74c3c;
+            margin-bottom: 5px;
+        }
+
+        .contract-number {
+            font-size: 12px;
+            color: #7f8c8d;
+            background: #ecf0f1;
+            padding: 4px 8px;
+            border-radius: 4px;
+            display: inline-block;
+        }
+
+        /* ============================= */
+        /*   SECTIONS GÉNÉRALES          */
+        /* ============================= */
+        .section {
+            margin-bottom: 20px;
+            padding: 15px;
+            border-radius: 8px;
+        }
+
+        .section-title {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            color: #2c3e50;
+        }
+
+        .section-title i {
+            margin-right: 6px;
+            color: #e74c3c;
+        }
+
+        /* Sections spécifiques */
+        .tenant-section { border-left: 4px solid #e74c3c; background: #fdf2f2; }
+        .period-section { border-left: 4px solid #27ae60; background: #ecfdf5; }
+        .location-details { border: 1px solid #e0e0e0; background: #fafafa; }
+        .financial-section { border-left: 4px solid #f39c12; background: #fff7e6; }
+
+        /* ============================= */
+        /*   GRILLES                     */
+        /* ============================= */
+        .grid {
+            display: flex;
+            justify-content: space-between;
+            gap: 15px;
+        }
+
+        .grid-item {
+            flex: 1;
+        }
+
+        .info-label {
+            font-size: 10px;
+            font-weight: 600;
+            color: #7f8c8d;
+            text-transform: uppercase;
+            margin-bottom: 3px;
+        }
+
+        .info-value {
+            font-size: 12px;
+            font-weight: 500;
+            color: #2c3e50;
+        }
+
+        /* ============================= */
+        /*   STATUT PAIEMENT             */
+        /* ============================= */
+        .status-badge {
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 20px;
+            font-size: 10px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        .status-paid { background: #d4edda; color: #155724; }
+        .status-pending { background: #fff3cd; color: #856404; }
+
+        /* ============================= */
+        /*   MONTANT TOTAL CONTRAT       */
+        /* ============================= */
+        .total-amount {
+            background: linear-gradient(135deg, #e74c3c, #c0392b);
+            color: white;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            margin: 15px 0;
+        }
+
+        .total-label { font-size: 12px; opacity: 0.9; }
+        .total-value { font-size: 22px; font-weight: bold; margin-top: 4px; }
+
+        /* ============================= */
+        /*   CONDITIONS GÉNÉRALES        */
+        /* ============================= */
+        .conditions {
+            border-left: 4px solid #3498db;
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 6px;
+            margin: 20px 0;
+        }
+
+        .conditions li {
+            font-size: 11px;
+            color: #7f8c8d;
+            margin-bottom: 5px;
+        }
+
+        /* ============================= */
+        /*   SIGNATURES                  */
+        /* ============================= */
+        .signatures {
+            margin: 30px 0 20px 0;
+            border-top: 1px dashed #bdc3c7;
+            padding-top: 20px;
+        }
+
+        .signature-box {
+            text-align: center;
+        }
+
+        .signature-line {
+            border-bottom: 1px solid #7f8c8d;
+            padding-bottom: 40px;
+            margin-bottom: 8px;
+        }
+
+        .signature-name {
+            font-weight: 600;
+            font-size: 11px;
+            text-transform: uppercase;
+        }
+
+        .signature-role {
+            font-size: 9px;
+            color: #7f8c8d;
+        }
+
+        /* ============================= */
+        /*   FOOTER                      */
+        /* ============================= */
+        .footer {
+            margin-top: 30px;
+            padding-top: 10px;
+            border-top: 2px solid #e74c3c;
+            text-align: center;
+            font-size: 10px;
+            color: #7f8c8d;
+        }
+
+        .footer .contact-info {
+            margin: 8px 0;
+            font-weight: 600;
+            color: #e74c3c;
+        }
+
+        .footer .legal-notice {
+            font-style: italic;
+            color: #95a5a6;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- ============================= -->
+        <!--   EN-TÊTE                     -->
+        <!-- ============================= -->
+        <div class="header">
+            <div class="company-info">
+                <div class="company-name">AGENCE IMMOBILIERE </div>
+                <div class="company-details">
+                    123 Avenue des Propriétés<br>
+                    75001 Paris, France<br>
+                    📞 +22_ 91 13 41 60<br>
+                    ✉️ contact@gestion-immobiliere.fr
+                </div>
+            </div>
+            <div class="contract-info">
+                <div class="contract-title">CONTRAT DE LOCATION</div>
+                <div class="contract-number">N° {{ location.id|stringformat:"06d" }}</div>
+                <div style="margin-top: 6px; font-size: 10px; color: #7f8c8d;">
+                    Émis le {% now "d/m/Y à H:i" %}
+                </div>
+            </div>
+        </div>
+
+        <!-- ============================= -->
+        <!--   INFORMATIONS LOCATAIRE      -->
+        <!-- ============================= -->
+        <div class="section tenant-section">
+            <div class="section-title"><i>👤</i> Informations du Locataire</div>
+            <div class="grid">
+                <div class="grid-item">
+                    <div class="info-label">Nom complet</div>
+                    <div class="info-value">{{ location.utilisateur.nom }} {{ location.utilisateur.prenom }}</div>
+                </div>
+                <div class="grid-item">
+                    <div class="info-label">Téléphone</div>
+                    <div class="info-value">{{ location.utilisateur.tel }}</div>
+                </div>
+                <div class="grid-item">
+                    <div class="info-label">Adresse</div>
+                    <div class="info-value">{{ location.propriete.adresse }}</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ============================= -->
+        <!--   PÉRIODE LOCATION            -->
+        <!-- ============================= -->
+        <div class="section period-section">
+            <div class="section-title"><i>📅</i> Période de Location</div>
+            <div class="grid">
+                <div class="grid-item">
+                    <div class="info-label">Date de début</div>
+                    <div class="info-value" style="color:#27ae60; font-weight:bold;">
+                        {{ location.date_debut_location|date:"d/m/Y" }}
+                    </div>
+                </div>
+                <div class="grid-item">
+                    <div class="info-label">Date de fin</div>
+                    <div class="info-value" style="color:#e74c3c; font-weight:bold;">
+                        {{ location.date_fin_avance|date:"d/m/Y" }}
+                    </div>
+                </div>
+                <div class="grid-item">
+                    <div class="info-label">Durée</div>
+                    <div class="info-value" style="color:#3498db; font-weight:bold;">
+                        {{ location.nombre_mois_paye }} mois
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ============================= -->
+        <!--   DÉTAILS FINANCIERS          -->
+        <!-- ============================= -->
+        <div class="section financial-section">
+            <div class="section-title"><i>💰</i> Détails Financiers</div>
+            <div class="grid">
+                <div class="grid-item">
+                    <div class="info-label">Caution</div>
+                    <div class="info-value">{{ location.montant_caution }} CFA</div>
+                </div>
+                <div class="grid-item">
+                    <div class="info-label">Avance</div>
+                    <div class="info-value">{{ location.montant_avance }} CFA</div>
+                </div>
+                <div class="grid-item">
+                    <div class="info-label">Mode de paiement</div>
+                    <div class="info-value">{{ location.mode_paiement }}</div>
+                </div>
+                <div class="grid-item">
+                    <div class="info-label">Statut</div>
+                    <div class="info-value">
+                        <span class="status-badge status-{{ location.statut_paiement|lower }}">
+                            {{ location.statut_paiement }}
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="total-amount">
+                <div class="total-label">MONTANT TOTAL DU CONTRAT</div>
+                <div class="total-value">{{ location.montant_total }} CFA</div>
+            </div>
+        </div>
+
+        <!-- ============================= -->
+        <!--   SIGNATURES                  -->
+        <!-- ============================= -->
+        <div class="signatures">
+            <div class="signature-box">
+                <div class="signature-line"></div>
+                <div class="signature-name">Signature du Gestionnaire</div>
+            </div>
+        </div>
+
+        <!-- ============================= -->
+        <!--   FOOTER                      -->
+        <!-- ============================= -->
+        <div class="footer">
+            <p><strong>Ce contrat fait office d'engagement officiel entre les parties.</strong></p>
+            <div class="contact-info">📞 +228 91 13 41 60 — ✉️ contact@gestion-immobiliere.fr</div>
+            <div class="legal-notice">
+                Document généré automatiquement le {% now "d/m/Y à H:i" %}<br>
+                © {% now "Y" %} Gestion Immobilière - Tous droits réservés
+            </div>
+        </div>
+    </div>
+</body>
+</html>
+
+
+{% comment %} <!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Reçu de Location</title>
+    <style>
+        @page {
+            size: A3;
+            margin: 1cm;
+        }
+        body {
+            font-family: 'Arial', sans-serif;
+            line-height: 1.4;
+            margin: 0;
+            padding: 0;
+            background: #f8f9fa;
+        }
+        .recu {
+            width: 100%;
+            padding: 0cm;
+            background: #fff;
+            margin: auto;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 1.5cm;
+        }
+        .header h1 {
+            font-size: 24px;
+            color: #2c3e50;
+            margin: 0;
+            text-transform: uppercase;
+        }
+        .header .numero-recu {
+            font-size: 10px;
+            color: #585E34FF;
+            margin-top: 0.5cm;
+        }
+        .card {
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            margin-bottom: 1.5cm;
+            background: #fff;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        .card-header {
+            background: #28a745;
+            color: #fff;
+            padding: 10px 15px;
+            border-bottom: 1px solid #dee2e6;
+            border-radius: 8px 8px 0 0;
+        }
+        .card-header h5 {
+            margin: 0;
+            font-size: 18px;
+        }
+        .card-body {
+            padding: 15px;
+        }
+        .row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        .col-md-4, .col-md-6, .col-12 {
+            flex: 1;
+            min-width: 20%;
+        }
+        .form-label {
+            font-weight: bold;
+            font-size: 14px;
+            margin-bottom: 5px;
+            display: block;
+        }
+        .alert {
+            padding: 10px 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+        }
+        .alert-primary {
+            background: #e9ecef;
+            color: #2c3e50;
+        }
+        .signature {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 2cm;
+        }
+        .signature-box {
+            text-align: center;
+            width: 40%;
+        }
+        .signature-line {
+            border-top: 1px solid #000;
+            margin-top: 1.5cm;
+            padding-top: 5px;
+            font-size: 14px;
+        }
+        .footer {
+            text-align: center;
+            margin-top: 2cm;
+            font-size: 12px;
+            color: #6c757d;
+        }
+    </style>
+</head>
+<body>
+    <div class="recu">
+        <div class="header">
+            <h1>Reçu de Location</h1>
+            <div class="numero-recu">Reçu N° {{ location.id|stringformat:"05d" }}</div>
+            <div>Date d'émission : {{ location.date_paiement|date:"d/m/Y" }}</div>
+        </div>
+
+        <!-- Détails de la Location -->
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="fas fa-file-contract me-2"></i>Détails de la Location</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-4">
+                        <p><strong>Nom :</strong> {{ location.utilisateur.nom }} {{ location.utilisateur.prenom }} {{ location.utilisateur.tel }} </p>
+                        <label class="form-label">Date de début</label>
+                        <p>{{ location.date_debut_location|date:"d/m/Y" }}</p>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Nombre de mois</label>
+                        <p>{{ location.nombre_mois_paye }}</p>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Date de fin</label>
+                        <p>{{ location.date_fin_avance|date:"d/m/Y" }}</p>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Montant caution</label>
+                        <p>{{ location.montant_caution }} CFA</p>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Montant avance</label>
+                        <p>{{ location.montant_avance }} CFA</p>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Mode de paiement</label>
+                        <p>{{ location.mode_paiement }}</p>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Statut du paiement</label>
+                        <p>{{ location.statut_paiement }}</p>
+                    </div>
+                </div>
+                <div class="alert alert-primary">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span class="h5">Montant Total :</span>
+                        <span class="h4">{{ location.montant_total }} CFA</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Signatures -->
+        <div class="signature">
+            <div class="signature-box">
+                <div class="signature-line">Signature du gestionnaire</div>
+            </div>
+        </div>
+        <!-- Footer -->
+        <div class="footer">
+            <p>Ce reçu fait office de preuve de paiement officielle.</p>
+            <p>Pour toute question, veuillez nous contacter au : 91134160 </p>
+            <p>© {{ location.date_paiement|date:"Y" }} Gestion Immobilière - Tous droits réservés</p>
+        </div>
+    </div>
+</body>
+</html> {% endcomment %}

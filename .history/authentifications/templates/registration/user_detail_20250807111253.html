@@ -1,0 +1,35 @@
+{% extends "accuiel/Base.html" %}
+{% load static %}
+
+{% block title %}Détail de l'utilisateur{% endblock %}
+
+{% block content %}
+<h2>Détail de l'utilisateur</h2>
+
+<div style="display: flex; align-items: center; gap: 20px;">
+
+    {% if utilisateur.image %}
+        <img src="{{ utilisateur.image.url }}" alt="Photo de profil"
+             style="width: 150px; height: 150px; border-radius: 50%; object-fit: cover; border: 2px solid #ccc;">
+    {% else %}
+        <img src="{% static 'image/employee.png' %}" alt="Photo par défaut"
+             style="width: 150px; height: 150px; border-radius: 50%; object-fit: cover; border: 2px solid #ccc;">
+    {% endif %}
+
+    <ul style="list-style: none; padding: 0;">
+        <li><strong>Nom :</strong> {{ utilisateur.nom }}</li>
+        <li><strong>Prénom :</strong> {{ utilisateur.prenom }}</li>
+        <li><strong>Nom d'utilisateur :</strong> {{ utilisateur.username }}</li>
+        <li><strong>Téléphone :</strong> {{ utilisateur.tel }}</li>
+        <li><strong>Type :</strong> {{ utilisateur.type_utilisateur.nom }}</li>
+        <li><strong>Genre :</strong> {{ utilisateur.get_gender_display }}</li>
+        <li><strong>Personne à prévenir :</strong>
+            {{ utilisateur.nom_personne_prevenir }} {{ utilisateur.prenom_personne_prevenir }}
+            ({{ utilisateur.telephone_personne_prevenir }})
+        </li>
+    </ul>
+</div>
+
+<br>
+<a href="{% url 'liste_utilisateurs' %}" style="text-decoration: none; color: #3498db;">← Retour à la liste</a>
+{% endblock %}

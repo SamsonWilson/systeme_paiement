@@ -1,0 +1,36 @@
+# Étape 1: Choisir une image de base officielle Python
+FROM python:3.11.9
+
+# Étape 2: Définir des variables d'environnement
+ENV PYTHONUNBUFFERED=1
+ENV PYTHONDONTWRITEBYTECODE=1
+
+# --- AJOUT IMPORTANT ---
+# Étape 3: Installer les dépendances système pour mysqlclient et autres paquets
+# apt-get update -> met à jour la liste des paquets
+# apt-get install -y -> installe les paquets sans poser de question
+# gcc pkg-config -> outils de compilation
+# default-libmysqlclient-dev -> bibliothèques de développement pour MySQL/MariaDB
+# rm -rf ... -> nettoie le cache apt pour garder l'image légère
+RUN apt-get update && apt-get install -y \
+    gcc \
+    pkg-config \
+    default-libmysqlclient-dev \
+    && rm -rf /var/lib/apt/lists/*
+# --- FIN DE L'AJOUT ---
+
+# Étape 4: Créer et définir le répertoire de travail
+WORKDIR /app
+
+# Étape 5: Copier le fichier des dépendances et les installer
+COPY requirements.txt .
+RUN pip install -r requirements.txt
+
+# Étape 6: Copier tout le reste du code du projet
+COPY . .
+
+# Étape 7: Exposer le port
+EXPOSE 8000
+
+# Étape 8: La commande pour lancer l'application
+CMD ["gunicorn", "authentifications.wsgi:application", "--bind", "0.0.0.0:8000"]

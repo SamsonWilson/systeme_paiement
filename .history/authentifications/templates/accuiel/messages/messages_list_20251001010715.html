@@ -1,0 +1,53 @@
+class MaisonMessageView(LoginRequiredMixin, View):
+    """
+    Gère l'affichage et l'envoi de messages pour une maison spécifique.
+    """
+    template_name = 'accuiel/messages/maison_messages.html'
+
+    def get(self, request, maison_id):
+        maison = get_object_or_404(Maison, pk=maison_id)
+
+        # --- Vérification de sécurité ---
+        # Un admin peut tout voir. Un locataire ne peut voir que les conversations de ses locations.
+        if not request.user.is_staff:
+            if maison not in request.user.get_maisons_louees():
+                raise PermissionDenied("Vous n'avez pas accès à cette conversation.")
+        
+        # Marquer les messages comme lus LORSQU'ON OUVRE la conversation
+        # On ne marque que les messages reçus (pas ceux qu'on a envoyés nous-mêmes)
+        maison.messages.filter(is_read=False).exclude(sender=request.user).update(is_read=True)
+
+        # Récupérer tous les messages de la conversation, du plus ancien au plus récent
+        messages = maison.messages.all().order_by('timestamp')
+        
+        context = {
+            'maison': maison,
+            'messages': messages,
+        }
+        return render(request, self.template_name, context)
+
+    def post(self, request, maison_id):
+        maison = get_object_or_404(Maison, pk=maison_id)
+
+        # --- Vérification de sécurité (importante aussi pour le POST !) ---
+        if not request.user.is_staff:
+            if maison not in request.user.get_maisons_louees():
+                raise PermissionDenied("Vous ne pouvez pas envoyer de message dans cette conversation.")
+
+        message_text = request.POST.get('message', '').strip()
+        image_file = request.FILES.get('image')
+
+        # On n'envoie pas de message s'il est vide (ni texte, ni image)
+        if not message_text and not image_file:
+            return redirect('maison_messages', maison_id=maison.id)
+
+        # Créer le nouveau message
+        Message.objects.create(
+            sender=request.user,
+            maison=maison,
+            message=message_text,
+            image=image_file,
+            is_group_message=True # On considère que tous les messages de maison sont de groupe
+        )
+
+        return redirect('maison_messages', maison_id=maison.id)

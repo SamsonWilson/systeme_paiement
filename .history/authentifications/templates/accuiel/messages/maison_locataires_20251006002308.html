@@ -1,0 +1,351 @@
+{% extends 'accuiel/base.html' %}
+{% block content %}
+<div class="locataires-container">
+    <div class="locataires-header">
+        <h1>
+            {% if mode == "admin" %}
+                👥 Locataires de la maison « {{ maison.nom }} »
+            {% else %}
+                💬 Discussion avec l'Administrateur
+            {% endif %}
+        </h1>
+        <a href="{% url 'message_inbox' %}" class="btn-back">&larr; Retour</a>
+    </div>
+
+    <div class="locataires-list">
+        {% if mode == "admin" %}
+            {% for locataire in locataires %}
+                <a href="{% url 'private_chat' user_id=locataire.id %}" class="locataire-link">
+                    <div class="locataire-card" data-locataire-id="{{ locataire.id }}">
+                        <div class="locataire-avatar">
+                            <i class="fas fa-user-circle"></i>
+                        </div>
+                        <div class="locataire-info">
+                            <div class="locataire-name-container">
+                                <h5>{{ locataire.prenom }} {{ locataire.nom }}</h5>
+                                {% if locataire.unread_count > 0 %}
+                                    <span class="notification-badge">{{ locataire.unread_count }}</span>
+                                {% endif %}
+                            </div>
+                            <p class="email"><i class="fas fa-envelope"></i> {{ locataire.email|default:'Non renseigné' }}</p>
+                            <p class="phone"><i class="fas fa-phone"></i> {{ locataire.tel|default:'Non renseigné' }}</p>
+                        </div>
+                    </div>
+                </a>
+            {% empty %}
+                <div class="empty-list"><p>Aucun locataire actif pour cette maison.</p></div>
+            {% endfor %}
+        
+        {% elif mode == "locataire" %}
+            <a href="{% url 'private_chat' user_id=admin.id %}" class="btn-contact">
+                <i class="fas fa-comments"></i> Contacter l'Administrateur
+                {% if unread_count > 0 %}
+                    <span class="notification-badge">{{ unread_count }}</span>
+                {% endif %}
+            </a>
+        {% endif %}
+    </div>
+</div>
+
+<style>
+/* 🌈 Palette moderne */
+:root {
+    --primary-color: #007bff;
+    --danger-color: #dc3545;
+    --background-light: #f8f9fa;
+    --border-color: #dee2e6;
+    --card-background: #ffffff;
+    --text-color: #212529;
+    --text-muted: #6c757d;
+    --shadow: 0 4px 12px rgba(0,0,0,0.08);
+    --font-family: "Poppins", system-ui, sans-serif;
+}
+
+/* 🌍 Container principal */
+.locataires-container {
+    max-width: 850px;
+    margin: 3rem auto;
+    padding: 2rem;
+    font-family: var(--font-family);
+    background-color: var(--background-light);
+    border-radius: 16px;
+    box-shadow: var(--shadow);
+}
+
+/* 🧭 En-tête */
+.locataires-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 2px solid var(--border-color);
+    margin-bottom: 1.8rem;
+    padding-bottom: 0.8rem;
+}
+
+.locataires-header h1 {
+    font-size: 1.6rem;
+    color: var(--text-color);
+    margin: 0;
+}
+
+/* 🔙 Bouton retour */
+.btn-back {
+    background: var(--primary-color);
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    text-decoration: none;
+    transition: background 0.3s ease;
+}
+.btn-back:hover {
+    background: #0056b3;
+}
+
+/* 👤 Carte locataire */
+.locataire-card {
+    display: flex;
+    align-items: center;
+    background: var(--card-background);
+    border-radius: 12px;
+    padding: 1rem 1.2rem;
+    margin-bottom: 1rem;
+    box-shadow: var(--shadow);
+    transition: transform 0.2s ease, box-shadow 0.3s ease;
+}
+.locataire-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 18px rgba(0,0,0,0.12);
+}
+
+/* 🧑‍💼 Avatar */
+.locataire-avatar {
+    font-size: 2.8rem;
+    color: var(--primary-color);
+    margin-right: 1rem;
+}
+
+/* ✉️ Informations */
+.locataire-info {
+    flex: 1;
+}
+.locataire-name-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.locataire-info h5 {
+    margin: 0;
+    color: var(--text-color);
+    font-size: 1.1rem;
+}
+.locataire-info p {
+    margin: 4px 0;
+    color: var(--text-muted);
+    font-size: 0.9rem;
+}
+
+/* 🔔 Badge de notification */
+.notification-badge {
+    background-color: var(--danger-color);
+    color: white;
+    font-size: 0.75rem;
+    font-weight: bold;
+    padding: 0.25em 0.6em;
+    border-radius: 50%;
+    min-width: 22px;
+    text-align: center;
+}
+
+/* 📭 Aucun locataire */
+.empty-list {
+    text-align: center;
+    padding: 2rem;
+    color: var(--text-muted);
+}
+
+/* 💬 Bouton contact admin */
+.btn-contact {
+    display: inline-flex;
+    align-items: center;
+    background: var(--primary-color);
+    color: white;
+    padding: 0.8rem 1.2rem;
+    font-weight: bold;
+    border-radius: 10px;
+    text-decoration: none;
+    transition: background 0.3s ease, transform 0.2s ease;
+}
+.btn-contact:hover {
+    background: #0056b3;
+    transform: translateY(-2px);
+}
+.btn-contact i {
+    margin-right: 0.5rem;
+}
+</style>
+
+{% if mode == 'admin' %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const apiUrl = "{% url 'check_unread_api' maison_id=maison.id %}";
+    
+    const updateNotificationBadges = (unreadData) => {
+        document.querySelectorAll('.locataire-card[data-locataire-id]').forEach(card => {
+            const locataireId = card.dataset.locataireId;
+            const unreadCount = unreadData[locataireId] || 0;
+            const nameContainer = card.querySelector('.locataire-name-container');
+            let badge = nameContainer.querySelector('.notification-badge');
+
+            if (unreadCount > 0) {
+                if (badge) badge.textContent = unreadCount;
+                else {
+                    badge = document.createElement('span');
+                    badge.className = 'notification-badge';
+                    badge.textContent = unreadCount;
+                    nameContainer.appendChild(badge);
+                }
+            } else if (badge) badge.remove();
+        });
+    };
+
+    const checkUnreadMessages = async () => {
+        try {
+            const response = await fetch(apiUrl);
+            if (!response.ok) return;
+            const data = await response.json();
+            updateNotificationBadges(data);
+        } catch (error) {
+            console.error("Erreur réseau :", error);
+        }
+    };
+
+    checkUnreadMessages();
+    setInterval(checkUnreadMessages, 20000);
+});
+</script>
+{% endif %}
+{% endblock %}
+
+{% comment %} {% extends 'accuiel/base.html' %}
+{% block content %}
+<div class="locataires-container">
+    <div class="locataires-header">
+        <h1>
+            {% if mode == "admin" %}
+                Locataires de la maison "{{ maison.nom }}"
+            {% else %}
+                Discussion avec l'Administrateur
+            {% endif %}
+        </h1>
+        <a href="{% url 'message_inbox' %}" class="btn-back">&larr; Retour</a>
+    </div>
+
+    <div class="locataires-list">
+        {% if mode == "admin" %}
+            {% for locataire in locataires %}
+                <a href="{% url 'private_chat' user_id=locataire.id %}" class="locataire-link">
+                    <!-- L'attribut `data-locataire-id` est crucial pour que le JS trouve la bonne carte -->
+                    <div class="locataire-card" data-locataire-id="{{ locataire.id }}">
+                        <div class="locataire-info">
+                            <div class="locataire-name-container">
+                                <h5>{{ locataire.prenom }} {{ locataire.nom }}</h5>
+                                
+                                <!-- Affiche le badge au chargement de la page si nécessaire -->
+                                {% if locataire.unread_count > 0 %}
+                                    <span class="notification-badge">{{ locataire.unread_count }}</span>
+                                {% endif %}
+                            </div>
+                            <p class="email">{{ locataire.email|default:'Email non renseigné' }}</p>
+                            <p class="phone">{{ locataire.tel|default:'Téléphone non renseigné' }}</p>
+                        </div>
+                    </div>
+                </a>
+            {% empty %}
+                <div class="empty-list"><p>Aucun locataire actif pour cette maison.</p></div>
+            {% endfor %}
+        
+        {% elif mode == "locataire" %}
+            <a href="{% url 'private_chat' user_id=admin.id %}" class="btn btn-primary btn-with-badge">
+                Contacter l'Administrateur
+                {% if unread_count > 0 %}
+                    <span class="notification-badge">{{ unread_count }}</span>
+                {% endif %}
+            </a>
+        {% endif %}
+    </div>
+</div>
+
+<style>
+/* Votre CSS est déjà très bien, je le garde tel quel. */
+:root { --primary-color: #007bff; --danger-color: #dc3545; --background-light: #f8f9fa; --border-color: #dee2e6; --card-background: #ffffff; --text-color: #212529; --text-muted: #6c757d; --font-family: system-ui, sans-serif; }
+.locataires-container { max-width: 800px; margin: 2rem auto; padding: 1.5rem; font-family: var(--font-family); background-color: var(--background-light); border-radius: 12px; }
+.locataires-header { display: flex; justify-content: space-between; align-items: center; padding-bottom: 1rem; margin-bottom: 1.5rem; border-bottom: 1px solid var(--border-color); }
+.locataires-header h1 { margin: 0; font-size: 1.5rem; }
+.locataire-card { background: var(--card-background); border: 1px solid var(--border-color); border-radius: 8px; padding: 1rem; margin-bottom: 1rem; transition: box-shadow 0.2s ease-in-out; }
+.locataire-card:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
+.locataire-link { text-decoration: none; color: inherit; }
+.locataire-name-container { display: flex; justify-content: space-between; align-items: center; width: 100%; }
+.locataire-info h5 { margin: 0 0 8px; color: var(--text-color); }
+.locataire-info p { margin: 4px 0; color: var(--text-muted); font-size: 0.9rem; }
+.notification-badge { background-color: var(--danger-color); color: white; font-size: 0.75rem; font-weight: bold; padding: 0.2em 0.6em; border-radius: 1rem; margin-left: 0.75rem; min-width: 20px; text-align: center; line-height: 1.2; }
+.empty-list { text-align: center; padding: 2rem; color: var(--text-muted); }
+</style>
+
+<!-- Le script est ajouté uniquement pour l'admin, pour ne pas charger de JS inutile pour les locataires -->
+{% if mode == 'admin' %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    
+    // Génère l'URL de l'API de manière sécurisée grâce à Django
+    const apiUrl = "{% url 'check_unread_api' maison_id=maison.id %}";
+    
+    // Fonction qui met à jour l'affichage des badges
+    const updateNotificationBadges = (unreadData) => {
+        const locataireCards = document.querySelectorAll('.locataire-card[data-locataire-id]');
+
+        locataireCards.forEach(card => {
+            const locataireId = card.dataset.locataireId;
+            const unreadCount = unreadData[locataireId] || 0;
+            const nameContainer = card.querySelector('.locataire-name-container');
+            let badge = nameContainer.querySelector('.notification-badge');
+
+            if (unreadCount > 0) {
+                if (badge) {
+                    badge.textContent = unreadCount; // Met à jour le badge existant
+                } else {
+                    // Crée le badge s'il n'existe pas
+                    badge = document.createElement('span');
+                    badge.className = 'notification-badge';
+                    badge.textContent = unreadCount;
+                    nameContainer.appendChild(badge);
+                }
+            } else if (badge) {
+                badge.remove(); // Supprime le badge s'il n'y a plus de message
+            }
+        });
+    };
+
+    // Fonction qui appelle l'API pour récupérer les dernières données
+    const checkUnreadMessages = async () => {
+        try {
+            const response = await fetch(apiUrl);
+            if (!response.ok) {
+                console.error("Erreur de l'API:", response.status, response.statusText);
+                return;
+            }
+            const data = await response.json();
+            updateNotificationBadges(data);
+        } catch (error) {
+            console.error("Impossible de contacter le serveur:", error);
+        }
+    };
+
+    // Lance une première vérification juste après le chargement de la page
+    checkUnreadMessages();
+
+    // Répète la vérification toutes les 20 secondes (20000 millisecondes)
+    setInterval(checkUnreadMessages, 20);
+});
+</script>
+{% endif %}
+{% endblock %}   {% endcomment %}

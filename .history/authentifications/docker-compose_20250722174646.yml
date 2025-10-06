@@ -1,0 +1,41 @@
+# docker-compose.yml (version finale)
+
+# Plus besoin de la ligne "version: '3.8'"
+services:
+  db:
+    image: mysql:8.0
+    container_name: mysql_db_container
+    restart: always
+    # Le volume pour que vos données ne soient pas perdues
+    volumes:
+      - mysql_data:/var/lib/mysql
+    # IMPORTANT : Définition des variables pour la création de la base de données
+    environment:
+      MYSQL_DATABASE: 'immobilier' # Le nom de votre base de données
+      MYSQL_USER: 'root' # L'utilisateur
+      MYSQL_ROOT_PASSWORD: 'un_mot_de_passe_solide' # OBLIGATOIRE, mettez un mot de passe ici
+
+  web:
+    build: .
+    container_name: django_app_container
+    command: gunicorn authentifications.wsgi:application --bind 0.0.0.0:8000
+    volumes:
+      - .:/app
+    ports:
+      - "8000:8000"
+    restart: always
+    # IMPORTANT : On passe les variables à Django
+    environment:
+      # Django utilisera ces variables grâce au os.environ.get()
+      - DB_HOST=db
+      - DB_NAME=immobilier # Doit correspondre à MYSQL_DATABASE
+      - DB_USER=root       # Doit correspondre à MYSQL_USER
+      - DB_PASSWORD=       # Pour root, le mot de passe n'est pas utilisé pour la connexion depuis le même réseau par défaut, mais il est bon de le définir si besoin
+      # Passez aussi votre SECRET_KEY pour la sécurité
+     - SECRET_KEY=django-insecure-9cr+ja%d0ace@j1+8+r_a$$czlq3e^zikmg@12hea4puk#(lm-o
+      - DEBUG=1 # Mettez 0 en production
+    depends_on:
+      - db
+
+volumes:
+  mysql_data:

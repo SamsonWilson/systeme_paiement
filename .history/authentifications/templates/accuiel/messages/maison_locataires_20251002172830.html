@@ -1,0 +1,54 @@
+{% extends 'accuiel/base.html' %}  
+{% block content %}  
+<div class="locataires-container">  
+    <div class="locataires-header">  
+        <h1>Locataires de la maison "{{ maison.nom }}"</h1>  
+        <a href="{% url 'message_inbox' %}" class="btn-back">&larr; Retour</a>  
+    </div>  
+    <div class="locataires-list">  
+        {% for locataire in locataires %}
+            <!-- Début de la modification : Ajout de la balise <a> -->
+            <a href="{% url 'private_chat' user_id=locataire.id %}" class="locataire-link">
+                <div class="locataire-card">  
+                    <div class="locataire-info">  
+                        <h5>{{ locataire.prenom }} {{ locataire.nom }}</h5>  
+                        <p class="email">{{ locataire.email|default:'Email non renseigné' }}</p>  
+                        <p class="phone">{{ locataire.tel|default:'Téléphone non renseigné' }}</p>  
+                    </div>  
+                </div>
+            </a>
+            <!-- Fin de la modification -->
+        {% empty %}  
+            <div class="empty-list"><p>Aucun locataire actif pour cette maison.</p></div>  
+        {% endfor %}  
+    </div>  
+</div>  
+
+<style>  
+/* Styles CSS complets pour maison_locataires.html. */  
+:root { /* ... vos variables ... */ } 
+.locataires-container { /* ... vos styles ... */ } 
+.locataires-header { /* ... vos styles ... */ } 
+
+/* Nouveaux styles pour le lien et l'effet de survol */
+.locataire-link {
+    text-decoration: none; /* Supprime le soulignement du lien */
+    color: inherit; /* Utilise la couleur de texte par défaut, pas le bleu des liens */
+}
+
+.locataire-card { 
+    /* ... vos styles existants pour .locataire-card ... */
+    transition: background-color 0.2s, border-color 0.2s; /* Ajoute une transition douce */
+} 
+
+.locataire-card:hover {
+    background-color: #f1f1f1; /* Change la couleur de fond au survol */
+    border-color: var(--primary-color); /* Met en évidence la bordure */
+    cursor: pointer; /* Montre une main pour indiquer que c'est cliquable */
+}
+
+.locataire-info h5 { /* ... vos styles ... */ } 
+.locataire-info p { /* ... vos styles ... */ } 
+.empty-list { /* ... vos styles ... */ }  
+</style>  
+{% endblock %}

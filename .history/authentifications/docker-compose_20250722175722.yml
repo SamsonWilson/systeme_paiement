@@ -1,0 +1,46 @@
+# docker-compose.yml (version finale avec healthcheck)
+
+services:
+  db:
+    image: mysql:8.0
+    container_name: mysql_db_container
+    restart: always
+    volumes:
+      - mysql_data:/var/lib/mysql
+    environment:
+      MYSQL_DATABASE: 'immobilier'
+      MYSQL_USER: 'root'
+      MYSQL_ROOT_PASSWORD: 'un_mot_de_passe_solide' # OBLIGATOIRE
+    # --- AJOUT DE LA SECTION HEALTHCHECK ---
+    healthcheck:
+      # Commande à exécuter pour vérifier si MySQL est prêt.
+      # mysqladmin ping -h localhost -u root -p<mot_de_passe>
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${MYSQL_ROOT_PASSWORD}"]
+      interval: 10s   # Vérifier toutes les 10 secondes
+      timeout: 5s     # Considérer que la vérification a échoué après 5 secondes
+      retries: 5      # Essayer 5 fois avant de marquer comme "unhealthy"
+
+  web:
+    build: .
+    container_name: django_app_container
+    command: gunicorn authentifications.wsgi:application --bind 0.0.0.0:8000
+    volumes:
+      - .:/app
+    ports:
+      - "8000:8000"
+    restart: always
+    environment:
+      - DB_HOST=db
+      - DB_NAME=immobilier
+      - DB_USER=root
+      - DB_PASSWORD=  # Laisser vide si l'utilisateur root n'a pas besoin de mdp pour se connecter
+      # On corrige le problème du $ en le doublant
+      - SECRET_KEY=django-insecure-9cr+ja%d0ace@j1+8+r_a$$czlq3e^zikmg@12hea4puk#(lm-o
+      - DEBUG=1
+    # --- MODIFICATION DE LA SECTION depends_on ---
+    depends_on:
+      db:
+        condition: service_healthy # Attendre que le healthcheck de 'db' soit bon
+
+volumes:
+  mysql_data:

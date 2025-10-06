@@ -1,0 +1,59 @@
+version: '3'
+
+services:
+  web:
+    restart: always
+    build: .
+    command: "sh run.sh"
+    ports:
+      - "8000:8000"
+    volumes:
+      - .:/invoice
+    env_file:
+      - ".env"
+    depends_on:
+      - db
+      - redis
+    networks:
+      - default
+
+  db:
+    image: postgres
+    volumes:
+      - ./data/db:/var/lib/postgresql/data
+    environment:
+      POSTGRES_DB: postgres
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      retries: 5
+    networks:
+      - default
+
+  redis:
+    restart: always
+    image: "redis:6.2.2-alpine"
+    networks:
+      - default
+
+  celery:
+    restart: always
+    build: .
+    command: celery -A django_invoice worker -l info -B --scheduler django_celery_beat.schedulers:DatabaseScheduler
+    volumes:
+      - .:/invoice
+    env_file:
+      - ".env"
+    depends_on:
+      - redis
+      - db
+      - web
+    networks:
+      - default
+
+networks:
+  default:

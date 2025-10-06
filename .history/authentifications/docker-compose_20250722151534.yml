@@ -1,0 +1,39 @@
+version: '3.8'
+
+services:
+  # Service 1: La base de données MySQL
+  db:
+    image: mysql:8.0 # Ou une autre version de votre choix
+    container_name: mysql_db_container # Nom explicite du conteneur
+    restart: always
+    environment:
+      MYSQL_DATABASE: 'immobilier'
+      MYSQL_USER: 'mon_user_django'
+      MYSQL_PASSWORD: 'mon_mot_de_passe_django'
+      MYSQL_ROOT_PASSWORD: 'un_mot_de_passe_root_solide' # Important pour MySQL 8+
+    volumes:
+      - mysql_data:/var/lib/mysql
+
+  # Service 2: Votre application Django
+  web:
+    build: . # Construit l'image à partir du Dockerfile dans le répertoire courant
+    container_name: django_app_container # Nom explicite
+    command: gunicorn authentifications.wsgi:application --bind 0.0.0.0:8000
+    volumes:
+      - .:/app # Utile en dev pour voir les changements de code sans rebuild
+    ports:
+      - "8000:8000" # Mappe le port 8000 du conteneur au port 8000 de votre machine
+    restart: always
+    environment:
+      # --- CONFIGURATION CRUCIALE ---
+      # On dit à Django de se connecter au service nommé 'db'
+      - DB_HOST=db
+      - DB_NAME=ma_db_django
+      - DB_USER=mon_user_django
+      - DB_PASSWORD=mon_mot_de_passe_django
+    depends_on:
+      - db # S'assure que le conteneur 'db' démarre avant 'web'
+
+# On définit un volume nommé pour que les données de la DB persistent
+volumes:
+  mysql_data:

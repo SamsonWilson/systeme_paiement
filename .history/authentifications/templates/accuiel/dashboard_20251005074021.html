@@ -1,0 +1,190 @@
+{% extends "accuiel/base.html" %}
+
+{% block content %}
+<style>
+    :root {
+        --primary-color: #6366f1;
+        --primary-hover: #4338ca;
+        --sidebar-bg: #111827;
+        --main-bg: #f9fafb;
+        --text-light: #f3f4f6;
+        --text-dark: #374151;
+        --card-bg: rgba(255,255,255,0.85);
+        --border-color: #e5e7eb;
+        --shadow-color: rgba(99,102,241,0.08);
+    }
+    body {
+        font-family: 'Poppins', 'Inter', sans-serif;
+        background: linear-gradient(120deg, #f8f9fa 60%, #e0eafc 100%);
+        color: var(--text-dark);
+    }
+    .main-content {
+        margin-left: 260px;
+        width: calc(100% - 260px);
+        padding: 40px 20px;
+        min-height: 100vh;
+        background: transparent;
+    }
+    .main-content header h1 {
+        font-size: 2.3rem;
+        font-weight: 800;
+        color: var(--primary-color);
+        margin-bottom: 30px;
+        letter-spacing: 1px;
+        text-shadow: 0 2px 8px rgba(99,102,241,0.07);
+        animation: fadeInDown 0.7s;
+    }
+    @keyframes fadeInDown {
+        from { opacity: 0; transform: translateY(-30px);}
+        to { opacity: 1; transform: translateY(0);}
+    }
+    .widgets-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+        gap: 30px;
+        margin-bottom: 30px;
+    }
+    .card {
+        background: var(--card-bg);
+        border-radius: 18px;
+        border: 1px solid var(--border-color);
+        box-shadow: 0 8px 32px var(--shadow-color);
+        padding: 32px 28px;
+        position: relative;
+        overflow: hidden;
+        transition: transform 0.25s, box-shadow 0.25s;
+        animation: fadeInUp 0.8s;
+    }
+    .card:hover {
+        transform: translateY(-8px) scale(1.03);
+        box-shadow: 0 16px 40px rgba(99,102,241,0.14);
+    }
+    @keyframes fadeInUp {
+        from { opacity: 0; transform: translateY(30px);}
+        to { opacity: 1; transform: translateY(0);}
+    }
+    .card h3 {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: #6b7280;
+        margin-bottom: 18px;
+        letter-spacing: 0.5px;
+    }
+    .card .stat {
+        font-size: 2.4rem;
+        font-weight: 800;
+        color: var(--primary-color);
+        margin-bottom: 12px;
+        letter-spacing: 1px;
+        transition: color 0.2s;
+        animation: countUp 1s;
+    }
+    @keyframes countUp {
+        from { opacity: 0; transform: translateY(20px);}
+        to { opacity: 1; transform: translateY(0);}
+    }
+    .card .trend, .card .trend-down {
+        font-size: 1.05rem;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+    .card .trend { color: #10b981; }
+    .card .trend-down { color: #ef4444; }
+    .card .icon-bg {
+        position: absolute;
+        top: -18px;
+        right: -18px;
+        font-size: 3.5rem;
+        color: #6366f1;
+        opacity: 0.08;
+        pointer-events: none;
+    }
+    /* Responsive */
+    @media (max-width: 991px) {
+        .main-content { margin-left: 0; width: 100%; padding: 20px 8px;}
+        .widgets-grid { gap: 18px;}
+    }
+    @media (max-width: 600px) {
+        .main-content { padding: 10px 2px;}
+        .card { padding: 18px 10px;}
+        .widgets-grid { grid-template-columns: 1fr;}
+    }
+</style>
+<main class="main-content">
+    <header>
+        <h1>Vue d'ensemble</h1>
+    </header>
+    <section class="widgets-grid">
+        <div class="card animate__animated animate__fadeInUp">
+            <span class="icon-bg"><i class="fas fa-euro-sign"></i></span>
+            <h3>Ventes du jour</h3>
+            <p class="stat" id="stat-ventes">0</p>
+            <span class="trend"><i class="fas fa-arrow-up"></i>+5% vs hier</span>
+        </div>
+        <div class="card animate__animated animate__fadeInUp">
+            <span class="icon-bg"><i class="fas fa-user-plus"></i></span>
+            <h3>Nouveaux Inscrits</h3>
+            <p class="stat" id="stat-inscrits">0</p>
+            <span class="trend"><i class="fas fa-arrow-up"></i>+12% vs semaine passée</span>
+        </div>
+        <div class="card animate__animated animate__fadeInUp">
+            <span class="icon-bg"><i class="fas fa-percentage"></i></span>
+            <h3>Taux de Conversion</h3>
+            <p class="stat" id="stat-conv">0</p>
+            <span class="trend-down"><i class="fas fa-arrow-down"></i>-0.2% vs hier</span>
+        </div>
+        <div class="card animate__animated animate__fadeInUp">
+            <span class="icon-bg"><i class="fas fa-users"></i></span>
+            <h3>Visiteurs Actifs</h3>
+            <p class="stat" id="stat-visiteurs">0</p>
+            <span class="trend"><i class="fas fa-bolt"></i>En temps réel</span>
+        </div>
+    </section>
+</main>
+<script>
+    // Animation des compteurs
+    function animateStat(id, target, duration=1200) {
+        const el = document.getElementById(id);
+        if (!el) return;
+        let start = 0;
+        const step = Math.ceil(target / (duration/20));
+        const interval = setInterval(() => {
+            start += step;
+            if (start >= target) {
+                el.textContent = target.toLocaleString();
+                clearInterval(interval);
+            } else {
+                el.textContent = start.toLocaleString();
+            }
+        }, 20);
+    }
+    document.addEventListener('DOMContentLoaded', () => {
+        animateStat('stat-ventes', 1250);
+        animateStat('stat-inscrits', 84);
+        animateStat('stat-conv', 3.4);
+        animateStat('stat-visiteurs', 2305);
+    });
+</script>
+{% endblock %}
+
+
+{% comment %} {% extends "base.html" %}
+
+{% block title %}
+    Tableau de Bord Administrateur
+{% endblock %}
+
+{% block header %}
+    Tableau de Bord Administrateur
+{% endblock %}
+
+{% block content %}
+    <h2>Bienvenue, {{ user.username }} !</h2>
+    <h2>{{ user.username }}</h2>
+    <p>Voici la section pour afficher des statistiques spécifiques au tableau de bord.</p>
+    <!-- Ajoutez ici le contenu spécifique au tableau de bord de l'administrateur -->
+{% endblock %} {% endcomment %}
+
+

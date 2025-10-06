@@ -1,0 +1,32 @@
+# Étape 1: Choisir une image de base officielle Python
+# On utilise une version "slim" pour avoir une image plus légère.
+# Remplacez 3.10 par la version de Python que vous utilisez.
+FROM python:3.10-slim
+
+# Étape 2: Définir des variables d'environnement
+# Empêche Python de mettre en mémoire tampon les sorties stdout et stderr
+ENV PYTHONUNBUFFERED 1
+# Empêche Python d'écrire des fichiers .pyc
+ENV PYTHONDONTWRITEBYTECODE 1
+
+# Étape 3: Créer et définir le répertoire de travail dans le conteneur
+WORKDIR /app
+
+# Étape 4: Copier le fichier des dépendances et les installer
+# On copie d'abord ce fichier seul pour profiter du cache de Docker.
+# Si requirements.txt ne change pas, Docker n'exécutera pas cette étape à chaque build.
+COPY requirements.txt .
+RUN pip install -r requirements.txt
+
+# Étape 5: Copier tout le reste du code du projet dans le conteneur
+COPY . .
+
+# Étape 6: Exposer le port que l'application va utiliser
+# C'est une documentation pour l'utilisateur, et permet à Docker de mapper ce port.
+EXPOSE 8000
+
+# Étape 7: La commande pour lancer l'application
+# On utilise Gunicorn, un serveur WSGI robuste pour la production.
+# NE PAS utiliser "python manage.py runserver" en production !
+# Remplacez "monprojet" par le nom du dossier qui contient votre settings.py
+CMD ["gunicorn", "monprojet.wsgi:application", "--bind", "0.0.0.0:8000"]

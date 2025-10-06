@@ -1,0 +1,611 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Reçu de Paiement - {{ paiement.location.utilisateur.nom }}</title>
+    <style>
+        /* === CONFIGURATION DE LA PAGE === */
+        @page {
+            size: A4;
+            margin: 1.5cm;
+            @bottom-center {
+                content: "Page " counter(page) " sur " counter(pages);
+                font-size: 10px;
+                color: #666;
+                margin-top: 10px;
+            }
+        }
+
+        /* === STYLES GÉNÉRAUX === */
+        body {
+            font-family: 'Helvetica', 'Arial', sans-serif;
+            color: #2c3e50;
+            line-height: 1.4;
+            margin: 0;
+            padding: 0;
+            background: #f8f9fa;
+        }
+
+        .container {
+            max-width: 100%;
+            background: white;
+            padding: 30px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+            border-radius: 8px;
+        }
+
+        /* === EN-TÊTE PROFESSIONNELLE === */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 3px solid #3498db;
+        }
+
+        .company-info {
+            flex: 1;
+        }
+
+        .company-name {
+            font-size: 24px;
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 5px;
+        }
+
+        .company-details {
+            font-size: 12px;
+            color: #7f8c8d;
+            line-height: 1.3;
+        }
+
+        .receipt-info {
+            text-align: right;
+        }
+
+        .receipt-title {
+            font-size: 28px;
+            font-weight: 300;
+            color: #3498db;
+            margin-bottom: 10px;
+        }
+
+        .receipt-number {
+            font-size: 14px;
+            color: #7f8c8d;
+            background: #ecf0f1;
+            padding: 5px 10px;
+            border-radius: 4px;
+            display: inline-block;
+        }
+
+        /* === INFORMATIONS CLIENT === */
+        .client-section {
+            background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 25px;
+            border-left: 4px solid #3498db;
+        }
+
+        .section-title {
+            color: #2c3e50;
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+        }
+
+        .section-title i {
+            margin-right: 10px;
+            color: #3498db;
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+        }
+
+        .info-item {
+            margin-bottom: 8px;
+        }
+
+        .info-label {
+            font-weight: 600;
+            color: #7f8c8d;
+            font-size: 12px;
+            text-transform: uppercase;
+            margin-bottom: 3px;
+        }
+
+        .info-value {
+            font-size: 14px;
+            color: #2c3e50;
+            font-weight: 500;
+        }
+
+        /* === DÉTAILS DU PAIEMENT === */
+        .payment-details {
+            background: white;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 25px;
+            margin-bottom: 25px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+
+        .payment-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .payment-item {
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 6px;
+            border-left: 3px solid #3498db;
+        }
+
+        /* === MONTANT TOTAL EN ÉVIDENCE === */
+        .total-amount {
+            background: linear-gradient(135deg, #27ae60, #2ecc71);
+            color: white;
+            padding: 25px;
+            border-radius: 8px;
+            text-align: center;
+            margin: 25px 0;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .total-amount::before {
+            content: "";
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: rgba(255,255,255,0.1);
+            transform: rotate(45deg);
+        }
+
+        .total-label {
+            font-size: 16px;
+            opacity: 0.9;
+            margin-bottom: 5px;
+        }
+
+        .total-value {
+            font-size: 32px;
+            font-weight: bold;
+            margin: 0;
+        }
+
+        /* === COMMENTAIRE === */
+        .comment-section {
+            background: #e3f2fd;
+            border-left: 4px solid #2196f3;
+            padding: 15px;
+            border-radius: 6px;
+            margin: 20px 0;
+        }
+
+        .comment-label {
+            font-weight: 600;
+            color: #1976d2;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+
+        .comment-text {
+            color: #1565c0;
+            font-style: italic;
+            margin: 0;
+        }
+
+        /* === SIGNATURES PROFESSIONNELLES === */
+        .signatures {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin: 40px 0 30px 0;
+            padding-top: 30px;
+            border-top: 2px dashed #bdc3c7;
+        }
+
+        .signature-box {
+            text-align: center;
+        }
+
+        .signature-line {
+            border-bottom: 1px solid #7f8c8d;
+            padding-bottom: 40px;
+            margin-bottom: 10px;
+            color: #7f8c8d;
+            font-size: 14px;
+        }
+
+        .signature-name {
+            font-weight: 600;
+            color: #2c3e50;
+            font-size: 12px;
+            text-transform: uppercase;
+        }
+
+        /* === FOOTER PROFESSIONNEL === */
+        .footer {
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 2px solid #3498db;
+            text-align: center;
+            font-size: 11px;
+            color: #7f8c8d;
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 6px;
+        }
+
+        .footer p {
+            margin: 5px 0;
+        }
+
+        .legal-notice {
+            font-style: italic;
+            color: #95a5a6;
+            margin-top: 10px;
+        }
+
+        /* === BADGES DE STATUT === */
+        .status-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .status-paid {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status-pending {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        /* === TIMBRE DE VALIDATION === */
+        .validation-stamp {
+            position: absolute;
+            top: 50px;
+            right: 50px;
+            transform: rotate(15deg);
+            background: #27ae60;
+            color: white;
+            padding: 15px 25px;
+            border-radius: 4px;
+            font-weight: bold;
+            font-size: 16px;
+            opacity: 0.9;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- TIMBRE DE VALIDATION -->
+        <div class="validation-stamp">
+            {{ paiement.statut_paiement|upper }}
+        </div>
+
+        <!-- EN-TÊTE -->
+        <div class="header">
+            <div class="company-info">
+                <div class="company-name">GESTION IMMOBILIÈRE</div>
+                <div class="company-details">
+                    123 Avenue des Propriétés<br>
+                    75001 Paris, France<br>
+                    Tél: +XXX XX XX XX XX<br>
+                    Email: contact@gestion-immobiliere.fr
+                </div>
+            </div>
+            <div class="receipt-info">
+                <div class="receipt-title">REÇU DE PAIEMENT</div>
+                <div class="receipt-number">N° {{ paiement.id|stringformat:"06d" }}</div>
+                <div style="margin-top: 10px; font-size: 12px; color: #7f8c8d;">
+                    Émis le {% now "d/m/Y à H:i" %}
+                </div>
+            </div>
+        </div>
+
+        <!-- INFORMATIONS DU LOCATAIRE -->
+        <div class="client-section">
+            <div class="section-title">
+                <i>👤</i> Informations du Locataire
+            </div>
+            <div class="info-grid">
+                <div class="info-item">
+                    <div class="info-label">Nom complet</div>
+                    <div class="info-value">{{ paiement.location.utilisateur.nom }}</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Adresse de location</div>
+                    <div class="info-value">{{ paiement.location.propriete.adresse }}</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- DÉTAILS DU PAIEMENT -->
+        <div class="payment-details">
+            <div class="section-title">
+                <i>💰</i> Détails du Paiement
+            </div>
+            
+            <div class="payment-grid">
+                <div class="payment-item">
+                    <div class="info-label">Période payée</div>
+                    <div class="info-value">{{ paiement.nombre_mois_paye }} mois</div>
+                </div>
+                <div class="payment-item">
+                    <div class="info-label">Date de début</div>
+                    <div class="info-value">{{ paiement.location.date_debut_location|date:"d/m/Y" }}</div>
+                </div>
+                <div class="payment-item">
+                    <div class="info-label">Date de fin</div>
+                    <div class="info-value">{{ paiement.date_fin_paiement|date:"d/m/Y" }}</div>
+                </div>
+                <div class="payment-item">
+                    <div class="info-label">Mode de paiement</div>
+                    <div class="info-value">{{ paiement.mode_paiement }}</div>
+                </div>
+                <div class="payment-item">
+                    <div class="info-label">Statut</div>
+                    <div class="info-value">
+                        <span class="status-badge status-{{ paiement.statut_paiement|lower }}">
+                            {{ paiement.statut_paiement }}
+                        </span>
+                    </div>
+                </div>
+                <div class="payment-item">
+                    <div class="info-label">Commission</div>
+                    <div class="info-value">{{ paiement.commission }} CFA</div>
+                </div>
+            </div>
+
+            <!-- COMMENTAIRE -->
+            {% if paiement.commentaire %}
+            <div class="comment-section">
+                <div class="comment-label">Commentaire :</div>
+                <div class="comment-text">{{ paiement.commentaire }}</div>
+            </div>
+            {% endif %}
+
+            <!-- MONTANT TOTAL -->
+            <div class="total-amount">
+                <div class="total-label">MONTANT TOTAL PAYÉ</div>
+                <div class="total-value">{{ paiement.montant_paye }} CFA</div>
+            </div>
+        </div>
+
+        <!-- SIGNATURES -->
+        <div class="signatures">
+            <div class="signature-box">
+                <div class="signature-line"></div>
+                <div class="signature-name">Signature du Locataire</div>
+            </div>
+            <div class="signature-box">
+                <div class="signature-line"></div>
+                <div class="signature-name">Signature du Gestionnaire</div>
+            </div>
+        </div>
+
+        <!-- FOOTER -->
+        <div class="footer">
+            <p><strong>Ce reçu fait office de preuve de paiement officielle.</strong></p>
+            <p>Pour toute question, veuillez nous contacter au : +XXX XX XX XX XX</p>
+            <p>Email : contact@gestion-immobiliere.fr</p>
+            <div class="legal-notice">
+                Document généré automatiquement le {% now "d/m/Y à H:i" %} - 
+                © {% now "Y" %} Gestion Immobilière - Tous droits réservés
+            </div>
+        </div>
+    </div>
+</body>
+</html>
+
+
+{% comment %} <!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Reçu de Paiement</title>
+    <style>
+        @page {
+            size: A3;
+            margin: 1cm;
+        }
+        body {
+            font-family: 'Arial', sans-serif;
+            line-height: 1.4;
+            margin: 0;
+            padding: 0;
+            background: #f8f9fa;
+        }
+        .recu {
+            width: 100%;
+            padding: 0cm;
+            background: #fff;
+            margin: auto;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 1.5cm;
+        }
+        .header h1 {
+            font-size: 24px;
+            color: #2c3e50;
+            margin: 0;
+            text-transform: uppercase;
+        }
+        .header .numero-recu {
+            font-size: 10px;
+            color: #585E34FF;
+            margin-top: 0.5cm;
+        }
+        .card {
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            margin-bottom: 1.5cm;
+            background: #fff;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        .card-header {
+            background: #28a745;
+            color: #fff;
+            padding: 10px 15px;
+            border-bottom: 1px solid #dee2e6;
+            border-radius: 8px 8px 0 0;
+        }
+        .card-header h5 {
+            margin: 0;
+            font-size: 18px;
+        }
+        .card-body {
+            padding: 15px;
+        }
+        .row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        .col-md-4, .col-md-6, .col-12 {
+            flex: 1;
+            min-width: 20%;
+        }
+        .form-label {
+            font-weight: bold;
+            font-size: 14px;
+            margin-bottom: 5px;
+            display: block;
+        }
+        .alert {
+            padding: 10px 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+        }
+        .alert-primary {
+            background: #e9ecef;
+            color: #2c3e50;
+        }
+        .signature {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 2cm;
+        }
+        .signature-box {
+            text-align: center;
+            width: 40%;
+        }
+        .signature-line {
+            border-top: 1px solid #000;
+            margin-top: 1.5cm;
+            padding-top: 5px;
+            font-size: 14px;
+        }
+        .footer {
+            text-align: center;
+            margin-top: 2cm;
+            font-size: 12px;
+            color: #6c757d;
+        }
+    </style>
+</head>
+<body>
+    <div class="recu">
+        <div class="header">
+            <h1>Reçu de Paiement</h1>
+            <div class="numero-recu">Reçu N° {{ paiement.id|stringformat:"05d" }}</div>
+            <div>Date d'émission : {{ paiement.date_paiement|date:"d/m/Y" }}</div>
+        </div>
+
+        <!-- Détails du Paiement -->
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="fas fa-file-invoice me-2"></i>Détails du Paiement</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-4">
+                        <label class="form-label">Nom du locataire</label>
+                        <p>{{ paiement.location.utilisateur.nom }}</p>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Nombre de mois payé</label>
+                        <p>{{ paiement.nombre_mois_paye }}</p>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Date de début</label>
+                        <p>{{ paiement.location.date_debut_location|date:"d/m/Y" }}</p>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Date de fin du paiement</label>
+                        <p>{{ paiement.date_fin_paiement|date:"d/m/Y" }}</p>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Montant payé</label>
+                        <p>{{ paiement.montant_paye }} CFA</p>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Mode de paiement</label>
+                        <p>{{ paiement.mode_paiement }}</p>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Statut</label>
+                        <p>{{ paiement.statut_paiement }}</p>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Commission</label>
+                        <p>{{ paiement.commission }} CFA</p>
+                    </div>
+                </div>
+                {% if paiement.commentaire %}
+                <div class="alert alert-primary">
+                    <strong>Commentaire :</strong> {{ paiement.commentaire }}
+                </div>
+                {% endif %}
+                <div class="alert alert-primary">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span class="h5">Montant Total :</span>
+                        <span class="h4">{{ paiement.montant_paye }} CFA</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Signatures -->
+        <div class="signature">
+            <div class="signature-box">
+                <div class="signature-line">Signature du locataire</div>
+            </div>
+            <div class="signature-box">
+                <div class="signature-line">Signature du gestionnaire</div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="footer">
+            <p>Ce reçu fait office de preuve de paiement officielle.</p>
+            <p>Pour toute question, veuillez nous contacter au : +XXX XX XX XX XX</p>
+            <p>© {{ paiement.date_paiement|date:"Y" }} Gestion Immobilière - Tous droits réservés</p>
+        </div>
+    </div>
+</body>
+</html> {% endcomment %}

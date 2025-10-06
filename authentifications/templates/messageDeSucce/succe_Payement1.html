@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Téléchargement en cours...</title>
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; padding-top: 50px; }
+        .spinner { border: 4px solid #f3f3f3; border-top: 4px solid #3498db; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin: 20px auto; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+    <h1>Téléchargement de votre PDF en cours...</h1>
+    <p>Vous allez être redirigé vers la page d'accueil dans quelques instants.</p>
+    <div class="spinner"></div>
+
+    <script>
+        window.onload = function() {
+            // 1. Obtenir les URLs passées par la vue Django
+            const pdfUrl = "{{ pdf_url }}";
+            const homeUrl = "{{ home_url }}";
+
+            // 2. Créer un lien invisible pour déclencher le téléchargement
+            const a = document.createElement('a');
+            a.style.display = 'none';
+            a.href = pdfUrl;
+            a.setAttribute('download', ''); 
+            document.body.appendChild(a);
+
+            // 3. Simuler un clic sur le lien pour lancer le téléchargement
+            a.click();
+
+            // 4. Nettoyer en supprimant le lien du DOM
+            document.body.removeChild(a);
+
+            // 5. Attendre 2 secondes (pour être sûr que le téléchargement a démarré)
+            //    puis rediriger vers la page d'accueil.
+            setTimeout(function() {
+                window.location.href = homeUrl;
+            }, 20); // 2000 millisecondes = 2 secondes
+        };
+    </script>
+</body>
+</html>

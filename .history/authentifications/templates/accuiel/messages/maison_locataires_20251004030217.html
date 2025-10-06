@@ -1,0 +1,197 @@
+{% extends 'accuiel/base.html' %}
+{% block content %}
+<div class="locataires-container">
+    <div class="locataires-header">
+        <h1>
+            {% if mode == "admin" %}
+                Locataires de la maison "{{ maison.nom }}"
+            {% else %}
+                Discussion avec l'Administrateur
+            {% endif %}
+        </h1>
+        <a href="{% url 'message_inbox' %}" class="btn-back">&larr; Retour</a>
+    </div>
+
+    <div class="locataires-list">
+        {% if mode == "admin" %}
+            {% for locataire in locataires %}
+                <a href="{% url 'private_chat' user_id=locataire.id %}" class="locataire-link">
+                    <!-- L'attribut `data-locataire-id` est crucial pour que le JS trouve la bonne carte -->
+                    <div class="locataire-card" data-locataire-id="{{ locataire.id }}">
+                        <div class="locataire-info">
+                            <div class="locataire-name-container">
+                                <h5>{{ locataire.prenom }} {{ locataire.nom }}</h5>
+                                
+                                <!-- Affiche le badge au chargement de la page si nécessaire -->
+                                {% if locataire.unread_count > 0 %}
+                                    <span class="notification-badge">{{ locataire.unread_count }}</span>
+                                {% endif %}
+                            </div>
+                            <p class="email">{{ locataire.email|default:'Email non renseigné' }}</p>
+                            <p class="phone">{{ locataire.tel|default:'Téléphone non renseigné' }}</p>
+                        </div>
+                    </div>
+                </a>
+            {% empty %}
+                <div class="empty-list"><p>Aucun locataire actif pour cette maison.</p></div>
+            {% endfor %}
+        
+        {% elif mode == "locataire" %}
+            <a href="{% url 'private_chat' user_id=admin.id %}" class="btn btn-primary btn-with-badge">
+                Contacter l'Administrateur
+                {% if unread_count > 0 %}
+                    <span class="notification-badge">{{ unread_count }}</span>
+                {% endif %}
+            </a>
+        {% endif %}
+    </div>
+</div>
+
+<style>
+/* Votre CSS est déjà très bien, je le garde tel quel. */
+:root { --primary-color: #007bff; --danger-color: #dc3545; --background-light: #f8f9fa; --border-color: #dee2e6; --card-background: #ffffff; --text-color: #212529; --text-muted: #6c757d; --font-family: system-ui, sans-serif; }
+.locataires-container { max-width: 800px; margin: 2rem auto; padding: 1.5rem; font-family: var(--font-family); background-color: var(--background-light); border-radius: 12px; }
+.locataires-header { display: flex; justify-content: space-between; align-items: center; padding-bottom: 1rem; margin-bottom: 1.5rem; border-bottom: 1px solid var(--border-color); }
+.locataires-header h1 { margin: 0; font-size: 1.5rem; }
+.locataire-card { background: var(--card-background); border: 1px solid var(--border-color); border-radius: 8px; padding: 1rem; margin-bottom: 1rem; transition: box-shadow 0.2s ease-in-out; }
+.locataire-card:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
+.locataire-link { text-decoration: none; color: inherit; }
+.locataire-name-container { display: flex; justify-content: space-between; align-items: center; width: 100%; }
+.locataire-info h5 { margin: 0 0 8px; color: var(--text-color); }
+.locataire-info p { margin: 4px 0; color: var(--text-muted); font-size: 0.9rem; }
+.notification-badge { background-color: var(--danger-color); color: white; font-size: 0.75rem; font-weight: bold; padding: 0.2em 0.6em; border-radius: 1rem; margin-left: 0.75rem; min-width: 20px; text-align: center; line-height: 1.2; }
+.empty-list { text-align: center; padding: 2rem; color: var(--text-muted); }
+</style>
+
+<!-- Le script est ajouté uniquement pour l'admin, pour ne pas charger de JS inutile pour les locataires -->
+{% if mode == 'admin' %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    
+    // Génère l'URL de l'API de manière sécurisée grâce à Django
+    const apiUrl = "{% url 'check_unread_api' maison_id=maison.id %}";
+    
+    // Fonction qui met à jour l'affichage des badges
+    const updateNotificationBadges = (unreadData) => {
+        const locataireCards = document.querySelectorAll('.locataire-card[data-locataire-id]');
+
+        locataireCards.forEach(card => {
+            const locataireId = card.dataset.locataireId;
+            const unreadCount = unreadData[locataireId] || 0;
+            const nameContainer = card.querySelector('.locataire-name-container');
+            let badge = nameContainer.querySelector('.notification-badge');
+
+            if (unreadCount > 0) {
+                if (badge) {
+                    badge.textContent = unreadCount; // Met à jour le badge existant
+                } else {
+                    // Crée le badge s'il n'existe pas
+                    badge = document.createElement('span');
+                    badge.className = 'notification-badge';
+                    badge.textContent = unreadCount;
+                    nameContainer.appendChild(badge);
+                }
+            } else if (badge) {
+                badge.remove(); // Supprime le badge s'il n'y a plus de message
+            }
+        });
+    };
+
+    // Fonction qui appelle l'API pour récupérer les dernières données
+    const checkUnreadMessages = async () => {
+        try {
+            const response = await fetch(apiUrl);
+            if (!response.ok) {
+                console.error("Erreur de l'API:", response.status, response.statusText);
+                return;
+            }
+            const data = await response.json();
+            updateNotificationBadges(data);
+        } catch (error) {
+            console.error("Impossible de contacter le serveur:", error);
+        }
+    };
+
+    // Lance une première vérification juste après le chargement de la page
+    checkUnreadMessages();
+
+    // Répète la vérification toutes les 20 secondes (20000 millisecondes)
+    setInterval(checkUnreadMessages, 20000);
+});
+</script>
+{% endif %}
+{% endblock %}
+
+{% comment %} {% extends 'accuiel/base.html' %}
+{% block content %}
+<div class="locataires-container">  
+    <div class="locataires-header">  
+        <h1>
+            {% if mode == "admin" %}
+                Locataires de la maison "{{ maison.nom }}"
+            {% else %}
+                Discussion avec l'Administrateur
+            {% endif %}
+        </h1>  
+        <a href="{% url 'message_inbox' %}" class="btn-back">&larr; Retour</a>  
+    </div>  
+
+    <div class="locataires-list">  
+        {% if mode == "admin" %}
+            {% for locataire in locataires %}
+                <a href="{% url 'private_chat' user_id=locataire.id %}" class="locataire-link">
+                    <div class="locataire-card">  
+                        <div class="locataire-info">  
+                            <h5>{{ locataire.prenom }} {{ locataire.nom }}</h5>  
+                            <p class="email">{{ locataire.email|default:'Email non renseigné' }}</p>  
+                            <p class="phone">{{ locataire.tel|default:'Téléphone non renseigné' }}</p>  
+                        </div>  
+                    </div>
+                </a>
+            {% empty %}  
+                <div class="empty-list"><p>Aucun locataire actif pour cette maison.</p></div>  
+            {% endfor %}
+        {% elif mode == "locataire" %}
+            <a href="{% url 'private_chat' user_id=admin.id %}" class="btn btn-primary">
+                Contacter l'Administrateur
+            </a>
+        {% endif %}
+    </div>  
+</div>  
+<style>
+/* Styles CSS complets pour maison_locataires.html. */
+:root { --primary-color: #007bff; --background-light: #f8f9fa; --border-color: #dee2e6; --card-background: #ffffff; --text-color: #212529; --text-muted: #6c757d; --font-family: system-ui, sans-serif; } .locataires-container { max-width: 800px; margin: 2rem auto; padding: 1.5rem; font-family: var(--font-family); background-color: var(--background-light); border-radius: 12px; } .locataires-header { padding-bottom: 1rem; margin-bottom: 1.5rem; border-bottom: 1px solid var(--border-color); } .locataires-header h1 { margin: 0; } .btn-back { display: inline-block; margin-top: 0.5rem; text-decoration: none; color: var(--primary-color); } .locataire-card { background: var(--card-background); border: 1px solid var(--border-color); border-radius: 8px; padding: 1rem; margin-bottom: 1rem; } .locataire-info h5 { margin: 0 0 8px; } .locataire-info p { margin: 4px 0; color: var(--text-muted); } .empty-list { text-align: center; padding: 2rem; color: var(--text-muted); }
+</style>
+{% endblock %} {% endcomment %}
+
+
+{% comment %} {% extends 'accuiel/base.html' %}
+{% block content %}
+<div class="locataires-container">  
+    <div class="locataires-header">  
+        <h1>Locataires de la maison "{{ maison.nom }}"</h1>  
+        <a href="{% url 'message_inbox' %}" class="btn-back">&larr; Retour</a>  
+    </div>  
+    <div class="locataires-list">  
+        {% for locataire in locataires %}
+            <!-- Début de la modification : Ajout de la balise <a> -->
+            <a href="{% url 'private_chat' user_id=locataire.id %}" class="locataire-link">
+                <div class="locataire-card">  
+                    <div class="locataire-info">  
+                        <h5>{{ locataire.prenom }} {{ locataire.nom }}</h5>  
+                        <p class="email">{{ locataire.email|default:'Email non renseigné' }}</p>  
+                        <p class="phone">{{ locataire.tel|default:'Téléphone non renseigné' }}</p>  
+                    </div>  
+                </div>
+            </a>
+            <!-- Fin de la modification -->
+        {% empty %}  
+            <div class="empty-list"><p>Aucun locataire actif pour cette maison.</p></div>  
+        {% endfor %}  
+    </div>  
+</div>  
+<style>
+/* Styles CSS complets pour maison_locataires.html. */
+:root { --primary-color: #007bff; --background-light: #f8f9fa; --border-color: #dee2e6; --card-background: #ffffff; --text-color: #212529; --text-muted: #6c757d; --font-family: system-ui, sans-serif; } .locataires-container { max-width: 800px; margin: 2rem auto; padding: 1.5rem; font-family: var(--font-family); background-color: var(--background-light); border-radius: 12px; } .locataires-header { padding-bottom: 1rem; margin-bottom: 1.5rem; border-bottom: 1px solid var(--border-color); } .locataires-header h1 { margin: 0; } .btn-back { display: inline-block; margin-top: 0.5rem; text-decoration: none; color: var(--primary-color); } .locataire-card { background: var(--card-background); border: 1px solid var(--border-color); border-radius: 8px; padding: 1rem; margin-bottom: 1rem; } .locataire-info h5 { margin: 0 0 8px; } .locataire-info p { margin: 4px 0; color: var(--text-muted); } .empty-list { text-align: center; padding: 2rem; color: var(--text-muted); }
+</style>
+{% endblock %} {% endcomment %}

@@ -1,0 +1,67 @@
+
+
+
+
+{% extends 'accuiel/base.html' %}
+{% block content %}
+        <div class="inbox-container">
+            <div class="inbox-header"><h1>Boîte de réception</h1></div>
+            <div class="conversation-list">
+                {% for conv in maisons %}
+                    {% comment %} <a href="{% url 'maison_messages' conv.maison.id %}" class="conversation-item-link"> {% endcomment %}
+                        <div class="conversation-item {% if conv.unread_count > 0 %}unread{% endif %}">
+                            <div class="avatar"><span>{{ conv.maison.nom|first }}</span></div>
+                            <div class="conversation-content">
+                                <div class="content-header">
+                                    <h3>{{ conv.maison.nom }}</h3>
+                                    {% if conv.last_message %}
+                                        <span class="timestamp">{{ conv.last_message.timestamp|timesince }}</span>
+                                    {% endif %}
+                                </div>
+                                {% if user.is_staff and conv.locataires %}
+                                    <div class="participants">
+                                        Avec :
+                                        {% for locataire in conv.locataires %}
+                                            {{ locataire.prenom|default:locataire.username }}
+                                            {% if not forloop.last %}, {% endif %}
+                                        {% empty %}
+                                            Aucun locataire assigné
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                                <div class="preview">
+                                    {% if conv.last_message %}
+                                        <p>
+                                            <strong>{{ conv.last_message.sender.prenom|default:conv.last_message.sender.username }}:</strong>
+                                            {% if conv.last_message.message %}
+                                                {{ conv.last_message.message|truncatewords:10 }}
+                                            {% else %}
+                                                <i>Image envoyée</i>
+                                            {% endif %}
+                                        </p>
+                                    {% else %}
+                                        <p class="no-message"><i>Cliquez pour démarrer la conversation.</i></p>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="conversation-meta">
+                                {% if user.is_staff %}
+                                    {% comment %} <a href="{% url 'maison_locataires' conv.maison.id %}" class="btn-locataires">Gérer Locataires</a> {% endcomment %}
+                                {% endif %}
+                                {% if conv.unread_count > 0 %}
+                                    <span class="unread-badge">{{ conv.unread_count }}</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </a>
+                {% empty %}
+                    <div class="empty-inbox"><p>Aucune conversation à afficher.</p></div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <style>
+        /* Styles CSS déjà prêts */
+        ...
+        </style>
+{% endblock %}

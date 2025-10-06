@@ -1,0 +1,123 @@
+
+
+
+
+{% extends 'accuiel/base.html' %}
+{% block content %}
+<div class="inbox-container">
+    <div class="inbox-header"><h1>Boîte de réception</h1></div>
+    <div class="conversation-list">
+        {% for conv in maisons %}
+            <a href="{% url 'maison_messages' conv.maison.id %}" class="conversation-item-link">
+                <div class="conversation-item {% if conv.unread_count > 0 %}unread{% endif %}">
+                    <div class="avatar"><span>{{ conv.maison.nom|first }}</span></div>
+                    <div class="conversation-content">
+                        <div class="content-header">
+                            <h3>{{ conv.maison.nom }}</h3>
+                            {% if conv.last_message %}
+                                <span class="timestamp">{{ conv.last_message.timestamp|timesince }}</span>
+                            {% endif %}
+                        </div>
+                        {% if user.is_staff and conv.locataires %}
+                            <div class="participants">
+                                Avec :
+                                {% for locataire in conv.locataires %}
+                                    {{ locataire.prenom|default:locataire.username }}
+                                    {% if not forloop.last %}, {% endif %}
+                                {% empty %}
+                                    Aucun locataire assigné
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                        <div class="preview">
+                            {% if conv.last_message %}
+                                <p>
+                                    <strong>{{ conv.last_message.sender.prenom|default:conv.last_message.sender.username }}:</strong>
+                                    {% if conv.last_message.message %}
+                                        {{ conv.last_message.message|truncatewords:10 }}
+                                    {% else %}
+                                        <i>Image envoyée</i>
+                                    {% endif %}
+                                </p>
+                            {% else %}
+                                <p class="no-message"><i>Cliquez pour démarrer la conversation.</i></p>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="conversation-meta">
+                        {% if user.is_staff %}
+                            <a href="{% url 'maison_locataires' conv.maison.id %}" class="btn-locataires">Gérer Locataires</a>
+                        {% endif %}
+                        {% if conv.unread_count > 0 %}
+                            <span class="unread-badge">{{ conv.unread_count }}</span>
+                        {% endif %}
+                    </div>
+                </div>
+            </a>
+        {% empty %}
+            <div class="empty-inbox"><p>Aucune conversation à afficher.</p></div>
+        {% endfor %}
+    </div>
+</div>
+
+<style>
+/* Styles CSS déjà prêts */
+...
+</style>
+{% endblock %}
+
+
+
+{# templates/messagerie/maison_list.html #}
+<h2>Maisons</h2>
+<ul>
+    {% for maison in maisons %}
+        <li>
+            <strong>{{ maison.nom }}</strong> ({{ maison.adresse }})
+            <a href="{% url 'maison_messages' maison.pk %}" class="btn btn-success">Message de Groupe</a>
+        </li>
+            <a href="{% url 'maison_locataires' maison.pk %}" class="btn btn-primary">Message Individuel</a> 
+    {% endfor %}
+</ul>
+
+{% extends 'accuiel/base.html' %}
+{% block content %}
+<div class="inbox-container">
+    <div class="inbox-header"><h1>Boîte de réception</h1></div>
+    <div class="conversation-list">
+        {% for maison in maisons %}
+            <a href="{% url 'maison_messages' maison.pk %}" class="conversation-item-link">
+                <div class="conversation-item {% if conv.unread_count > 0 %}unread{% endif %}">
+                    <div class="avatar"><span>{{ maison.nom|first }}</span></div>
+                    <div class="conversation-content">
+                        <div class="content-header">
+                            <h3>{{ maison.nom }}</h3>
+                            {% if conv.last_message %}<span class="timestamp">{{ conv.last_message.timestamp|timesince }}</span>{% endif %}
+                        </div>
+                        {% if user.is_staff and conv.locataires %}
+                            <div class="participants">
+                                Avec : {% for locataire in conv.locataires %}{{ locataire.prenom|default:locataire.username }}{% if not forloop.last %}, {% endif %}{% empty %}Aucun locataire assigné{% endfor %}
+                            </div>
+                        {% endif %}
+                        <div class="preview">
+                            {% if conv.last_message %}
+                                <p><strong>{{ conv.last_message.sender.prenom|default:conv.last_message.sender.username }}:</strong> {% if conv.last_message.message %}{{ conv.last_message.message|truncatewords:10 }}{% else %}<i>Image envoyée</i>{% endif %}</p>
+                            {% else %}<p class="no-message"><i>Cliquez pour démarrer la conversation.</i></p>{% endif %}
+                        </div>
+                    </div>
+                    <div class="conversation-meta">
+                        {% if user.is_staff %}<a href="{% url 'maison_locataires' conv.maison.id %}" class="btn-locataires">Gérer Locataires</a>{% endif %}
+                        {% if conv.unread_count > 0 %}<span class="unread-badge">{{ conv.unread_count }}</span>{% endif %}
+                    </div>
+                </div>
+            </a>
+        {% empty %}
+            <div class="empty-inbox"><p>Aucune conversation à afficher.</p></div>
+        {% endfor %}
+    </div>
+</div>
+<style>
+/* Styles CSS complets pour inbox.html. Pas besoin de modifications. */
+:root { --primary-color: #007bff; --background-light: #f8f9fa; --border-color: #dee2e6; --card-background: #ffffff; --text-color: #212529; --text-muted: #6c757d; --unread-color: #dc3545; --font-family: system-ui, sans-serif; } .inbox-container { max-width: 900px; margin: 2rem auto; font-family: var(--font-family); background-color: var(--background-light); border-radius: 12px; } .inbox-header { padding: 1rem 1.5rem; border-bottom: 1px solid var(--border-color); } .inbox-header h1 { margin: 0; } .conversation-list { padding: 1rem; } .conversation-item-link { text-decoration: none; color: inherit; display: block; } .conversation-item { display: flex; align-items: center; gap: 15px; padding: 1.25rem; background-color: var(--card-background); border: 1px solid var(--border-color); border-radius: 10px; margin-bottom: 1rem; transition: transform 0.2s ease, box-shadow 0.2s ease; } .conversation-item:hover { transform: translateY(-3px); box-shadow: 0 4px 15px rgba(0,0,0,0.07); } .avatar { flex-shrink: 0; width: 50px; height: 50px; border-radius: 50%; background-color: var(--primary-color); color: white; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; } .conversation-content { flex-grow: 1; min-width: 0; } .content-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; } .content-header h3 { margin: 0; font-size: 1.1rem; } .participants { font-size: 0.85rem; color: var(--text-muted); } .preview p { margin: 4px 0 0; font-size: 0.9rem; color: var(--text-muted); } .conversation-meta { display: flex; flex-direction: column; align-items: flex-end; gap: 8px; } .btn-locataires { background-color: #e9ecef; color: var(--text-muted); padding: 5px 12px; font-size: 0.75rem; border-radius: 20px; transition: all 0.2s; text-decoration:none; } .conversation-item-link:hover .btn-locataires { background-color: #6c757d; color: white; } .timestamp { font-size: 0.8rem; color: var(--text-muted); } .unread-badge { background-color: var(--unread-color); color: white; font-weight: bold; border-radius: 50%; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; } .conversation-item.unread .content-header h3, .conversation-item.unread .preview p { font-weight: bold; color: var(--text-color); } .empty-inbox { text-align: center; padding: 4rem 2rem; color: var(--text-muted); }
+</style>
+{% endblock %} 

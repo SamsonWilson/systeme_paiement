@@ -1,0 +1,95 @@
+version: '3.8'
+
+services:
+  web:
+    restart: always
+    build: .
+    # Le répertoire de travail dans le conteneur
+    working_dir: /app
+    # Commande pour lancer le serveur Django
+    command: python manage.py runserver 0.0.0.0:8000
+    ports:
+      - "8000:8000"
+    volumes:
+      # Monte tout le projet dans le répertoire /app du conteneur
+      - .:/app
+    env_file:
+      - ".env" # Utilisons .env comme standard
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    networks:
+      - default
+
+  db:
+    image: mysql:8.0
+    restart: always
+    volumes:
+      # Le nom du volume est plus explicite
+      - db_data:/var/lib/mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+    ports:
+      - "3306:3306"
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-p$${MYSQL_ROOT_PASSWORD}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - default
+
+  redis:
+    restart: always
+    image: "redis:6.2.2-alpine"
+    networks:
+      - default
+
+  celery:
+    restart: always
+    build: .
+    working_dir: /app
+    # Commande corrigée avec le nom de votre projet Django
+    command: celery -A authentifications worker -l info
+    volumes:
+      - .:/app
+    env_file:
+      - ".env"
+    depends_on:
+      redis:
+        condition: service_started
+      db:
+        condition: service_healthy
+    networks:
+      - default
+
+# Le service pour Celery Beat (si vous l'utilisez pour les tâches planifiées)
+  celery-beat:
+    restart: always
+    build: .
+    working_dir: /app
+    command: celery -A authentifications beat -l info --scheduler django_celery_beat.schedulers:DatabaseScheduler
+    volumes:
+      - .:/app
+    env_file:
+      - ".env"
+    depends_on:
+      redis:
+        condition: service_started
+      db:
+        condition: service_healthy
+    networks:
+      - default
+
+
+# Déclaration du volume pour la persistance des données de la BD
+volumes:
+  db_data:
+
+networks:
+  default:

@@ -1,0 +1,679 @@
+{% extends "accuiel/base.html" %}
+{% block content %}
+ <style>
+    /* --- VARIABLES GLOBALES (peu de changements, elles sont déjà bonnes) --- */
+    :root {
+        --primary-color: #007bff; /* Bleu principal */
+        --secondary-color: #6c757d; /* Gris secondaire pour labels/textes */
+        --light-gray: #f8f9fa; /* Arrière-plan très clair */
+        --medium-gray: #e9ecef; /* Bordures, séparations */
+        --dark-gray: #343a40; /* Texte foncé pour contraste */
+        --text-color: #495057; /* Couleur de texte général un peu plus douce */
+        --white: #ffffff; /* Blanc pur */
+        --success-color: #28a745; /* Vert succès */
+        --danger-color: #dc3545; /* Rouge erreur */
+        --info-color: #17a2b8; /* Bleu info */
+        --warning-color: #ffc107; /* Jaune alerte */
+        --border-radius: 0.6rem; /* Rayon des bordures */
+
+        /* Nouvelles variables pour des ombres et focus plus élégants */
+        --shadow-elevation-1: 0 2px 5px rgba(0, 0, 0, 0.07), 0 0 0 1px rgba(0, 0, 0, 0.03);
+        --shadow-elevation-2: 0 5px 15px rgba(0, 0, 0, 0.1), 0 0 0 1px rgba(0, 0, 0, 0.05);
+        --focus-ring: 0 0 0 0.25rem rgba(0, 123, 255, .35);
+    }
+
+    /* --- STYLES GÉNÉRAUX --- */
+    body {
+        font-family: 'Inter', Arial, 'Segoe UI', Verdana, sans-serif;
+        background-color: var(--light-gray);
+        color: var(--text-color);
+        line-height: 1.65; /* Légèrement ajusté pour une meilleure lecture */
+        margin: 0; /* Assure qu'il n'y a pas de marge par défaut sur le body */
+        padding: 20px; /* Ajoute un peu de padding autour de la page */
+        -webkit-font-smoothing: antialiased; /* Rend le texte plus doux sur WebKit */
+        -moz-osx-font-smoothing: grayscale; /* Rend le texte plus doux sur Firefox/macOS */
+    }
+
+    .page-container.form-page {
+        margin: 40px auto; /* Marge verticale généreuse et centrage */
+        padding: 45px 40px; /* Padding interne augmenté pour plus d'espace */
+        background-color: var(--white);
+        border-radius: var(--border-radius);
+        box-shadow: var(--shadow-elevation-1); /* Utilisation de la nouvelle ombre */
+        max-width: 850px; /* Légèrement ajusté pour un look plus compact */
+        border: 1px solid var(--medium-gray); /* Bordure subtile */
+        transition: box-shadow 0.3s ease-in-out; /* Transition pour l'ombre */
+    }
+    .page-container.form-page:hover {
+        box-shadow: var(--shadow-elevation-2); /* Ombre plus prononcée au survol */
+    }
+
+
+    /* --- TITRE DU FORMULAIRE --- */
+    .form-title {
+        color: var(--primary-color);
+        font-size: 2.3em; /* Taille de titre légèrement plus grande */
+        font-weight: 700;
+        margin-bottom: 1.3em; /* Marge augmentée pour le titre */
+        text-align: center;
+        letter-spacing: -0.02em; /* Réduit l'espacement entre les lettres */
+        position: relative; /* Pour le pseudo-élément */
+        padding-bottom: 0.5em; /* Espace pour la ligne décorative */
+    }
+    .form-title::after { /* Ligne décorative sous le titre */
+        content: '';
+        position: absolute;
+        left: 50%;
+        bottom: 0;
+        transform: translateX(-50%);
+        width: 70px; /* Longueur de la ligne */
+        height: 4px; /* Épaisseur de la ligne */
+        background-color: var(--primary-color);
+        border-radius: 2px;
+        opacity: 0.8;
+    }
+
+    /* --- SECTIONS DU FORMULAIRE --- */
+    .elegant-form .form-section {
+        margin-bottom: 2.8em; /* Plus d'espace entre les sections */
+        padding-bottom: 2em; /* Plus de padding interne */
+        border-bottom: 1px dashed var(--medium-gray); /* Ligne pointillée douce */
+    }
+    .elegant-form .form-section:last-child {
+        border-bottom: none; /* Pas de bordure pour la dernière section */
+        margin-bottom: 1.5em; /* Marge ajustée pour la dernière section */
+        padding-bottom: 0;
+    }
+
+    /* --- TITRES DE SECTION --- */
+    .elegant-form .section-heading {
+        color: var(--dark-gray);
+        font-size: 1.6em; /* Taille de titre de section plus grande */
+        font-weight: 600; /* Moins gras que le titre principal */
+        margin-top: 0;
+        margin-bottom: 1.6em; /* Plus d'espace en bas */
+        display: flex;
+        align-items: center;
+        gap: 0.8em; /* Espacement entre l'icône et le texte */
+        padding-bottom: 0.4em; /* Espacement sous le texte */
+        border-bottom: 1px solid rgba(0, 123, 255, 0.15); /* Bordure subtile */
+    }
+    .elegant-form .section-heading i {
+        color: var(--primary-color);
+        font-size: 1.3em; /* Taille de l'icône légèrement plus grande */
+        background-color: rgba(0, 123, 255, 0.08); /* Fond léger pour l'icône */
+        padding: 7px 10px; /* Padding autour de l'icône */
+        border-radius: var(--border-radius); /* Bords arrondis pour l'icône */
+    }
+
+    /* --- GRILLE ET GROUPES DE FORMULAIRE --- */
+    .elegant-form .form-row {
+        display: flex;
+        flex-wrap: wrap;
+        margin-right: -15px; /* Compense le padding des form-group */
+        margin-left: -15px;
+    }
+    .elegant-form .form-group {
+        margin-bottom: 1.8em; /* Plus d'espace entre les groupes de champs */
+        padding-right: 15px; /* Padding interne pour les colonnes */
+        padding-left: 15px;
+    }
+    .elegant-form .col-md-6 {
+        flex: 0 0 50%;
+        max-width: 50%;
+    }
+
+    /* --- LABELS ET CHAMPS DE SAISIE --- */
+    .elegant-form label {
+        display: block; /* Chaque label sur sa propre ligne */
+        margin-bottom: 0.7rem; /* Plus d'espace entre label et input */
+        font-weight: 600; /* Labels plus gras */
+        color: var(--dark-gray); /* Couleur de label plus foncée */
+        font-size: 0.98em; /* Légèrement plus grand */
+    }
+    .elegant-form .form-control {
+        display: block;
+        width: 100%;
+        padding: 0.9rem 1.1rem; /* Padding interne généreux */
+        font-size: 1rem;
+        font-weight: 400;
+        line-height: 1.5;
+        color: var(--text-color);
+        background-color: var(--white);
+        background-clip: padding-box;
+        border: 1px solid var(--medium-gray);
+        border-radius: var(--border-radius);
+        appearance: none; /* Reset l'apparence par défaut pour les select/checkbox/radio */
+        transition: border-color .2s ease-in-out, box-shadow .2s ease-in-out, background-color .2s ease-in-out; /* Transitions douces */
+    }
+    .elegant-form .form-control:focus {
+        color: var(--text-color);
+        background-color: var(--white);
+        border-color: var(--primary-color);
+        outline: 0;
+        box-shadow: var(--focus-ring); /* Utilisation de l'anneau de focus */
+        background-color: var(--light-gray); /* Léger changement de fond au focus */
+    }
+    .elegant-form .form-control::placeholder {
+        color: var(--secondary-color);
+        opacity: 0.8;
+    }
+
+    .elegant-form select.form-control {
+        padding-right: 2.8rem; /* Plus d'espace pour l'icône de la flèche */
+        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23343a40' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M2 5l6 6 6-6'/%3e%3c/svg%3e");
+        background-repeat: no-repeat;
+        background-position: right 1.2rem center; /* Position de la flèche */
+        background-size: 18px 14px; /* Taille de la flèche */
+    }
+    .elegant-form textarea.form-control {
+        min-height: 120px; /* Hauteur minimale augmentée pour les textareas */
+        resize: vertical; /* Permet le redimensionnement vertical */
+    }
+    .elegant-form .form-error {
+        font-size: 0.88em; /* Taille du texte d'erreur */
+        color: var(--danger-color);
+        margin-top: 0.5rem; /* Marge pour séparer de l'input */
+        font-weight: 500;
+        line-height: 1.4;
+    }
+    .elegant-form .alert-danger { /* Style pour les erreurs non liées à un champ */
+        background-color: #fce4e6; /* Fond rose très clair */
+        color: var(--danger-color); /* Texte rouge */
+        border: 1px solid #f8d7da;
+        padding: 1.2rem 1.5rem;
+        margin-bottom: 2em;
+        border-radius: var(--border-radius);
+        font-weight: 500;
+        text-align: center;
+        box-shadow: 0 2px 8px rgba(220, 53, 69, 0.1);
+    }
+
+
+    /* --- ACTIONS ET BOUTONS --- */
+    .elegant-form .form-actions {
+        padding-top: 2.5em; /* Plus d'espace au-dessus du bouton */
+        text-align: center; /* Centre le bouton */
+    }
+    .elegant-form .btn.btn-primary {
+        color: var(--white);
+        background-color: var(--primary-color);
+        border-color: var(--primary-color);
+        font-weight: 600; /* Texte du bouton plus gras */
+        padding: 1rem 2rem; /* Bouton plus grand et plus large */
+        font-size: 1.05rem; /* Taille de police du bouton */
+        border-radius: var(--border-radius);
+        box-shadow: 0 4px 12px rgba(0, 123, 255, 0.25); /* Ombre élégante pour le bouton */
+        transition: all .3s ease-in-out; /* Toutes les transitions pour un survol fluide */
+        line-height: 1.2;
+        display: inline-flex; /* Permet un meilleur alignement de l'icône */
+        align-items: center;
+        justify-content: center;
+    }
+    .elegant-form .btn.btn-primary:hover {
+        background-color: #0056b3; /* Bleu plus foncé au survol */
+        border-color: #004f9a;
+        transform: translateY(-3px); /* Effet de "soulèvement" au survol */
+        box-shadow: 0 8px 20px rgba(0, 123, 255, 0.35); /* Ombre plus prononcée au survol */
+    }
+    .elegant-form .btn.btn-primary:focus {
+        box-shadow: var(--focus-ring), 0 4px 12px rgba(0, 123, 255, 0.25); /* Focus + ombre */
+        outline: none; /* Retire l'outline par défaut du navigateur */
+    }
+    .elegant-form .btn.btn-primary i {
+        margin-right: .7em; /* Plus d'espace pour l'icône du bouton */
+        font-size: 1.1em;
+    }
+
+    /* --- RESPONSIVE DESIGN --- */
+    @media (max-width: 992px) { /* Pour les écrans de taille moyenne (tablettes en mode paysage) */
+        .page-container.form-page {
+            max-width: 720px;
+            padding: 35px;
+            margin: 30px auto;
+        }
+        .form-title { font-size: 2em; margin-bottom: 1.1em; }
+        .form-title::after { width: 60px; height: 3px; }
+        .elegant-form .section-heading { font-size: 1.4em; margin-bottom: 1.3em; }
+        .elegant-form .form-group { margin-bottom: 1.5em; }
+        .elegant-form .form-control { padding: 0.8rem 1rem; }
+    }
+
+    @media (max-width: 768px) { /* Pour les petits écrans (tablettes en mode portrait et mobiles) */
+        .elegant-form .col-md-6 {
+            flex: 0 0 100%; /* Les colonnes prennent toute la largeur */
+            max-width: 100%;
+            padding-right: 0; /* Supprime le padding horizontal des colonnes */
+            padding-left: 0;
+        }
+        .elegant-form .form-row {
+            margin-right: 0; /* Ajuste les marges de la ligne */
+            margin-left: 0;
+        }
+        .elegant-form .form-group {
+            padding-right: 0; /* Supprime le padding horizontal des groupes */
+            padding-left: 0;
+            margin-bottom: 1.4em; /* Marge ajustée pour les groupes */
+        }
+        .page-container.form-page {
+            padding: 25px 20px; /* Padding interne réduit */
+            margin: 20px auto;
+            box-shadow: none; /* Pas d'ombre sur mobile pour un look plus "natif" */
+            border: none; /* Pas de bordure sur mobile */
+            border-radius: 0; /* Retire les bords arrondis sur mobile */
+        }
+        body { padding: 0; } /* Supprime le padding du body sur mobile */
+        .form-title { font-size: 1.9em; margin-bottom: 0.9em; }
+        .form-title::after { width: 50px; height: 3px; }
+        .elegant-form .section-heading { font-size: 1.3em; margin-bottom: 1.1em; gap: 0.6em; }
+        .elegant-form .section-heading i { padding: 5px 8px; font-size: 1.2em; }
+        .elegant-form .btn.btn-primary {
+            padding: 0.9rem 1.8rem;
+            font-size: 1rem;
+            width: 100%; /* Bouton pleine largeur sur mobile */
+            box-shadow: none; /* Pas d'ombre sur mobile */
+            transform: none; /* Pas d'effet de soulèvement sur mobile */
+        }
+        .elegant-form .btn.btn-primary:hover {
+            transform: none; /* Pas de transform au survol sur mobile */
+            box-shadow: none; /* Pas d'ombre au survol sur mobile */
+        }
+    }
+</style>
+
+
+<div class="page-container form-page">
+  <h1 class="form-title">Formulaire Fin de Location</h1>
+
+  <form method="post" enctype="multipart/form-data" class="elegant-form">
+    {% csrf_token %}
+    {{ form.media }}
+    {% if form.non_field_errors %}
+      <div class="alert alert-danger">{{ form.non_field_errors }}</div>
+    {% endif %}
+
+    <!-- Section 1 : Informations Location -->
+    <div class="form-section">
+      <h2 class="section-heading">
+        <i class="fa-solid fa-location-pin"></i> Informations Location
+      </h2>
+      <div class="form-row">
+        <div class="form-group col-md-6">
+          <label for="id_location_display">Location</label>
+          <input type="text" id="id_location_display" class="form-control" value="{{ location }}" readonly>
+        </div>
+        <div class="form-group col-md-6">
+          {{ form.date_fin_location.label_tag }}
+          {{ form.date_fin_location }}
+          {% if form.date_fin_location.errors %}
+            <div class="form-error">{{ form.date_fin_location.errors|striptags }}</div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <!-- Section 2 : Détails de Fin -->
+    <div class="form-section">
+      <h2 class="section-heading">
+        <i class="fa-solid fa-file-alt"></i> Détails de Fin
+      </h2>
+      <div class="form-group">
+        {{ form.raison_fin.label_tag }}
+        {{ form.raison_fin }}
+        {% if form.raison_fin.errors %}
+          <div class="form-error">{{ form.raison_fin.errors|striptags }}</div>
+        {% endif %}
+      </div>
+      <div class="form-row">
+        <div class="form-group col-md-6">
+          {{ form.montant_restant.label_tag }}
+          {{ form.montant_restant }}
+          {% if form.montant_restant.errors %}
+            <div class="form-error">{{ form.montant_restant.errors|striptags }}</div>
+          {% endif %}
+        </div>
+        <div class="form-group col-md-6">
+          {{ form.montant_remboursement_caution.label_tag }}
+          {{ form.montant_remboursement_caution }}
+          {% if form.montant_remboursement_caution.errors %}
+            <div class="form-error">{{ form.montant_remboursement_caution.errors|striptags }}</div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <!-- Section 3 : Pièces Jointes -->
+    <div class="form-section">
+      <h2 class="section-heading">
+        <i class="fa-solid fa-paperclip"></i> Pièces Jointes
+      </h2>
+      <div class="form-group">
+        {{ form.image_contrat.label_tag }}
+        {{ form.image_contrat }}
+        {% if form.image_contrat.errors %}
+          <div class="form-error">{{ form.image_contrat.errors|striptags }}</div>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Bouton Soumettre -->
+    <div class="form-actions">
+      <button type="submit" class="btn btn-primary">
+        <i class="fa-solid fa-check-circle"></i> Enregistrer Fin Location
+      </button>
+    </div>
+  </form>
+</div>
+
+<!-- === SCRIPT JAVASCRIPT (inchangé) === -->
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const montantRestantInput = document.querySelector("#id_montant_restant");
+    const montantRemboursementInput = document.querySelector("#id_montant_remboursement_caution");
+
+    // Utilisez la valeur passée par le contexte si elle est disponible
+    const caution = parseFloat("{{ montant_caution|default:'0' }}");
+
+    if (montantRemboursementInput) {
+        // Définir la valeur initiale seulement si le champ est vide ou non défini par l'utilisateur
+        if (!montantRemboursementInput.value || parseFloat(montantRemboursementInput.value) === 0) {
+             montantRemboursementInput.value = caution.toFixed(2);
+        }
+    }
+
+    if (montantRestantInput && montantRemboursementInput) { // S'assurer que les deux éléments existent
+        montantRestantInput.addEventListener("input", function () {
+            const restant = parseFloat(montantRestantInput.value) || 0;
+            // La somme remboursée est la caution initiale moins ce qui reste dû
+            const remboursement = (caution - restant);
+            // Assurez-vous que le remboursement ne soit pas négatif
+            montantRemboursementInput.value = (remboursement >= 0 ? remboursement : 0).toFixed(2);
+        });
+    }
+});
+</script>
+{% endblock %}
+
+
+{% comment %} {% extends "accuiel/base.html" %}
+{% block content %}
+ <style>
+    /* ... votre CSS reste inchangé ... */
+    :root {
+    --primary-color: #007bff;
+    --secondary-color: #6c757d;
+    --light-gray: #f8f9fa;
+    --medium-gray: #e9ecef;
+    --dark-gray: #495057;
+    --text-color: #343a40;
+    --white: #ffffff;
+    --success-color: #25c36f;
+    --danger-color: #dc3545;
+    --info-color: #17a2b8;
+    --warning-color: #ffc107;
+    --border-radius: 0.6rem;
+    }
+    body {
+    font-family: 'Inter', Arial, 'Segoe UI', Verdana, sans-serif;
+    background-color: var(--light-gray);
+    color: var(--text-color);
+    line-height: 1.64;
+    }
+    .page-container.form-page {
+    margin: 35px auto 20px auto;
+    padding: 32px 28px;
+    background-color: var(--white);
+    border-radius: var(--border-radius);
+    box-shadow: 0 7px 24px 0 rgba(60,80,100,0.11);
+    max-width: 940px; /* Ajuste largeur max du form */
+    }
+    .form-title {
+    color: var(--primary-color);
+    font-size: 2.1em;
+    font-weight: 700;
+    margin-bottom: 1.1em;
+    text-align: center;
+    letter-spacing: -.01em;
+    }
+    .elegant-form .form-section {
+    margin-bottom: 2.1em;
+    padding-bottom: 1.4em;
+    border-bottom: 1.5px solid var(--medium-gray);
+    }
+    .elegant-form .form-section:last-child {
+    border-bottom: none;
+    margin-bottom: 1.4em;
+    padding-bottom: 0;
+    }
+    .elegant-form .section-heading {
+    color: var(--dark-gray);
+    font-size: 1.4em;
+    font-weight: 700;
+    margin-top: 0;
+    margin-bottom: 1.2em;
+    display: flex;
+    align-items: center;
+    gap: .5em;
+    }
+    .elegant-form .section-heading i {
+    color: var(--primary-color);
+    font-size: 1.4em;
+    }
+    /* Form Grid & Group */
+    .elegant-form .form-row {
+    display: flex;
+    flex-wrap: wrap;
+    margin-right: -15px;
+    margin-left: -15px;
+    }
+    .elegant-form .form-group {
+    margin-bottom: 1.4em;
+    }
+    .elegant-form .col-md-6 {
+    flex: 0 0 50%;
+    max-width: 50%;
+    padding-right: 15px;
+    padding-left: 15px;
+    }
+    /* Label & Input */
+    .elegant-form label {
+    display: inline-block;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+    color: var(--secondary-color);
+    }
+    .elegant-form .form-control {
+    display: block;
+    width: 100%;
+    padding: 0.7rem 0.8rem;
+    font-size: 1rem;
+    font-weight: 400;
+    line-height: 1.5;
+    color: var(--text-color);
+    background-color: var(--white);
+    background-clip: padding-box;
+    border: 1px solid var(--medium-gray);
+    appearance: none;
+    border-radius: var(--border-radius);
+    transition: border-color .15s ease-in-out, box-shadow .15s ease-in-out;
+    }
+    .elegant-form .form-control:focus {
+    color: var(--text-color);
+    background-color: var(--white);
+    border-color: var(--primary-color);
+    outline: 0;
+    box-shadow: 0 0 0 0.25rem rgba(0, 123, 255, .25);
+    }
+    .elegant-form select.form-control {
+    padding-right: 2.25rem;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23343a40' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M2 5l6 6 6-6'/%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right 0.75rem center;
+    background-size: 16px 12px;
+    }
+    .elegant-form textarea.form-control {
+    min-height: 90px;
+    }
+    .elegant-form .form-error {
+    font-size: 0.9em;
+    color: var(--danger-color);
+    margin-top: 0.4rem;
+    }
+    /* Actions & Button */
+    .elegant-form .form-actions {
+    padding-top: 1.8em;
+    text-align: right; /* Aligne bouton à droite */
+    }
+    .elegant-form .btn.btn-primary {
+    color: #fff;
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
+    display: inline-block;
+    font-weight: 500;
+    line-height: 1.5;
+    text-align: center;
+    text-decoration: none;
+    vertical-align: middle;
+    cursor: pointer;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    user-select: none;
+    background-color: transparent;
+    border: 1px solid transparent;
+    padding: 0.75rem 1.25rem;
+    font-size: 1rem;
+    border-radius: var(--border-radius);
+    transition: color .15s ease-in-out, background-color .15s ease-in-out, border-color .15s ease-in-out, box-shadow .15s ease-in-out;
+    }
+    .elegant-form .btn.btn-primary:hover {
+    color: #fff;
+    background-color: #0056b3;
+    border-color: #004f9a;
+    }
+    .elegant-form .btn.btn-primary:focus {
+    box-shadow: 0 0 0 0.25rem rgba(0, 123, 255, .5);
+    }
+    .elegant-form .btn.btn-primary i { margin-right: .4em; }
+    @media (max-width: 768px) {
+    .elegant-form .col-md-6 { flex: 0 0 100%; max-width: 100%; } /* 1 colonne sur mobile */
+    .page-container.form-page { padding: 22px 15px; }
+    .form-title { font-size: 1.8em; }
+    .elegant-form .section-heading { font-size: 1.25em; margin-bottom: 1em; }
+    }
+</style>
+
+
+<div class="page-container form-page">
+  <h1 class="form-title">Formulaire Fin de Location</h1>
+
+  <form method="post" enctype="multipart/form-data" class="elegant-form">
+    {% csrf_token %}
+    {{ form.media }} 
+    {% if form.non_field_errors %}
+      <div class="alert alert-danger">{{ form.non_field_errors }}</div>
+    {% endif %}
+
+    <!-- Section 1 : Informations Location -->
+    <div class="form-section">
+      <h2 class="section-heading">
+        <i class="fa-solid fa-location-pin"></i> Informations Location
+      </h2>
+      <div class="form-row">
+        <div class="form-group col-md-6">
+          <label for="id_location_display">Location</label>
+          <input type="text" id="id_location_display" class="form-control" value="{{ location }}" readonly>
+        </div>
+        <div class="form-group col-md-6">
+          {{ form.date_fin_location.label_tag }}
+          {{ form.date_fin_location }}
+          {% if form.date_fin_location.errors %}
+            <div class="form-error">{{ form.date_fin_location.errors|striptags }}</div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <!-- Section 2 : Détails de Fin -->
+    <div class="form-section">
+      <h2 class="section-heading">
+        <i class="fa-solid fa-file-alt"></i> Détails de Fin
+      </h2>
+      <div class="form-group">
+        {{ form.raison_fin.label_tag }}
+        {{ form.raison_fin }}
+        {% if form.raison_fin.errors %}
+          <div class="form-error">{{ form.raison_fin.errors|striptags }}</div>
+        {% endif %}
+      </div>
+      <div class="form-row">
+        <div class="form-group col-md-6">
+          {{ form.montant_restant.label_tag }}
+          {{ form.montant_restant }}
+          {% if form.montant_restant.errors %}
+            <div class="form-error">{{ form.montant_restant.errors|striptags }}</div>
+          {% endif %}
+        </div>
+        <div class="form-group col-md-6">
+          {{ form.montant_remboursement_caution.label_tag }}
+          {{ form.montant_remboursement_caution }}
+          {% if form.montant_remboursement_caution.errors %}
+            <div class="form-error">{{ form.montant_remboursement_caution.errors|striptags }}</div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <!-- Section 3 : Pièces Jointes -->
+    <div class="form-section">
+      <h2 class="section-heading">
+        <i class="fa-solid fa-paperclip"></i> Pièces Jointes
+      </h2>
+      <div class="form-group">
+        {{ form.image_contrat.label_tag }}
+        {{ form.image_contrat }}
+        {% if form.image_contrat.errors %}
+          <div class="form-error">{{ form.image_contrat.errors|striptags }}</div>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Bouton Soumettre -->
+    <div class="form-actions">
+      <button type="submit" class="btn btn-primary">
+        <i class="fa-solid fa-check-circle"></i> Enregistrer Fin Location
+      </button>
+    </div>
+  </form>
+</div>
+
+<!-- === SCRIPT JAVASCRIPT === -->
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const montantRestantInput = document.querySelector("#id_montant_restant");
+    const montantRemboursementInput = document.querySelector("#id_montant_remboursement_caution");
+
+    // Utilisez la valeur passée par le contexte si elle est disponible
+    const caution = parseFloat("{{ montant_caution|default:'0' }}");
+
+    if (montantRemboursementInput) {
+        // Définir la valeur initiale seulement si le champ est vide ou non défini par l'utilisateur
+        if (!montantRemboursementInput.value || parseFloat(montantRemboursementInput.value) === 0) {
+             montantRemboursementInput.value = caution.toFixed(2);
+        }
+    }
+
+    if (montantRestantInput && montantRemboursementInput) { // S'assurer que les deux éléments existent
+        montantRestantInput.addEventListener("input", function () {
+            const restant = parseFloat(montantRestantInput.value) || 0;
+            // La somme remboursée est la caution initiale moins ce qui reste dû
+            const remboursement = (caution - restant);
+            // Assurez-vous que le remboursement ne soit pas négatif
+            montantRemboursementInput.value = (remboursement >= 0 ? remboursement : 0).toFixed(2);
+        });
+    }
+});
+</script>
+{% endblock %} {% endcomment %}

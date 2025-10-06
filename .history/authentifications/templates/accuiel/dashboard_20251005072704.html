@@ -1,0 +1,198 @@
+{% comment %} {% extends "base.html" %}
+
+{% block title %}
+    Tableau de Bord Administrateur
+{% endblock %}
+
+{% block header %}
+    Tableau de Bord Administrateur
+{% endblock %}
+
+{% block content %}
+    <h2>Bienvenue, {{ user.username }} !</h2>
+    <h2>{{ user.username }}</h2>
+    <p>Voici la section pour afficher des statistiques spécifiques au tableau de bord.</p>
+    <!-- Ajoutez ici le contenu spécifique au tableau de bord de l'administrateur -->
+{% endblock %} {% endcomment %}
+
+
+
+{% extends "base.html" %}
+{% block title %}
+    Tableau de Bord Administrateur
+{% endblock %}
+
+{% block header %}
+    Tableau de Bord Administrateur
+{% endblock %}
+{% block content %}
+    <!-- Contenu principal -->
+    <main class="main-content">
+        <header>
+            <h1>Vue d'ensemble</h1>
+        </header>
+
+        <!-- Grille pour les widgets -->
+        <section class="widgets-grid">
+            <div class="card">
+                <h3>Ventes du jour</h3>
+                <p class="stat">1,250 €</p>
+                <span class="trend">+5% vs hier</span>
+            </div>
+            <div class="card">
+                <h3>Nouveaux Inscrits</h3>
+                <p class="stat">84</p>
+                <span class="trend">+12% vs semaine passée</span>
+            </div>
+            <div class="card">
+                <h3>Taux de Conversion</h3>
+                <p class="stat">3.4%</p>
+                <span class="trend-down">-0.2% vs hier</span>
+            </div>
+            <div class="card">
+                <h3>Visiteurs Actifs</h3>
+                <p class="stat">2,305</p>
+                <span class="trend">En temps réel</span>
+            </div>
+        </section>
+    </main>
+    <style>
+        /* --- Variables et Initialisation --- */
+:root {
+    --primary-color: #4f46e5;
+    --primary-hover: #4338ca;
+    --sidebar-bg: #111827;
+    --main-bg: #f9fafb;
+    --text-light: #f3f4f6;
+    --text-dark: #374151;
+    --card-bg: #ffffff;
+    --border-color: #e5e7eb;
+    --shadow-color: rgba(0, 0, 0, 0.05);
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Poppins', sans-serif;
+    display: flex;
+    background-color: var(--main-bg);
+    color: var(--text-dark);
+}
+
+/* --- Barre Latérale (Sidebar) --- */
+.sidebar {
+    width: 260px;
+    background-color: var(--sidebar-bg);
+    color: var(--text-light);
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    position: fixed; /* Reste en place au défilement */
+    left: 0;
+    top: 0;
+    padding: 20px;
+}
+
+.sidebar-header {
+    margin-bottom: 30px;
+    text-align: center;
+}
+
+.sidebar-header h2 {
+    font-weight: 600;
+}
+
+.sidebar-nav {
+    flex-grow: 1; /* Pousse le footer en bas */
+}
+
+/* Style des "boutons" de navigation */
+.nav-item {
+    display: flex;
+    align-items: center;
+    padding: 12px 15px;
+    margin-bottom: 8px;
+    border-radius: 8px;
+    text-decoration: none;
+    color: var(--text-light);
+    font-weight: 500;
+    transition: background-color 0.3s, color 0.3s;
+}
+
+.nav-item:hover {
+    background-color: #374151; /* Un gris foncé au survol */
+}
+
+/* Style du bouton actif */
+.nav-item.active {
+    background-color: var(--primary-color);
+    color: white;
+}
+
+.nav-item svg {
+    width: 24px;
+    height: 24px;
+    margin-right: 15px;
+}
+
+/* --- Contenu Principal --- */
+.main-content {
+    margin-left: 260px; /* Décale le contenu pour ne pas être sous la sidebar */
+    width: calc(100% - 260px);
+    padding: 40px;
+}
+
+.main-content header {
+    margin-bottom: 30px;
+}
+
+.main-content header h1 {
+    font-size: 2.2rem;
+    font-weight: 700;
+}
+
+/* --- Cartes (Widgets) --- */
+.widgets-grid {
+    display: grid;
+    /* Crée des colonnes responsives : elles s'adaptent à la largeur de l'écran */
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 25px;
+}
+
+.card {
+    background-color: var(--card-bg);
+    padding: 25px;
+    border-radius: 12px;
+    border: 1px solid var(--border-color);
+    box-shadow: 0 4px 6px var(--shadow-color);
+}
+
+.card h3 {
+    font-size: 1rem;
+    font-weight: 600;
+    margin-bottom: 15px;
+    color: #6b7280;
+}
+
+.card .stat {
+    font-size: 2rem;
+    font-weight: 700;
+    margin-bottom: 10px;
+}
+
+.card .trend {
+    color: #10b981; /* Vert */
+    font-weight: 500;
+}
+
+.card .trend-down {
+    color: #ef4444; /* Rouge */
+    font-weight: 500;
+}
+    </style>
+</body>
+</html>
