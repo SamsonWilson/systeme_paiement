@@ -1,33 +1,28 @@
-# Fichier : Dockerfile
-
-# 1. Utiliser une image "slim" qui est plus légère
+# 1. Image de base légère
 FROM python:3.9-slim
 
-# 2. Définir des variables d'environnement
-ENV PYTHONDONTWRITEBYTECODE 1
-ENV PYTHONUNBUFFERED 1
+# 2. Variables d'environnement
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
 
-# 3. Mettre à jour apt et installer les dépendances système nécessaires
-# (build-essential et default-libmysqlclient-dev sont souvent requis pour mysqlclient)
-#RUN apt-get update && apt-get install -y --no-install-recommends \
-    #build-essential \
-   # default-libmysqlclient-dev \
-    
-    #&& rm -rf /var/lib/apt/lists/*
+# 3. Installer les dépendances système nécessaires
 RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
     default-libmysqlclient-dev \
     pkg-config \
+    libjpeg-dev \
+    zlib1g-dev \
  && rm -rf /var/lib/apt/lists/*
+
 # 4. Définir le répertoire de travail
 WORKDIR /app
 
-# 5. Copier UNIQUEMENT le fichier des dépendances
-# C'est la clé de l'optimisation ! Si ce fichier ne change pas, Docker n'exécutera pas l'étape suivante.
-COPY requirements.txt .
+# 5. Copier uniquement le fichier requirements.txt
+COPY requirements.txt ./
 
-# 6. Installer les dépendances Python
-RUN pip install -r requirements.txt
+# 6. Mettre à jour pip et installer les dépendances Python
+RUN pip install --upgrade pip setuptools wheel
+RUN pip install --no-cache-dir -r requirements.txt
 
-# 7. Copier tout le reste de votre projet
+# 7. Copier le reste du code de l’application
 COPY . .
