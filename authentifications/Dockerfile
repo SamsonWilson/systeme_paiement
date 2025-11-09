@@ -9,12 +9,16 @@ ENV PYTHONUNBUFFERED 1
 
 # 3. Mettre à jour apt et installer les dépendances système nécessaires
 # (build-essential et default-libmysqlclient-dev sont souvent requis pour mysqlclient)
+#RUN apt-get update && apt-get install -y --no-install-recommends \
+    #build-essential \
+   # default-libmysqlclient-dev \
+    
+    #&& rm -rf /var/lib/apt/lists/*
 RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
     default-libmysqlclient-dev \
-    # Nettoyer le cache apt pour réduire la taille de l'image
-    && rm -rf /var/lib/apt/lists/*
-
+    pkg-config \
+ && rm -rf /var/lib/apt/lists/*
 # 4. Définir le répertoire de travail
 WORKDIR /app
 
